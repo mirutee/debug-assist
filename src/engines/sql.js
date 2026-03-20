@@ -1,6 +1,6 @@
 // src/engines/sql.js
 function diagnosticarSQL({ mensagem = "", dados = {} }) {
-  const base = { categoria: "sql" };
+  const base = { categoria: "sql", confianca: 0.9 };
   const query = (dados.query || "").toUpperCase();
   const tempo = dados.tempo_execucao || 0;
   const execucoes = dados.quantidade_execucoes || 1;

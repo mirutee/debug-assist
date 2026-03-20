@@ -91,8 +91,8 @@ function diagnosticarFrontend({ tipo, mensagem = "", status, dados = {} }) {
   }
 
   if (tipo === "responsive_error") {
-    const tipoProbema = dados.problema || "layout";
-    if (tipoProbema === "overflow") {
+    const tipoProblema = dados.problema || "layout";
+    if (tipoProblema === "overflow") {
       return {
         ...base,
         problema: "Layout quebrado — overflow horizontal",
