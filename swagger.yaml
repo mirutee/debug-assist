@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: DevInsight API
+  description: API de diagnóstico inteligente para frontend, backend e SQL.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local
+  - url: https://api.devinsight.com
+    description: Produção
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: API operacional
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+
+  /v1/diagnosticos:
+    post:
+      summary: Envia um erro para diagnóstico
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiagnosticoRequest"
+            examples:
+              hydration:
+                summary: Erro de hidratação
+                value:
+                  tipo: hydration_error
+                  mensagem: "Hydration failed because the initial UI does not match..."
+              sql:
+                summary: Query SQL lenta
+                value:
+                  tipo: sql_analysis
+                  mensagem: ""
+                  dados:
+                    query: "SELECT * FROM users"
+                    tempo_execucao: 900
+      responses:
+        "200":
+          description: Diagnóstico gerado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagnosticoResponse"
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Não autorizado
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    DiagnosticoRequest:
+      type: object
+      required:
+        - tipo
+      properties:
+        tipo:
+          type: string
+          enum:
+            - hydration_error
+            - request_error
+            - silent_error
+            - responsive_error
+            - performance_issue
+            - silent_backend_error
+            - contract_error
+            - external_api_error
+            - sql_analysis
+        mensagem:
+          type: string
+        status:
+          type: integer
+        contexto:
+          type: object
+          properties:
+            url:
+              type: string
+            plataforma:
+              type: string
+            framework:
+              type: string
+        dados:
+          type: object
+    DiagnosticoResponse:
+      type: object
+      properties:
+        problema:
+          type: string
+          example: "Erro de hidratação"
+        causa:
+          type: string
+        nivel:
+          type: string
+          enum:
+            - baixo
+            - médio
+            - alto
+        categoria:
+          type: string
+          enum:
+            - frontend
+            - backend
+            - sql
+            - desconhecido
+        sugestoes:
+          type: array
+          items:
+            type: string
+        confianca:
+          type: number
+          minimum: 0
+          maximum: 1
