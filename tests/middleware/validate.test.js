@@ -11,7 +11,7 @@ describe("Validate middleware", () => {
       .set(HEADERS)
       .send({ mensagem: "erro qualquer" });
     expect(res.status).toBe(400);
-    expect(res.body.erro).toMatch(/tipo/);
+    expect(res.body.erro).toBe("Campo 'tipo' é obrigatório");
   });
 
   it("retorna 400 quando 'mensagem' não enviada", async () => {
@@ -20,6 +20,6 @@ describe("Validate middleware", () => {
       .set(HEADERS)
       .send({ tipo: "hydration_error" });
     expect(res.status).toBe(400);
-    expect(res.body.erro).toMatch(/mensagem/);
+    expect(res.body.erro).toBe("Campo 'mensagem' é obrigatório");
   });
 });
