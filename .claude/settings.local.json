@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm test:*)",
+      "Bash(npx jest:*)",
+      "Bash(find /c/PROJETOS/API/src -type f -name *.js)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s -X POST http://localhost:3000/v1/diagnosticos -H \"Content-Type: application/json\" -H \"Authorization: Bearer dev-secret-key-local\" -d '{\"\"tipo\"\":\"\"hydration_error\"\",\"\"mensagem\"\":\"\"Hydration failed\"\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/v1/diagnosticos -H \"Content-Type: application/json\" -H \"Authorization: Bearer dev-secret-key-local\" -d '{\"\"tipo\"\":\"\"sql_analysis\"\",\"\"mensagem\"\":\"\"\"\",\"\"dados\"\":{\"\"query\"\":\"\"SELECT * FROM users\"\",\"\"tempo_execucao\"\":900}}')",
+      "Bash(curl -s -X POST http://localhost:3000/v1/diagnosticos -H \"Content-Type: application/json\" -d '{\"\"tipo\"\":\"\"hydration_error\"\",\"\"mensagem\"\":\"\"test\"\"}')",
+      "Bash(pkill -f \"node src/server.js\")"
+    ]
+  }
+}
