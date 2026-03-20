@@ -1,9 +1,10 @@
-// src/routes/diagnosticos.js (temporary stub — will be replaced in Task 3)
+// src/routes/diagnosticos.js
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/auth");
 
-router.post("/", (_req, res) => {
-  res.status(501).json({ erro: "Not implemented yet" });
+router.post("/", auth, (req, res) => {
+  res.json({ ok: true });
 });
 
 module.exports = router;
