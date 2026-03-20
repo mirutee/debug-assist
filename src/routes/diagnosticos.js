@@ -2,8 +2,9 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
+const validate = require("../middleware/validate");
 
-router.post("/", auth, (req, res) => {
+router.post("/", auth, validate, (req, res) => {
   res.json({ ok: true });
 });
 
