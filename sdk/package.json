@@ -1,0 +1,8 @@
+{
+  "name": "devinsight-sdk",
+  "version": "0.1.0",
+  "description": "SDK oficial da DevInsight API",
+  "main": "index.js",
+  "keywords": ["debug", "diagnostics", "api"],
+  "license": "MIT"
+}
