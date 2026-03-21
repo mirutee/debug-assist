@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.*
+tests/
+docs/
+coverage/
+OUTROS/
+*.test.js
+.git
+.claude
