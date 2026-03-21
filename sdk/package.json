@@ -1,8 +1,18 @@
 {
   "name": "devinsight-sdk",
-  "version": "0.1.0",
-  "description": "SDK oficial da DevInsight API",
+  "version": "1.0.0",
+  "description": "SDK oficial da DevInsight API — diagnósticos inteligentes para aplicações",
   "main": "index.js",
-  "keywords": ["debug", "diagnostics", "api"],
-  "license": "MIT"
+  "files": ["index.js"],
+  "keywords": ["diagnostics", "debug", "api", "devinsight", "monitoring"],
+  "author": "DevInsight",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mirutee/devinsight-api"
+  },
+  "homepage": "https://github.com/mirutee/devinsight-api",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
