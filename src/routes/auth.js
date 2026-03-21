@@ -12,7 +12,7 @@ const supabase = createClient(
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // POST /v1/auth/signup
-router.post("/signup", signupLimiter, validarDominio, async (req, res) => {
+router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
   const { email, senha } = req.body;
 
   if (!EMAIL_REGEX.test(email)) {
