@@ -16,10 +16,11 @@ O MVP atual usa uma única `API_KEY` em variável de ambiente para autenticar to
 
 - Tabelas `planos` e `usuarios` no Supabase
 - `POST /v1/auth/signup` — cadastro com verificação de email via Supabase Auth
-- `GET /v1/auth/me` — retorna dados do usuário autenticado (incluindo API Key)
+- `POST /v1/auth/login` — autentica com email/senha, retorna JWT do Supabase Auth
+- `GET /v1/auth/me` — retorna dados do usuário + API Key (autenticado via JWT)
 - Middleware de auth reescrito para validação por usuário + verificação de cota
 - Anti-abuso no signup: bloqueio de emails descartáveis + rate limit por IP
-- Reset mensal de `uso_mensal` via pg_cron no Supabase
+- Reset mensal de `uso_mensal` via pg_cron no Supabase (UTC)
 
 **Fora do escopo:** dashboard frontend, landing page, pagamentos, deploy.
 
@@ -61,38 +62,49 @@ CREATE TABLE usuarios (
 
 ### Trigger pós-confirmação de email
 
-Cria automaticamente o registro em `usuarios` quando o Supabase Auth confirma o email do usuário:
+O trigger dispara no **UPDATE** de `auth.users` quando `confirmed_at` muda de NULL para um valor (email confirmado). Isso garante que o registro em `usuarios` só existe após confirmação real.
 
 ```sql
-CREATE OR REPLACE FUNCTION handle_new_user()
+CREATE OR REPLACE FUNCTION handle_user_confirmed()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.usuarios (auth_id, email)
-  VALUES (NEW.id, NEW.email);
+  -- Só age quando confirmed_at passa de NULL para preenchido
+  IF OLD.confirmed_at IS NULL AND NEW.confirmed_at IS NOT NULL THEN
+    INSERT INTO public.usuarios (auth_id, email)
+    VALUES (NEW.id, NEW.email)
+    ON CONFLICT (auth_id) DO NOTHING;
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+CREATE TRIGGER on_auth_user_confirmed
+  AFTER UPDATE ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_user_confirmed();
 ```
 
 ### pg_cron — reset mensal
 
+Executa às 00:00 UTC do dia 1° de cada mês (equivale a 21:00 BRT do último dia do mês anterior). Documentar para suporte: o reset acontece em UTC, não em horário de Brasília.
+
 ```sql
 SELECT cron.schedule('reset-uso-mensal', '0 0 1 * *',
-  'UPDATE usuarios SET uso_mensal = 0');
+  'UPDATE public.usuarios SET uso_mensal = 0');
 ```
+
+**Nota timezone:** UTC-3 (BRT) significa que o reset ocorre às 21:00 do último dia do mês para usuários brasileiros. Aceito como trade-off do MVP — documentar no README operacional.
 
 ---
 
-## 2. Fluxo de Signup
+## 2. Fluxo de Signup e Login
+
+### 2.1 Signup
 
 ```
 POST /v1/auth/signup  { email, senha }
         │
         ├─ Valida formato do email
+        ├─ Valida senha (mínimo 6 caracteres — requisito do Supabase Auth)
         ├─ Bloqueia domínios descartáveis (lista local ~200 domínios)
         ├─ Rate limit: máx 3 signups por IP em janela de 24h
         │
@@ -105,30 +117,58 @@ POST /v1/auth/signup  { email, senha }
   (usuário clica no link de confirmação)
         │
         ▼
-  Trigger on_auth_user_created
+  Trigger on_auth_user_confirmed
         └─ INSERT em usuarios (auth_id, email, api_key=gen_random_uuid(), plano='free')
 ```
 
-**A API Key não é retornada no signup.** O usuário acessa via `GET /v1/auth/me` após login.
+**A API Key não é retornada no signup.** O usuário faz login para obter um JWT e então busca a key via `GET /v1/auth/me`.
 
-### GET /v1/auth/me
+### 2.2 Login
 
-Requer `Authorization: Bearer <api_key>`. Retorna:
-```json
-{
-  "email": "user@example.com",
-  "plano": "free",
-  "uso_mensal": 42,
-  "limite_mensal": 100,
-  "api_key": "uuid-da-key"
-}
 ```
+POST /v1/auth/login  { email, senha }
+        │
+        ▼
+  Supabase Auth.signInWithPassword(email, senha)
+        │
+        ├─ Credenciais inválidas → 401 { erro: "Email ou senha incorretos" }
+        ├─ Email não confirmado → 403 { erro: "Confirme seu email antes de fazer login" }
+        └─ Sucesso → 200 { token: "<supabase-jwt>", token_type: "Bearer" }
+```
+
+### 2.3 GET /v1/auth/me
+
+Autenticado via **Supabase JWT** (não via API Key — evita o problema circular de precisar da key para buscar a key).
+
+```
+GET /v1/auth/me
+Authorization: Bearer <supabase-jwt>
+        │
+        ▼
+  Supabase Auth.getUser(jwt)  →  { id: auth_id }
+        │
+        ▼
+  SELECT u.*, p.limite_mensal
+  FROM usuarios u JOIN planos p ON u.plano_id = p.id
+  WHERE u.auth_id = $1
+        │
+        └─ Retorna 200:
+           {
+             "email": "user@example.com",
+             "plano": "free",
+             "uso_mensal": 42,
+             "limite_mensal": 100,
+             "api_key": "uuid-da-key"
+           }
+```
+
+Esta rota usa o JWT do Supabase para autenticar, **não o middleware de cotas**. Não consome cota mensal.
 
 ---
 
 ## 3. Middleware de Auth + Cotas
 
-Substitui o `src/middleware/auth.js` atual (que valida contra `process.env.API_KEY`):
+Usado em `POST /v1/diagnosticos` (e futuros endpoints pagos). **Não** é usado em `/v1/auth/*`.
 
 ```
 Request: Authorization: Bearer <api_key>
@@ -150,7 +190,9 @@ Request: Authorization: Bearer <api_key>
   next()
 ```
 
-**Incremento de uso:** após diagnóstico bem-sucedido, `UPDATE usuarios SET uso_mensal = uso_mensal + 1`. Erros de validação não consomem cota.
+**Incremento de uso:** `src/routes/diagnosticos.js` chama `incrementarUso(req.usuario.id)` após retornar a resposta com sucesso (`res.on('finish', ...)`). Erros de validação não consomem cota.
+
+**Limitação conhecida (MVP):** verificação e incremento são operações separadas. Sob alta concorrência do mesmo usuário, a cota pode ser ultrapassada marginalmente. Mitigação com `UPDATE ... WHERE uso_mensal < limite_mensal` fica para versão futura.
 
 ---
 
@@ -168,7 +210,7 @@ Três camadas aplicadas em `POST /v1/auth/signup`:
 - Resposta: `429 { erro: "Limite de cadastros atingido. Tente novamente em 24h." }`
 
 ### 4.3 Verificação de email (Supabase Auth)
-- API Key só existe após confirmação — usuário não confirmado não tem registro em `usuarios`
+- O trigger só cria o registro em `usuarios` após confirmação — usuário não confirmado não tem API Key
 
 ---
 
@@ -178,20 +220,20 @@ Três camadas aplicadas em `POST /v1/auth/signup`:
 | Arquivo | Mudança |
 |---|---|
 | `src/middleware/auth.js` | Reescrito — valida api_key na tabela `usuarios` + verifica cota |
-| `src/db/supabase.js` | Adiciona `getUsuarioByApiKey()` e `incrementarUso()` |
+| `src/db/supabase.js` | Adiciona `getUsuarioByApiKey()`, `incrementarUso()`, `getUsuarioByAuthId()` |
 | `src/app.js` | Registra rota `/v1/auth` |
+| `src/routes/diagnosticos.js` | Adiciona chamada a `incrementarUso()` via `res.on('finish', ...)` |
 
 ### Criados
 | Arquivo | Conteúdo |
 |---|---|
-| `src/routes/auth.js` | `POST /v1/auth/signup`, `GET /v1/auth/me` |
+| `src/routes/auth.js` | `POST /v1/auth/signup`, `POST /v1/auth/login`, `GET /v1/auth/me` |
 | `src/middleware/antiAbuse.js` | Rate limit de signup + validação de domínio |
 | `src/data/blocked-domains.js` | Lista de domínios descartáveis |
-| `migrations/001_usuarios_planos.sql` | Tabelas, trigger, pg_cron |
+| `migrations/001_usuarios_planos.sql` | Raiz do projeto (`C:\PROJETOS\API\migrations\`). Tabelas, trigger, pg_cron — executar manualmente no Supabase SQL Editor |
 
 ### Inalterados
 - `src/engines/` — nenhuma mudança
-- `src/routes/diagnosticos.js` — nenhuma mudança
 - `src/routes/health.js` — nenhuma mudança
 - `src/middleware/validate.js` — nenhuma mudança
 
@@ -201,24 +243,28 @@ Três camadas aplicadas em `POST /v1/auth/signup`:
 
 | Situação | HTTP | Resposta |
 |---|---|---|
-| Header Authorization ausente | 401 | `{ erro: "API Key obrigatória" }` |
+| Header Authorization ausente (diagnosticos) | 401 | `{ erro: "API Key obrigatória" }` |
 | API Key não encontrada / inativa | 401 | `{ erro: "API Key inválida" }` |
 | Cota mensal esgotada | 429 | `{ erro: "Cota mensal esgotada. Faça upgrade do seu plano." }` |
 | Email descartável no signup | 400 | `{ erro: "Email não permitido" }` |
 | Muitos signups pelo mesmo IP | 429 | `{ erro: "Limite de cadastros atingido. Tente novamente em 24h." }` |
 | Email já cadastrado | 400 | `{ erro: "Email já cadastrado" }` |
+| Senha inválida (< 6 caracteres) | 400 | `{ erro: "Senha inválida. Mínimo 6 caracteres." }` |
+| Email ou senha incorretos no login | 401 | `{ erro: "Email ou senha incorretos" }` |
+| Email não confirmado no login | 403 | `{ erro: "Confirme seu email antes de fazer login" }` |
 | Erro interno do Supabase | 500 | `{ erro: "Erro interno. Tente novamente." }` |
 
 ---
 
 ## 7. Testes
 
-### Novos arquivos de teste
-- `tests/routes/auth.test.js` — signup válido, email descartável, rate limit, me sem key, me com key válida
-- `tests/middleware/auth.test.js` — reescrito para mock de `getUsuarioByApiKey` (key válida, inválida, cota esgotada)
+### Arquivos de teste
+- `tests/routes/auth.test.js` — signup válido, email descartável, senha curta, rate limit, login, me com JWT válido
+- `tests/middleware/auth.test.js` — **reescrito**: mock de `getUsuarioByApiKey` via `jest.mock('../db/supabase')` (key válida, inválida, cota esgotada, plano enterprise sem limite)
 
 ### Estratégia
 - Supabase mockado nos testes (sem chamadas reais ao banco)
+- `jest.mock('@supabase/supabase-js')` para testes de signup/login
 - Testes de integração reais ficam para fase de staging/deploy
 
 ---
@@ -227,8 +273,10 @@ Três camadas aplicadas em `POST /v1/auth/signup`:
 
 | Decisão | Motivo |
 |---|---|
-| Supabase Auth apenas para signup/email | Auth foi feito para isso; validação de Bearer token é mais rápida em tabela própria |
+| Supabase Auth apenas para signup/email/login | Auth foi feito para isso; validação de Bearer API Key é mais rápida em tabela própria |
+| GET /v1/auth/me usa JWT, não API Key | Evita dependência circular (precisar da key para buscar a key) |
 | API Key como UUID v4 | Simples, suficientemente seguro para MVP, sem dependências extras |
-| Incremento pós-sucesso | Erros não consomem cota — melhor UX e evita penalizar erros de integração |
+| Trigger em AFTER UPDATE (confirmed_at) | Garante que `usuarios` só tem registros com email confirmado |
+| Incremento via `res.on('finish')` | Desacopla o incremento da lógica de negócio; erros não consomem cota |
 | Lista de domínios local | Zero latência, sem API externa, suficiente para ~80% dos abusos |
-| pg_cron no Supabase | Reset não depende do servidor estar no ar |
+| pg_cron no Supabase (UTC) | Reset não depende do servidor estar no ar; UTC aceito como trade-off do MVP |
