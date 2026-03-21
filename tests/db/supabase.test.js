@@ -66,6 +66,19 @@ describe("incrementarUso", () => {
       { p_usuario_id: "user-uuid" }
     );
   });
+
+  it("loga erro quando rpc falha", async () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockSupabaseClient.rpc.mockResolvedValue({ error: { message: "db down" } });
+
+    await incrementarUso("user-uuid");
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Erro ao incrementar uso:",
+      "db down"
+    );
+    consoleSpy.mockRestore();
+  });
 });
 
 describe("getUsuarioByAuthId", () => {
