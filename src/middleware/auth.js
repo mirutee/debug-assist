@@ -8,28 +8,41 @@ async function auth(req, res, next) {
     return res.status(401).json({ erro: "API Key obrigatória" });
   }
 
-  const apiKey = header.replace("Bearer ", "").trim();
-  const usuario = await getUsuarioByApiKey(apiKey);
-
-  if (!usuario) {
-    return res.status(401).json({ erro: "API Key inválida" });
+  if (!header.startsWith("Bearer ")) {
+    return res.status(401).json({ erro: "API Key obrigatória" });
   }
 
-  const limiteMensal = usuario.planos.limite_mensal;
-  if (limiteMensal !== -1 && usuario.uso_mensal >= limiteMensal) {
-    return res.status(429).json({
-      erro: "Cota mensal esgotada. Faça upgrade do seu plano.",
-    });
+  const apiKey = header.slice(7).trim();
+
+  try {
+    const usuario = await getUsuarioByApiKey(apiKey);
+
+    if (!usuario) {
+      return res.status(401).json({ erro: "API Key inválida" });
+    }
+
+    if (!usuario.planos) {
+      return res.status(500).json({ erro: "Erro interno. Tente novamente." });
+    }
+
+    const limiteMensal = usuario.planos.limite_mensal;
+    if (limiteMensal !== -1 && usuario.uso_mensal >= limiteMensal) {
+      return res.status(429).json({
+        erro: "Cota mensal esgotada. Faça upgrade do seu plano.",
+      });
+    }
+
+    req.usuario = {
+      id: usuario.id,
+      plano_id: usuario.plano_id,
+      uso_mensal: usuario.uso_mensal,
+      limite_mensal: limiteMensal,
+    };
+
+    next();
+  } catch (err) {
+    return res.status(500).json({ erro: "Erro interno. Tente novamente." });
   }
-
-  req.usuario = {
-    id: usuario.id,
-    plano_id: usuario.plano_id,
-    uso_mensal: usuario.uso_mensal,
-    limite_mensal: limiteMensal,
-  };
-
-  next();
 }
 
 module.exports = auth;

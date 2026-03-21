@@ -9,9 +9,9 @@ jest.mock("../../src/db/supabase", () => ({
 const { getUsuarioByApiKey } = require("../../src/db/supabase");
 const auth = require("../../src/middleware/auth");
 
-function makeReqRes(apiKey) {
+function makeReqRes(authHeader) {
   const req = {
-    headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
+    headers: authHeader !== undefined ? { authorization: authHeader } : {},
   };
   const res = {
     status: jest.fn().mockReturnThis(),
@@ -25,7 +25,15 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("auth middleware", () => {
   it("retorna 401 quando Authorization não enviado", async () => {
-    const { req, res, next } = makeReqRes(null);
+    const { req, res, next } = makeReqRes(undefined);
+    await auth(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ erro: "API Key obrigatória" });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("retorna 401 quando scheme não é Bearer", async () => {
+    const { req, res, next } = makeReqRes("Basic abc123");
     await auth(req, res, next);
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ erro: "API Key obrigatória" });
@@ -34,7 +42,7 @@ describe("auth middleware", () => {
 
   it("retorna 401 quando API Key inválida", async () => {
     getUsuarioByApiKey.mockResolvedValue(null);
-    const { req, res, next } = makeReqRes("key-inexistente");
+    const { req, res, next } = makeReqRes("Bearer key-inexistente");
     await auth(req, res, next);
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ erro: "API Key inválida" });
@@ -48,7 +56,7 @@ describe("auth middleware", () => {
       uso_mensal: 100,
       planos: { limite_mensal: 100 },
     });
-    const { req, res, next } = makeReqRes("key-valida");
+    const { req, res, next } = makeReqRes("Bearer key-valida");
     await auth(req, res, next);
     expect(res.status).toHaveBeenCalledWith(429);
     expect(res.json).toHaveBeenCalledWith({
@@ -64,9 +72,10 @@ describe("auth middleware", () => {
       uso_mensal: 50,
       planos: { limite_mensal: 100 },
     });
-    const { req, res, next } = makeReqRes("key-valida");
+    const { req, res, next } = makeReqRes("Bearer key-valida");
     await auth(req, res, next);
     expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
     expect(req.usuario).toEqual({
       id: "u1",
       plano_id: "free",
@@ -82,8 +91,37 @@ describe("auth middleware", () => {
       uso_mensal: 99999,
       planos: { limite_mensal: -1 },
     });
-    const { req, res, next } = makeReqRes("key-enterprise");
+    const { req, res, next } = makeReqRes("Bearer key-enterprise");
     await auth(req, res, next);
     expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(req.usuario).toEqual({
+      id: "u2",
+      plano_id: "enterprise",
+      uso_mensal: 99999,
+      limite_mensal: -1,
+    });
+  });
+
+  it("retorna 500 quando usuario.planos é null (dados corrompidos)", async () => {
+    getUsuarioByApiKey.mockResolvedValue({
+      id: "u3",
+      plano_id: "free",
+      uso_mensal: 0,
+      planos: null,
+    });
+    const { req, res, next } = makeReqRes("Bearer key-corrompida");
+    await auth(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("retorna 500 quando getUsuarioByApiKey lança exceção", async () => {
+    getUsuarioByApiKey.mockRejectedValue(new Error("DB connection failed"));
+    const { req, res, next } = makeReqRes("Bearer key-valida");
+    await auth(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ erro: "Erro interno. Tente novamente." });
+    expect(next).not.toHaveBeenCalled();
   });
 });
