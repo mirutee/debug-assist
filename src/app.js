@@ -21,6 +21,7 @@ const swaggerDocument = YAML.load(path.join(__dirname, "../swagger.yaml"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/health", require("./routes/health"));
+app.use("/v1/auth", require("./routes/auth"));
 app.use("/v1/diagnosticos", limiter, require("./routes/diagnosticos"));
 
 module.exports = app;
