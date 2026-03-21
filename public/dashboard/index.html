@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — DevInsight</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DevInsight</span>
+      </div>
+      <a class="nav-item active">🏠 Visão Geral</a>
+      <a class="nav-item" href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
+      <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
+      <div class="sidebar-footer" id="user-email">Carregando...</div>
+    </nav>
+
+    <main class="main">
+      <div class="page-title">Visão Geral</div>
+      <div class="page-subtitle" id="user-subtitle">Carregando...</div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-label">Uso este mês</div>
+          <div>
+            <span class="usage-number" id="uso">—</span>
+            <span class="usage-limit"> / <span id="limite">—</span></span>
+          </div>
+          <div class="usage-bar">
+            <div class="usage-fill" id="usage-fill" style="width: 0%"></div>
+          </div>
+          <div class="card-sub" id="reset-info">Carregando...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Plano atual</div>
+          <div class="plan-badge" id="plano-nome">—</div>
+          <div class="card-sub" id="plano-limite">—</div>
+          <a class="btn-upgrade" href="mailto:contato@devinsight.com">Fazer upgrade →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="margin-bottom: 12px;">Sua API Key</div>
+        <div class="apikey-row">
+          <div class="apikey-field" id="apikey-field">••••••••-••••-••••-••••-••••••••••••</div>
+          <button class="btn-sm" id="btn-reveal" onclick="toggleReveal()">👁 Revelar</button>
+          <button class="btn-sm" onclick="copyKey()">📋 Copiar</button>
+        </div>
+        <div class="copied-feedback" id="copied-feedback">✓ Copiado para a área de transferência!</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = '';
+    let userData = null;
+    let revealed = false;
+
+    async function loadDashboard() {
+      const token = localStorage.getItem('devinsight_token');
+      if (!token) {
+        window.location.replace('/dashboard/login.html');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/v1/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status === 401) {
+          console.error('Token inválido ou expirado — redirecionando para login');
+          localStorage.removeItem('devinsight_token');
+          window.location.replace('/dashboard/login.html');
+          return;
+        }
+
+        if (res.status === 404) {
+          document.getElementById('user-subtitle').textContent =
+            'Conta não configurada. Entre em contato com o suporte.';
+          return;
+        }
+
+        if (!res.ok) {
+          document.getElementById('user-subtitle').textContent =
+            'Erro de conexão. Recarregue a página.';
+          return;
+        }
+
+        userData = await res.json();
+        render(userData);
+      } catch (err) {
+        document.getElementById('user-subtitle').textContent =
+          'Erro de conexão. Verifique sua internet.';
+      }
+    }
+
+    function render(data) {
+      document.getElementById('user-email').textContent = data.email;
+      document.getElementById('user-subtitle').textContent =
+        data.email + ' · Plano ' + capitalize(data.plano);
+
+      document.getElementById('uso').textContent = data.uso_mensal;
+
+      if (data.limite_mensal === -1) {
+        document.getElementById('limite').textContent = '∞';
+        document.getElementById('usage-fill').style.width = '5%';
+        document.getElementById('reset-info').textContent = 'Uso ilimitado';
+      } else {
+        document.getElementById('limite').textContent = data.limite_mensal;
+        const pct = Math.min(100, Math.round((data.uso_mensal / data.limite_mensal) * 100));
+        document.getElementById('usage-fill').style.width = pct + '%';
+        document.getElementById('reset-info').textContent =
+          'Reset em ' + diasAteReset() + ' dias (00:00 UTC do dia 1°)';
+      }
+
+      document.getElementById('plano-nome').textContent = capitalize(data.plano);
+      document.getElementById('plano-limite').textContent =
+        data.limite_mensal === -1 ? 'Ilimitado' : data.limite_mensal + ' req/mês';
+    }
+
+    function diasAteReset() {
+      const hoje = new Date();
+      const primeiroDoPróximoMês = new Date(Date.UTC(
+        hoje.getUTCMonth() === 11 ? hoje.getUTCFullYear() + 1 : hoje.getUTCFullYear(),
+        hoje.getUTCMonth() === 11 ? 0 : hoje.getUTCMonth() + 1,
+        1
+      ));
+      return Math.ceil((primeiroDoPróximoMês - hoje) / (1000 * 60 * 60 * 24));
+    }
+
+    function capitalize(str) {
+      return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+
+    function toggleReveal() {
+      if (!userData) return;
+      revealed = !revealed;
+      document.getElementById('apikey-field').textContent = revealed
+        ? userData.api_key
+        : '••••••••-••••-••••-••••-••••••••••••';
+      document.getElementById('btn-reveal').textContent = revealed ? '🙈 Ocultar' : '👁 Revelar';
+    }
+
+    function copyKey() {
+      if (!userData) return;
+      navigator.clipboard.writeText(userData.api_key).then(() => {
+        const el = document.getElementById('copied-feedback');
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+      });
+    }
+
+    document.getElementById('btn-sair').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('devinsight_token');
+      window.location.replace('/dashboard/login.html');
+    });
+
+    loadDashboard();
+  </script>
+</body>
+</html>
