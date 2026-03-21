@@ -52,4 +52,16 @@ async function getUsuarioByAuthId(authId) {
   return data;
 }
 
-module.exports = { saveDiagnostico, getUsuarioByApiKey, incrementarUso, getUsuarioByAuthId };
+async function signUpUser(email, senha) {
+  return supabase.auth.signUp({ email, password: senha });
+}
+
+async function signInUser(email, senha) {
+  return supabase.auth.signInWithPassword({ email, password: senha });
+}
+
+async function getUserFromToken(token) {
+  return supabase.auth.getUser(token);
+}
+
+module.exports = { saveDiagnostico, getUsuarioByApiKey, incrementarUso, getUsuarioByAuthId, signUpUser, signInUser, getUserFromToken };

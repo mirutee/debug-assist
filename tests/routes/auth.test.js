@@ -1,19 +1,4 @@
 // tests/routes/auth.test.js
-jest.mock("@supabase/supabase-js", () => ({
-  createClient: jest.fn(() => mockSupabase),
-}));
-
-const mockSupabase = {
-  from: jest.fn(),
-  auth: {
-    signUp: jest.fn(),
-    signInWithPassword: jest.fn(),
-    getUser: jest.fn(),
-  },
-  rpc: jest.fn(),
-};
-
-// Also mock src/db/supabase for the auth middleware used in diagnosticos
 jest.mock("../../src/db/supabase", () => ({
   saveDiagnostico: jest.fn().mockResolvedValue(undefined),
   getUsuarioByApiKey: jest.fn().mockResolvedValue({
@@ -24,7 +9,17 @@ jest.mock("../../src/db/supabase", () => ({
   }),
   incrementarUso: jest.fn().mockResolvedValue(undefined),
   getUsuarioByAuthId: jest.fn(),
+  signUpUser: jest.fn(),
+  signInUser: jest.fn(),
+  getUserFromToken: jest.fn(),
 }));
+
+const {
+  signUpUser,
+  signInUser,
+  getUserFromToken,
+  getUsuarioByAuthId,
+} = require("../../src/db/supabase");
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -33,7 +28,7 @@ const app = require("../../src/app");
 
 describe("POST /v1/auth/signup", () => {
   it("retorna 201 para signup válido", async () => {
-    mockSupabase.auth.signUp.mockResolvedValue({ data: {}, error: null });
+    signUpUser.mockResolvedValue({ data: {}, error: null });
 
     const res = await request(app)
       .post("/v1/auth/signup")
@@ -62,7 +57,7 @@ describe("POST /v1/auth/signup", () => {
   });
 
   it("retorna 400 para email já cadastrado", async () => {
-    mockSupabase.auth.signUp.mockResolvedValue({
+    signUpUser.mockResolvedValue({
       data: {},
       error: { message: "User already registered" },
     });
@@ -86,7 +81,7 @@ describe("POST /v1/auth/signup", () => {
 
 describe("POST /v1/auth/login", () => {
   it("retorna 200 com token para login válido", async () => {
-    mockSupabase.auth.signInWithPassword.mockResolvedValue({
+    signInUser.mockResolvedValue({
       data: { session: { access_token: "jwt-token-aqui" } },
       error: null,
     });
@@ -101,7 +96,7 @@ describe("POST /v1/auth/login", () => {
   });
 
   it("retorna 401 para credenciais inválidas", async () => {
-    mockSupabase.auth.signInWithPassword.mockResolvedValue({
+    signInUser.mockResolvedValue({
       data: {},
       error: { message: "Invalid login credentials" },
     });
@@ -115,7 +110,7 @@ describe("POST /v1/auth/login", () => {
   });
 
   it("retorna 403 para email não confirmado", async () => {
-    mockSupabase.auth.signInWithPassword.mockResolvedValue({
+    signInUser.mockResolvedValue({
       data: {},
       error: { message: "Email not confirmed" },
     });
@@ -131,26 +126,17 @@ describe("POST /v1/auth/login", () => {
 
 describe("GET /v1/auth/me", () => {
   it("retorna dados do usuário com token válido", async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
+    getUserFromToken.mockResolvedValue({
       data: { user: { id: "auth-uuid" } },
       error: null,
     });
 
-    mockSupabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: {
-              email: "user@gmail.com",
-              api_key: "key-uuid",
-              plano_id: "free",
-              uso_mensal: 10,
-              planos: { limite_mensal: 100 },
-            },
-            error: null,
-          }),
-        }),
-      }),
+    getUsuarioByAuthId.mockResolvedValue({
+      email: "user@gmail.com",
+      api_key: "key-uuid",
+      plano_id: "free",
+      uso_mensal: 10,
+      planos: { limite_mensal: 100 },
     });
 
     const res = await request(app)
@@ -171,7 +157,7 @@ describe("GET /v1/auth/me", () => {
   });
 
   it("retorna 401 para JWT inválido", async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
+    getUserFromToken.mockResolvedValue({
       data: { user: null },
       error: { message: "invalid token" },
     });
@@ -184,18 +170,12 @@ describe("GET /v1/auth/me", () => {
   });
 
   it("retorna 404 quando usuário não confirmou email", async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
+    getUserFromToken.mockResolvedValue({
       data: { user: { id: "auth-uuid" } },
       error: null,
     });
 
-    mockSupabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({ data: null, error: null }),
-        }),
-      }),
-    });
+    getUsuarioByAuthId.mockResolvedValue(null);
 
     const res = await request(app)
       .get("/v1/auth/me")

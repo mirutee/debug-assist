@@ -1,13 +1,8 @@
 // src/routes/auth.js
 const express = require("express");
 const router = express.Router();
-const { createClient } = require("@supabase/supabase-js");
 const { validarDominio, signupLimiter } = require("../middleware/antiAbuse");
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_KEY || ""
-);
+const { signUpUser, signInUser, getUserFromToken, getUsuarioByAuthId } = require("../db/supabase");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -24,7 +19,7 @@ router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
   }
 
   try {
-    const { error } = await supabase.auth.signUp({ email, password: senha });
+    const { error } = await signUpUser(email, senha);
 
     if (error) {
       if (error.message.includes("already registered")) {
@@ -48,10 +43,7 @@ router.post("/login", async (req, res) => {
   }
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    });
+    const { data, error } = await signInUser(email, senha);
 
     if (error) {
       if (error.message.includes("Email not confirmed")) {
@@ -80,17 +72,13 @@ router.get("/me", async (req, res) => {
   const token = header.replace("Bearer ", "").trim();
 
   try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await getUserFromToken(token);
 
     if (error || !user) {
       return res.status(401).json({ erro: "Token inválido" });
     }
 
-    const { data: usuario } = await supabase
-      .from("usuarios")
-      .select("*, planos(limite_mensal)")
-      .eq("auth_id", user.id)
-      .single();
+    const usuario = await getUsuarioByAuthId(user.id);
 
     if (!usuario) {
       return res.status(404).json({
