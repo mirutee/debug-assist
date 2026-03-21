@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — DevInsight</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DevInsight</span>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="seu@email.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-primary" id="btn-login">Entrar</button>
+        <div class="error-msg" id="error-msg"></div>
+        <p style="margin-top:16px;text-align:center;font-size:12px;color:#555;">
+          Não tem conta? <a href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener" style="color:#6366f1;text-decoration:none;">Cadastre-se</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+
+    if (localStorage.getItem('devinsight_token')) {
+      window.location.replace('/dashboard/');
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login');
+      const errorEl = document.getElementById('error-msg');
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+
+      btn.disabled = true;
+      btn.textContent = 'Entrando...';
+      errorEl.classList.remove('show');
+
+      try {
+        const res = await fetch(`${API}/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.erro || 'Erro ao fazer login.';
+          errorEl.classList.add('show');
+          return;
+        }
+
+        localStorage.setItem('devinsight_token', data.token);
+        window.location.replace('/dashboard/');
+      } catch (err) {
+        errorEl.textContent = 'Erro de conexão. Tente novamente.';
+        errorEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      }
+    });
+  </script>
+</body>
+</html>
