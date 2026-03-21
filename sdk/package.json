@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mirutee/devinsight-api"
+    "url": "git+https://github.com/mirutee/devinsight-api.git"
   },
   "homepage": "https://github.com/mirutee/devinsight-api",
   "engines": {
