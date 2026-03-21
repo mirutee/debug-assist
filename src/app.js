@@ -8,6 +8,7 @@ const path = require("path");
 
 const app = express();
 app.use(express.json());
+app.use("/dashboard", express.static(path.join(__dirname, "../public/dashboard")));
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minuto
