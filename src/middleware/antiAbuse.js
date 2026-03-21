@@ -1,5 +1,5 @@
 // src/middleware/antiAbuse.js
-const rateLimit = require("express-rate-limit");
+const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
 const BLOCKED_DOMAINS = require("../data/blocked-domains");
 
 function validarDominio(req, res, next) {
@@ -23,7 +23,7 @@ const signupLimiter = rateLimit({
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip,
+  keyGenerator: (req, res) => ipKeyGenerator(req, res),
   message: { erro: "Limite de cadastros atingido. Tente novamente em 24h." },
   skip: () => process.env.NODE_ENV === "test",
 });
