@@ -1,8 +1,20 @@
 // tests/middleware/validate.test.js
+jest.mock("../../src/db/supabase", () => ({
+  saveDiagnostico: jest.fn().mockResolvedValue(undefined),
+  getUsuarioByApiKey: jest.fn().mockResolvedValue({
+    id: "user-test-uuid",
+    plano_id: "free",
+    uso_mensal: 10,
+    planos: { limite_mensal: 100 },
+  }),
+  incrementarUso: jest.fn().mockResolvedValue(undefined),
+  getUsuarioByAuthId: jest.fn(),
+}));
+
 const request = require("supertest");
 const app = require("../../src/app");
 
-const HEADERS = { Authorization: `Bearer ${process.env.API_KEY || "dev-secret-key-local"}` };
+const HEADERS = { Authorization: "Bearer qualquer-api-key-valida" };
 
 describe("Validate middleware", () => {
   it("retorna 400 quando 'tipo' não enviado", async () => {

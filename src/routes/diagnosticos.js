@@ -4,7 +4,7 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const validate = require("../middleware/validate");
 const diagnosticar = require("../engines/index");
-const { saveDiagnostico } = require("../db/supabase");
+const { saveDiagnostico, incrementarUso } = require("../db/supabase");
 
 router.post("/", auth, validate, async (req, res) => {
   try {
@@ -16,7 +16,14 @@ router.post("/", auth, validate, async (req, res) => {
       mensagem: req.body.mensagem,
       contexto: req.body.contexto,
       resposta: resultado,
-    }).catch(() => {}); // silencia falha de log (Supabase pode não estar configurado)
+    }).catch(() => {});
+
+    // Incrementa cota após resposta bem-sucedida
+    res.on("finish", () => {
+      if (res.statusCode === 200) {
+        incrementarUso(req.usuario.id).catch(() => {});
+      }
+    });
 
     return res.json(resultado);
   } catch (err) {
