@@ -14,7 +14,29 @@
       "Bash(curl -s -X POST http://localhost:3000/v1/diagnosticos -H \"Content-Type: application/json\" -H \"Authorization: Bearer dev-secret-key-local\" -d '{\"\"tipo\"\":\"\"hydration_error\"\",\"\"mensagem\"\":\"\"Hydration failed\"\"}')",
       "Bash(curl -s -X POST http://localhost:3000/v1/diagnosticos -H \"Content-Type: application/json\" -H \"Authorization: Bearer dev-secret-key-local\" -d '{\"\"tipo\"\":\"\"sql_analysis\"\",\"\"mensagem\"\":\"\"\"\",\"\"dados\"\":{\"\"query\"\":\"\"SELECT * FROM users\"\",\"\"tempo_execucao\"\":900}}')",
       "Bash(curl -s -X POST http://localhost:3000/v1/diagnosticos -H \"Content-Type: application/json\" -d '{\"\"tipo\"\":\"\"hydration_error\"\",\"\"mensagem\"\":\"\"test\"\"}')",
-      "Bash(pkill -f \"node src/server.js\")"
+      "Bash(pkill -f \"node src/server.js\")",
+      "Bash(bash \"C:/Users/calfh/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh\" --project-dir \"C:/PROJETOS/API\")",
+      "Bash(find C:/PROJETOS/API -type f \\\\\\(-iname *.png -o -iname *.svg -o -iname *.jpg -o -iname *.webp \\\\\\))",
+      "Bash(python3 -c \"import base64; data=open\\(''''C:/PROJETOS/API/OUTROS/LOGOMARCA.png'''',''''rb''''\\).read\\(\\); print\\(base64.b64encode\\(data\\).decode\\(\\)\\)\")",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(gh pr:*)",
+      "Bash(winget install:*)",
+      "Bash(gh --version)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" --version 2>&1)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth login --git-protocol https --web)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr view 1 --repo mirutee/devinsight-api 2>&1)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr checks 1 --repo mirutee/devinsight-api 2>&1)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr merge 1 --repo mirutee/devinsight-api --merge --delete-branch 2>&1)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr view 1 --repo mirutee/devinsight-api --json state,mergedAt 2>&1)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)",
+      "Bash(ls C:/PROJETOS/API/*.json C:/PROJETOS/API/*.yaml C:/PROJETOS/API/.env* C:/PROJETOS/API/Procfile C:/PROJETOS/API/Dockerfile)",
+      "Bash(git:*)",
+      "Bash(docker build:*)",
+      "Bash(cd:*)"
     ]
   }
 }

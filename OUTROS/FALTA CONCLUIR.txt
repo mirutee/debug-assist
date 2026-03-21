@@ -1,0 +1,97 @@
+ Próximos passos para produção
+
+  1. Supabase (banco de dados)
+  - Criar conta em supabase.com e novo projeto
+  - Rodar o SQL da tabela diagnosticos (está no CLAUDE.md)
+  - Copiar SUPABASE_URL e SUPABASE_KEY para o .env
+
+  2. Deploy
+  - Criar conta no https://railway.app ou https://render.com (gratuitos)
+  - Conectar o repositório GitHub
+  - Adicionar as variáveis de ambiente: PORT, API_KEY, SUPABASE_URL, SUPABASE_KEY
+  - Deploy automático em 1 clique
+
+  3. Domínio e API Key real
+  - Gerar uma API_KEY segura (ex: openssl rand -hex 32)
+  - Configurar domínio próprio (ex: api.devinsight.com)
+
+  4. Publicar o SDK
+  - Criar conta no npmjs.com
+  - Rodar npm publish dentro da pasta sdk/
+  - Usuários instalam com npm install devinsight-sdk
+
+  5. Validação de mercado
+  - Publicar landing page (o copy já está no Prompt.txt)
+  - Postar em r/webdev, LinkedIn, grupos de dev
+  - Coletar os primeiros 10 usuários via lista de espera
+
+  6. Opcional (v2)
+  - Integrar OpenAI para diagnósticos mais inteligentes
+  - Criar dashboard web para visualizar os logs do Supabase
+  - Adicionar planos com rate limit por API Key (Free/Pro/Scale)
+  
+  
+  
+❯ O QUE VOCE RECOMENDA PRIMEIRO?
+
+● Deploy primeiro. Sem isso nada adianta.
+
+  Ordem exata:
+
+  1. Supabase (5 min) — criar projeto, rodar o SQL, copiar as keys
+  2. Railway (5 min) — conectar o repo, colar as variáveis de ambiente, fazer deploy
+  3. Testar a URL pública com curl para confirmar que está no ar
+
+  Com isso você já tem uma API real rodando na internet, com URL própria, pronta para mostrar para alguém.
+
+  Quer que eu te guie passo a passo no deploy agora?
+  
+  
+  | 20/03
+  
+  
+● Infraestrutura & Deploy
+  1. Deploy da API no Railway (ou Render/Fly.io)
+  2. Variáveis de ambiente configuradas em produção (API_KEY, SUPABASE_URL, SUPABASE_KEY)
+  3. Domínio customizado + HTTPS (ex: api.devinsight.com.br)
+  4. Pipeline CI/CD com GitHub Actions (testa antes de fazer deploy)
+
+  Banco de dados
+  5. Criar tabela diagnosticos no Supabase em produção
+  6. Criar tabela usuarios (id, email, api_key, plano, uso_mensal)
+  7. Reset automático do contador de uso mensal
+
+  Autenticação & Planos
+  8. Endpoint de cadastro (POST /v1/auth/signup) — gera API Key única por usuário
+  9. Rate limit por API Key (não só por IP) com base no plano do usuário
+  10. Middleware de verificação de cota mensal (bloqueia ao atingir limite do plano)
+
+  Dashboard real (frontend)
+  11. Projeto Next.js separado para o dashboard
+  12. Login do usuário no dashboard
+  13. Página de visão geral com dados reais do Supabase
+  14. Gráfico de uso ao longo do tempo
+  15. Listagem de diagnósticos com filtros (tipo, severidade, data)
+  16. Página de configurações (ver/regenerar API Key, ver plano)
+
+  Landing page
+  17. Publicar a landing page no Vercel ou Netlify
+  18. Formulário de cadastro / waitlist funcionando (integrado ao backend)
+  19. Registrar domínio (devinsight.com.br ou .io)
+
+  SDK
+  20. Publicar devinsight-sdk no npm (npm publish)
+  21. README do SDK com exemplos de uso
+
+  Monitoramento & Segurança
+  22. helmet.js para headers HTTP de segurança
+  23. CORS configurado (só origens autorizadas)
+  24. Logging estruturado com Pino ou Winston
+  25. Error tracking com Sentry
+  26. Uptime monitoring (UptimeRobot ou Better Uptime)
+
+  Negócio
+  27. Integração de pagamento para plano Pro (Stripe ou Lemon Squeezy)
+  28. Email de boas-vindas ao cadastrar (Resend ou SendGrid)
+  29. Página de Termos de Uso e Política de Privacidade
+  30. Página de status pública (status.devinsight.com.br)

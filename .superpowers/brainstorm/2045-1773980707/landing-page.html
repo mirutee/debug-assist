@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevInsight — Diagnóstico inteligente de erros para devs</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand: #6366f1;
+    --brand-dark: #4f46e5;
+    --brand-light: #e0e7ff;
+    --accent: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --bg: #0f0f1a;
+    --bg2: #161627;
+    --bg3: #1e1e35;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #2d2d4e;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(99,102,241,0.15);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 48px;
+    background: rgba(15,15,26,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .logo span { color: var(--brand); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    padding: 8px 20px; background: var(--brand); border-radius: 8px;
+    color: white; text-decoration: none; font-size: 14px; font-weight: 600;
+    transition: background .2s;
+  }
+  .nav-cta:hover { background: var(--brand-dark); }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 100px 24px 80px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc; padding: 6px 16px; border-radius: 100px; font-size: 13px;
+    margin-bottom: 28px; font-weight: 500;
+  }
+  .badge-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+  .hero h1 {
+    font-size: clamp(36px, 5vw, 72px); font-weight: 800; line-height: 1.1;
+    letter-spacing: -1.5px; margin-bottom: 24px;
+  }
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, #818cf8, #6366f1, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: clamp(16px, 2.5vw, 20px); color: var(--muted);
+    max-width: 560px; margin: 0 auto 40px;
+  }
+  .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    padding: 14px 32px; background: var(--brand); color: white;
+    border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px;
+    transition: all .2s; box-shadow: 0 0 32px rgba(99,102,241,0.4);
+  }
+  .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
+  .btn-secondary {
+    padding: 14px 32px; background: var(--bg3); color: var(--text);
+    border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 16px;
+    border: 1px solid var(--border); transition: all .2s;
+  }
+  .btn-secondary:hover { border-color: var(--brand); }
+
+  /* TERMINAL PREVIEW */
+  .terminal-wrapper {
+    max-width: 720px; margin: 64px auto 0;
+    background: var(--bg3); border-radius: 14px;
+    border: 1px solid var(--border); overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .terminal-bar {
+    background: var(--bg2); padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .terminal-body { padding: 20px 24px; font-family: 'Fira Code', 'Courier New', monospace; font-size: 13px; }
+  .t-line { margin-bottom: 4px; }
+  .t-cmd { color: #a5b4fc; }
+  .t-key { color: #67e8f9; }
+  .t-val { color: #86efac; }
+  .t-str { color: #fcd34d; }
+  .t-muted { color: #64748b; }
+  .t-label { color: #f472b6; }
+  .t-num { color: #fb923c; }
+
+  /* STATS */
+  .stats { display: flex; justify-content: center; gap: 64px; padding: 48px 24px; flex-wrap: wrap; }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 40px; font-weight: 800; color: var(--brand); line-height: 1; }
+  .stat-label { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  /* SECTION */
+  section { padding: 80px 24px; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-tag {
+    font-size: 12px; font-weight: 700; letter-spacing: 2px;
+    color: var(--brand); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 16px; }
+  .section-sub { color: var(--muted); font-size: 18px; max-width: 540px; margin-bottom: 56px; }
+
+  /* HOW IT WORKS */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .step {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 32px; position: relative; transition: border-color .2s;
+  }
+  .step:hover { border-color: var(--brand); }
+  .step-num {
+    font-size: 48px; font-weight: 900; color: var(--brand); opacity: 0.2;
+    line-height: 1; margin-bottom: 16px;
+  }
+  .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .step p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+  /* FEATURES */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .feature-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    transition: all .2s;
+  }
+  .feature-card:hover { border-color: var(--brand); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .feature-icon { font-size: 28px; margin-bottom: 14px; }
+  .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .feature-card p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+  .feature-tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 100px; margin-top: 12px;
+    background: rgba(99,102,241,0.15); color: #a5b4fc;
+  }
+
+  /* DASHBOARD MOCKUP */
+  .dashboard-section { background: var(--bg2); }
+  .dashboard-frame {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .dash-topbar {
+    background: var(--bg2); padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .dash-topbar-left { display: flex; align-items: center; gap: 16px; }
+  .dash-topbar h2 { font-size: 16px; font-weight: 700; }
+  .dash-badge { background: rgba(16,185,129,0.15); color: #34d399; padding: 3px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+  .dash-nav {
+    display: flex; gap: 4px; background: var(--bg3);
+    padding: 4px; border-radius: 8px; border: 1px solid var(--border);
+  }
+  .dash-nav-item { padding: 6px 14px; border-radius: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .dash-nav-item.active { background: var(--brand); color: white; font-weight: 600; }
+  .dash-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+  .dash-sidebar {
+    grid-column: span 1; background: var(--bg2);
+    border-right: 1px solid var(--border); padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .dash-side-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px;
+    color: var(--muted); transition: all .15s;
+  }
+  .dash-side-item.active { background: rgba(99,102,241,0.15); color: var(--text); font-weight: 600; }
+  .dash-side-item:hover { background: var(--bg3); color: var(--text); }
+  .dash-main { grid-column: span 2; padding: 20px; }
+  .dash-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .kpi-value { font-size: 28px; font-weight: 800; margin: 4px 0; }
+  .kpi-change { font-size: 12px; color: var(--accent); }
+  .kpi-change.down { color: var(--danger); }
+  .chart-area {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 16px;
+  }
+  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--brand); opacity: 0.7; transition: opacity .2s; }
+  .bar:hover { opacity: 1; }
+  .bar-label { font-size: 9px; color: var(--muted); }
+  .recent-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .diag-list { display: flex; flex-direction: column; gap: 8px; }
+  .diag-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 12px; font-size: 13px;
+  }
+  .sev { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sev.alto { background: var(--danger); }
+  .sev.medio { background: var(--warn); }
+  .sev.baixo { background: var(--accent); }
+  .diag-type { font-weight: 600; flex: 1; }
+  .diag-cat { color: var(--muted); font-size: 11px; }
+  .diag-time { color: var(--muted); font-size: 11px; margin-left: auto; }
+  .badge-level {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px;
+  }
+  .badge-alto { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .badge-medio { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .badge-baixo { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 860px; }
+  .pricing-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+  }
+  .pricing-card.featured {
+    border-color: var(--brand);
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), var(--bg2));
+    position: relative;
+  }
+  .featured-tag {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--brand); color: white; font-size: 11px; font-weight: 700;
+    padding: 3px 14px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .plan-name { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .plan-price { font-size: 48px; font-weight: 900; margin: 12px 0 4px; letter-spacing: -1px; }
+  .plan-price span { font-size: 16px; font-weight: 400; color: var(--muted); }
+  .plan-desc { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .plan-features li { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  .plan-features li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+  .btn-plan {
+    display: block; text-align: center; padding: 12px;
+    border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 15px;
+    transition: all .2s;
+  }
+  .btn-plan.outline { border: 1.5px solid var(--brand); color: var(--brand); }
+  .btn-plan.outline:hover { background: rgba(99,102,241,0.1); }
+  .btn-plan.filled { background: var(--brand); color: white; }
+  .btn-plan.filled:hover { background: var(--brand-dark); }
+
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(167,139,250,0.1));
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .cta-inner { text-align: center; padding: 80px 24px; }
+  .cta-inner h2 { font-size: clamp(28px, 4vw, 48px); font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
+  .cta-inner p { color: var(--muted); font-size: 18px; margin-bottom: 36px; }
+
+  /* CODE EXAMPLE */
+  .code-example {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; max-width: 680px;
+  }
+  .code-topbar {
+    background: var(--bg2); padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);
+  }
+  .code-lang { font-size: 12px; color: var(--muted); font-family: monospace; }
+  pre {
+    padding: 24px; font-size: 13px; overflow-x: auto;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    line-height: 1.8;
+  }
+  .k { color: #c084fc; }
+  .s { color: #86efac; }
+  .c { color: #64748b; }
+  .v { color: #67e8f9; }
+  .f { color: #fbbf24; }
+  .p { color: #f1f5f9; }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 48px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  footer .logo { font-size: 18px; }
+  footer p { color: var(--muted); font-size: 13px; }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Dev<span>Insight</span></div>
+  <ul class="nav-links">
+    <li><a href="#como-funciona">Como funciona</a></li>
+    <li><a href="#recursos">Recursos</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#precos">Preços</a></li>
+    <li><a href="#docs">Docs</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Começar grátis →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge"><span class="badge-dot"></span>Novo · Diagnóstico com IA em tempo real</div>
+  <h1>Entenda seus erros<br><span class="gradient">antes de entrar em pânico</span></h1>
+  <p>DevInsight analisa erros de frontend, backend e SQL e devolve diagnósticos claros com sugestões de correção — em milissegundos.</p>
+  <div class="hero-buttons">
+    <a href="#" class="btn-primary">Testar agora, grátis</a>
+    <a href="#docs" class="btn-secondary">Ver documentação →</a>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal-wrapper">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line"><span class="t-muted">POST</span> <span class="t-cmd">/v1/diagnosticos</span></div>
+      <div class="t-line" style="margin-top:12px"><span class="t-key">"tipo"</span>: <span class="t-str">"hydration_error"</span>,</div>
+      <div class="t-line"><span class="t-key">"mensagem"</span>: <span class="t-str">"Text content does not match server-rendered HTML"</span></div>
+      <br>
+      <div class="t-line"><span class="t-muted">← 200 OK  /  12ms</span></div>
+      <br>
+      <div class="t-line"><span class="t-label">"problema"</span>: <span class="t-str">"Erro de hidratação"</span>,</div>
+      <div class="t-line"><span class="t-label">"causa"</span>: <span class="t-str">"Diferença entre SSR e cliente"</span>,</div>
+      <div class="t-line"><span class="t-label">"nivel"</span>: <span class="t-val">"alto"</span>,</div>
+      <div class="t-line"><span class="t-label">"sugestoes"</span>: [</div>
+      <div class="t-line">&nbsp;&nbsp;<span class="t-str">"Evitar Date.now() ou Math.random() no render"</span>,</div>
+      <div class="t-line">&nbsp;&nbsp;<span class="t-str">"Usar useEffect para dados que mudam no cliente"</span></div>
+      <div class="t-line">]</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item">
+    <div class="stat-num">12ms</div>
+    <div class="stat-label">tempo médio de resposta</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">15+</div>
+    <div class="stat-label">tipos de erro suportados</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">90%</div>
+    <div class="stat-label">confiança média nos diagnósticos</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">0 dep</div>
+    <div class="stat-label">zero configuração necessária</div>
+  </div>
+</div>
+
+<hr>
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona">
+  <div class="section-inner">
+    <div class="section-tag">Como funciona</div>
+    <h2 class="section-title">3 passos. Diagnóstico na hora.</h2>
+    <p class="section-sub">Não precisa de IA gigante rodando localmente. Só um endpoint e a sua chave.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Receba o erro</h3>
+        <p>Captura qualquer erro no seu app — um hydration error do React, um SQL lento, uma chamada de API que retornou 401.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Envie para o DevInsight</h3>
+        <p>Uma chamada POST com o tipo do erro, a mensagem e contexto opcional. Funciona de qualquer linguagem ou framework.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Receba o diagnóstico</h3>
+        <p>Problema identificado, causa explicada em português, nível de severidade e sugestões de correção prontas pra ação.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RECURSOS -->
+<section id="recursos" style="background: var(--bg2)">
+  <div class="section-inner">
+    <div class="section-tag">Recursos</div>
+    <h2 class="section-title">Tudo que você precisa<br>para depurar rápido</h2>
+    <p class="section-sub">Cada tipo de erro recebe tratamento especializado, com regras afinadas para padrões reais de produção.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚛️</div>
+        <h3>Diagnóstico de Frontend</h3>
+        <p>Hydration errors, falhas de autenticação, erros silenciosos, problemas de layout responsivo e performance de UI.</p>
+        <span class="feature-tag">React · Next.js · Vue</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <h3>Diagnóstico de Backend</h3>
+        <p>Erros silenciosos, violações de contrato de API, falhas em serviços externos com contexto de status HTTP.</p>
+        <span class="feature-tag">Node · Python · Go</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <h3>Análise de SQL</h3>
+        <p>Detecta N+1 queries, SELECT *, queries sem LIMIT, queries lentas e risco de SQL Injection com alta precisão.</p>
+        <span class="feature-tag">PostgreSQL · MySQL · SQLite</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Dashboard de diagnósticos</h3>
+        <p>Visualize todos os erros diagnosticados, tendências por severidade, tipos mais frequentes e histórico completo.</p>
+        <span class="feature-tag">Tempo real</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <h3>SDK JavaScript</h3>
+        <p>Integração em 2 linhas com o SDK oficial. Funciona no browser e no Node.js sem configuração adicional.</p>
+        <span class="feature-tag">npm install devinsight-sdk</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Seguro por padrão</h3>
+        <p>Autenticação via API Key, rate limiting por IP, logs opcionais no Supabase. Seus dados nunca saem sem autorização.</p>
+        <span class="feature-tag">Bearer Auth · Rate limit</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓDIGO DE EXEMPLO -->
+<section>
+  <div class="section-inner">
+    <div class="section-tag">Integração</div>
+    <h2 class="section-title">Pronto em 2 minutos</h2>
+    <p class="section-sub">Instale o SDK e comece a diagnosticar. Funciona de dentro do catch de qualquer função.</p>
+    <div class="code-example">
+      <div class="code-topbar">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <span class="code-lang">JavaScript</span>
+      </div>
+      <pre><span class="k">import</span> <span class="p">{ reportError }</span> <span class="k">from</span> <span class="s">'devinsight-sdk'</span><span class="p">;</span>
+
+<span class="c">// No catch do seu componente React:</span>
+<span class="k">try</span> <span class="p">{</span>
+  <span class="k">const</span> <span class="v">data</span> <span class="p">=</span> <span class="k">await</span> <span class="f">fetch</span><span class="p">(</span><span class="s">'/api/user'</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(err) {</span>
+  <span class="k">const</span> <span class="v">diagnostico</span> <span class="p">=</span> <span class="k">await</span> <span class="f">reportError</span><span class="p">({</span>
+    <span class="v">tipo</span><span class="p">:</span> <span class="s">'request_error'</span><span class="p">,</span>
+    <span class="v">mensagem</span><span class="p">:</span> <span class="v">err</span><span class="p">.</span><span class="v">message</span><span class="p">,</span>
+    <span class="v">status</span><span class="p">:</span> <span class="s">401</span>
+  <span class="p">},</span> <span class="v">process</span><span class="p">.</span><span class="v">env</span><span class="p">.</span><span class="v">DEVINSIGHT_KEY</span><span class="p">);</span>
+
+  <span class="c">// → "Token ausente, inválido ou expirado"</span>
+  <span class="f">console</span><span class="p">.</span><span class="f">log</span><span class="p">(</span><span class="v">diagnostico</span><span class="p">.</span><span class="v">causa</span><span class="p">);</span>
+<span class="p">}</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD MOCKUP -->
+<section id="dashboard" class="dashboard-section">
+  <div class="section-inner">
+    <div class="section-tag">Dashboard</div>
+    <h2 class="section-title">Visibilidade total dos seus erros</h2>
+    <p class="section-sub">Acompanhe cada diagnóstico, identifique padrões e aja antes que o problema escale.</p>
+
+    <div class="dashboard-frame">
+      <!-- Top bar -->
+      <div class="dash-topbar">
+        <div class="dash-topbar-left">
+          <div class="logo" style="font-size:16px">Dev<span style="color:var(--brand)">Insight</span></div>
+          <span class="dash-badge">● Ao vivo</span>
+        </div>
+        <div class="dash-nav">
+          <div class="dash-nav-item active">Visão Geral</div>
+          <div class="dash-nav-item">Frontend</div>
+          <div class="dash-nav-item">Backend</div>
+          <div class="dash-nav-item">SQL</div>
+        </div>
+        <div style="font-size:13px;color:var(--muted)">Últimas 24 horas ▾</div>
+      </div>
+
+      <!-- Body -->
+      <div class="dash-body">
+        <!-- Sidebar -->
+        <div class="dash-sidebar">
+          <div class="dash-side-item active">📊 Visão Geral</div>
+          <div class="dash-side-item">⚠️ Severidade Alta</div>
+          <div class="dash-side-item">⚛️ Frontend</div>
+          <div class="dash-side-item">⚙️ Backend</div>
+          <div class="dash-side-item">🗄️ SQL</div>
+          <div class="dash-side-item" style="margin-top:auto">⚙️ Configurações</div>
+          <div class="dash-side-item">📚 Docs</div>
+        </div>
+
+        <!-- Main -->
+        <div class="dash-main">
+          <!-- KPIs -->
+          <div class="dash-kpis">
+            <div class="kpi">
+              <div class="kpi-label">Total hoje</div>
+              <div class="kpi-value" style="color:var(--text)">247</div>
+              <div class="kpi-change">+12% vs. ontem</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">Severidade Alta</div>
+              <div class="kpi-value" style="color:var(--danger)">18</div>
+              <div class="kpi-change down">+3 nas últimas 2h</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">Confiança média</div>
+              <div class="kpi-value" style="color:var(--accent)">87%</div>
+              <div class="kpi-change">estável</div>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="chart-area">
+            <div class="chart-title">Diagnósticos por hora</div>
+            <div class="chart-bars">
+              <div class="bar-wrap"><div class="bar" style="height:30%"></div><div class="bar-label">00h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:20%"></div><div class="bar-label">02h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:15%"></div><div class="bar-label">04h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:25%"></div><div class="bar-label">06h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:45%"></div><div class="bar-label">08h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:80%"></div><div class="bar-label">10h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:100%"></div><div class="bar-label">12h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:90%"></div><div class="bar-label">14h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:70%"></div><div class="bar-label">16h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:85%"></div><div class="bar-label">18h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:60%"></div><div class="bar-label">20h</div></div>
+              <div class="bar-wrap"><div class="bar" style="height:40%"></div><div class="bar-label">22h</div></div>
+            </div>
+          </div>
+
+          <!-- Recentes -->
+          <div class="recent-title">Diagnósticos recentes</div>
+          <div class="diag-list">
+            <div class="diag-item">
+              <div class="sev alto"></div>
+              <div>
+                <div class="diag-type">SQL Injection Risk</div>
+                <div class="diag-cat">sql_analysis · confiança 95%</div>
+              </div>
+              <span class="badge-level badge-alto">ALTO</span>
+              <div class="diag-time">há 2 min</div>
+            </div>
+            <div class="diag-item">
+              <div class="sev medio"></div>
+              <div>
+                <div class="diag-type">Hydration Error</div>
+                <div class="diag-cat">hydration_error · confiança 85%</div>
+              </div>
+              <span class="badge-level badge-medio">MÉDIO</span>
+              <div class="diag-time">há 5 min</div>
+            </div>
+            <div class="diag-item">
+              <div class="sev alto"></div>
+              <div>
+                <div class="diag-type">N+1 Query Detectado</div>
+                <div class="diag-cat">sql_analysis · 14 execuções</div>
+              </div>
+              <span class="badge-level badge-alto">ALTO</span>
+              <div class="diag-time">há 8 min</div>
+            </div>
+            <div class="diag-item">
+              <div class="sev baixo"></div>
+              <div>
+                <div class="diag-type">Token Expirado (401)</div>
+                <div class="diag-cat">request_error · confiança 85%</div>
+              </div>
+              <span class="badge-level badge-baixo">BAIXO</span>
+              <div class="diag-time">há 11 min</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREÇOS -->
+<section id="precos">
+  <div class="section-inner">
+    <div class="section-tag">Preços</div>
+    <h2 class="section-title">Simples e transparente</h2>
+    <p class="section-sub">Comece grátis. Escale quando precisar.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Gratuito</div>
+        <div class="plan-price">R$0 <span>/ mês</span></div>
+        <div class="plan-desc">Para projetos pessoais e testes</div>
+        <ul class="plan-features">
+          <li>500 diagnósticos/mês</li>
+          <li>Frontend, Backend e SQL</li>
+          <li>Histórico de 7 dias</li>
+          <li>SDK JavaScript</li>
+          <li>Documentação completa</li>
+        </ul>
+        <a href="#" class="btn-plan outline">Criar conta grátis</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="featured-tag">POPULAR</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">R$49 <span>/ mês</span></div>
+        <div class="plan-desc">Para times e apps em produção</div>
+        <ul class="plan-features">
+          <li>50.000 diagnósticos/mês</li>
+          <li>Dashboard completo</li>
+          <li>Histórico de 90 dias</li>
+          <li>Alertas por email</li>
+          <li>Webhooks</li>
+          <li>Suporte prioritário</li>
+        </ul>
+        <a href="#" class="btn-plan filled">Assinar Pro</a>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom</div>
+        <div class="plan-desc">Para grandes volumes e SLAs</div>
+        <ul class="plan-features">
+          <li>Volume ilimitado</li>
+          <li>SLA garantido</li>
+          <li>Deploy on-premise</li>
+          <li>SSO / SAML</li>
+          <li>Suporte dedicado</li>
+        </ul>
+        <a href="#" class="btn-plan outline">Falar com vendas</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <h2>Pronto para depurar<br>com mais clareza?</h2>
+    <p>Comece grátis agora. Sem cartão de crédito.</p>
+    <div class="hero-buttons" style="justify-content:center">
+      <a href="#" class="btn-primary">Criar conta grátis →</a>
+      <a href="#" class="btn-secondary">Ver demo ao vivo</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Dev<span>Insight</span></div>
+  <p>© 2026 DevInsight. Feito para devs, por devs.</p>
+  <p style="color:var(--muted);font-size:12px">API · Docs · Status · Privacidade</p>
+</footer>
+
+</body>
+</html>
