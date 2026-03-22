@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevInsight — API de diagnóstico para desenvolvedores</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Navbar ─────────────────────────────── */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 40px;
+      border-bottom: 1px solid #1a1a1a;
+      position: sticky;
+      top: 0;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: #6366f1; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: #888; font-size: 14px; transition: color 0.15s; }
+    .nav-links a:hover { color: #fff; }
+    .btn-nav {
+      background: #6366f1;
+      color: #fff !important;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-nav:hover { background: #4f52d9 !important; }
+
+    /* ── Hero ───────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 96px 24px 80px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: #555;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+    }
+    .hero p {
+      font-size: 17px;
+      color: #666;
+      max-width: 540px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: #6366f1;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #4f52d9; }
+    .btn-outline {
+      border: 1px solid #333;
+      color: #aaa;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-outline:hover { border-color: #555; color: #fff; }
+
+    /* ── Sections ───────────────────────────── */
+    section { padding: 72px 24px; max-width: 960px; margin: 0 auto; }
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: #555;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .section-title { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 40px; }
+
+    /* ── Features ───────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 28px;
+    }
+    .feature-icon { font-size: 28px; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 13px; color: #666; line-height: 1.6; }
+
+    /* ── Steps ──────────────────────────────── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .step-card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+    }
+    .step-number {
+      width: 36px;
+      height: 36px;
+      background: #1e1e2e;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #6366f1;
+      margin: 0 auto 16px;
+    }
+    .step-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .step-card p { font-size: 13px; color: #666; }
+
+    /* ── Pricing ────────────────────────────── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .pricing-card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 28px;
+    }
+    .pricing-card.featured { border-color: #6366f1; }
+    .pricing-badge {
+      background: #6366f1;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .pricing-plan { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .pricing-price { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
+    .pricing-price span { font-size: 14px; color: #555; font-weight: 400; }
+    .pricing-limit { font-size: 12px; color: #555; margin-bottom: 20px; }
+    .btn-pricing {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #aaa;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-pricing:hover { background: #222; color: #fff; }
+    .pricing-card.featured .btn-pricing {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+    .pricing-card.featured .btn-pricing:hover { background: #4f52d9; }
+
+    /* ── Misc ───────────────────────────────── */
+    .divider { border: none; border-top: 1px solid #1a1a1a; margin: 0; }
+    footer { text-align: center; padding: 32px 24px; color: #444; font-size: 13px; }
+    footer a { color: #555; margin: 0 8px; transition: color 0.15s; }
+    footer a:hover { color: #888; }
+
+    @media (max-width: 600px) {
+      .navbar { padding: 16px 20px; }
+      .nav-links a:not(.btn-nav) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="nav-logo">
+      <div class="logo-dot"></div>
+      DevInsight
+    </a>
+    <div class="nav-links">
+      <a href="/docs">Docs</a>
+      <a href="#pricing">Preços</a>
+      <a href="/dashboard/signup.html" class="btn-nav">Criar conta</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-label">API DE DIAGNÓSTICO PARA DESENVOLVEDORES</div>
+    <h1>Integre uma vez.<br>Debug enquanto desenvolve.</h1>
+    <p>Uma API que analisa seus erros de frontend, backend e SQL em tempo real — com causa, nível e sugestões de correção.</p>
+    <div class="hero-ctas">
+      <a href="/dashboard/signup.html" class="btn-primary">Criar conta grátis</a>
+      <a href="/docs" class="btn-outline">Ver documentação →</a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <section>
+    <div class="section-label">O que diagnosticamos</div>
+    <h2 class="section-title">Cobertura completa do seu stack</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Frontend</h3>
+        <p>Erros de hidratação, CORS, TypeError, ReferenceError e falhas silenciosas detectados com causa exata e sugestão de correção.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔧</div>
+        <h3>Backend</h3>
+        <p>Null access, respostas HTML inesperadas, ECONNREFUSED, timeouts e rate limit identificados pela mensagem real do erro.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <h3>SQL</h3>
+        <p>DELETE sem WHERE, N+1 queries, LIKE com wildcard à esquerda, queries lentas e risco de SQL Injection detectados automaticamente.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section>
+    <div class="section-label">Como funciona</div>
+    <h2 class="section-title">Três passos para debug contínuo</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Integre o SDK</h3>
+        <p>Instale o pacote npm e configure sua API Key no projeto.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>Envie os erros</h3>
+        <p>O SDK envia automaticamente para <code style="color:#6366f1;font-size:12px">POST /v1/diagnosticos</code>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>Receba o diagnóstico</h3>
+        <p>Causa, nível de severidade e sugestões de correção em milissegundos.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section id="pricing">
+    <div class="section-label">Planos</div>
+    <h2 class="section-title">Comece grátis, escale quando precisar</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-plan">Grátis</div>
+        <div class="pricing-price">R$0</div>
+        <div class="pricing-limit">100 diagnósticos/mês</div>
+        <a href="/dashboard/signup.html" class="btn-pricing">Criar conta</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Popular</div>
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price">R$29<span>/mês</span></div>
+        <div class="pricing-limit">1.000 diagnósticos/mês</div>
+        <a href="/dashboard/signup.html" class="btn-pricing">Criar conta</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-plan">Scale</div>
+        <div class="pricing-price">R$99<span>/mês</span></div>
+        <div class="pricing-limit">10.000 diagnósticos/mês</div>
+        <a href="/dashboard/signup.html" class="btn-pricing">Criar conta</a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+  <footer>
+    <p>© 2026 DevInsight
+      <a href="/docs">Docs</a>
+      <a href="/dashboard/">Dashboard</a>
+      <a href="mailto:contato@devinsight.com">contato@devinsight.com</a>
+    </p>
+  </footer>
+
+</body>
+</html>
