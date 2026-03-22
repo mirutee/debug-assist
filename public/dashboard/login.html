@@ -35,6 +35,10 @@
   <script>
     const API = '';
 
+    if (localStorage.getItem('devinsight_token')) {
+      window.location.replace('/dashboard/');
+    }
+
     const _params = new URLSearchParams(window.location.search);
     if (_params.get('msg') === 'verifique-email') {
       const _banner = document.getElementById('success-msg');
@@ -42,10 +46,6 @@
         _banner.textContent = 'Conta criada! Verifique seu email para ativar.';
         _banner.classList.add('show');
       }
-    }
-
-    if (localStorage.getItem('devinsight_token')) {
-      window.location.replace('/dashboard/');
     }
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
