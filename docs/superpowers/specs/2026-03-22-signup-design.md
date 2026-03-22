@@ -31,7 +31,7 @@ public/dashboard/
   signup.html    ← novo
   login.html     ← modificar: ler ?msg= e exibir banner
   index.html     ← sem mudança
-  style.css      ← sem mudança (compartilhado por signup e login)
+  style.css      ← modificar: adicionar .success-msg e .success-msg.show
 ```
 
 ## Arquivos
@@ -40,6 +40,7 @@ public/dashboard/
 |---------|------|-----------------|
 | `public/dashboard/signup.html` | Criar | Formulário email + senha, fetch POST /v1/auth/signup, redirect on success, error on fail |
 | `public/dashboard/login.html` | Modificar | Ler `?msg=verifique-email` e exibir banner de confirmação |
+| `public/dashboard/style.css` | Modificar | Adicionar `.success-msg` e `.success-msg.show` |
 | `tests/routes/signup.test.js` | Criar | Verifica que `GET /dashboard/signup.html` retorna 200 com HTML |
 
 ## Detalhes de implementação
@@ -56,11 +57,11 @@ public/dashboard/
 
 **Script:**
 - Se `localStorage.getItem('devinsight_token')` existir → redirecionar para `/dashboard/`
-- Submit: desabilitar botão, fetch `POST /v1/auth/signup` com `{ email, senha }`
+- Submit: desabilitar botão, fetch `POST /v1/auth/signup` com `{ email, senha }` e header `'Content-Type': 'application/json'`
 - 201 → `window.location.replace('/dashboard/login.html?msg=verifique-email')`
-- 400 com `erro: "Email já cadastrado"` → exibir "Email já cadastrado"
-- 400 com `erro: "Senha inválida..."` → exibir "Senha deve ter no mínimo 6 caracteres"
-- 400 com `erro: "Email inválido"` → exibir "Email inválido"
+- `data.erro === "Email já cadastrado"` → exibir "Email já cadastrado"
+- `data.erro.includes('Senha inválida')` → exibir "Senha deve ter no mínimo 6 caracteres" (backend retorna `"Senha inválida. Mínimo 6 caracteres."`)
+- `data.erro === "Email inválido"` → exibir "Email inválido"
 - Outros erros → exibir "Erro ao criar conta. Tente novamente."
 - Finally: reabilitar botão
 
@@ -79,7 +80,7 @@ if (params.get('msg') === 'verifique-email') {
 }
 ```
 
-Adicionar elemento HTML no card, após o `<form>` ou antes do erro:
+Adicionar elemento HTML dentro do `<form>`, imediatamente após `<div class="error-msg" id="error-msg"></div>`:
 
 ```html
 <div class="success-msg" id="success-msg"></div>
@@ -100,12 +101,42 @@ Adicionar CSS em `style.css`:
 
 ### `tests/routes/signup.test.js`
 
-Mesmo padrão de `tests/routes/dashboard.test.js`:
+Mesmo padrão de `tests/routes/dashboard.test.js` (que existe em `C:\PROJETOS\API\tests\routes\dashboard.test.js`). O mock usa caminho relativo `'../../src/db/supabase'` porque o arquivo de teste fica em `tests/routes/`.
+
+Como `express.static` retorna 404 se o arquivo não existir em disco, o teste usa `beforeAll`/`afterAll` para criar um arquivo temporário caso `signup.html` ainda não exista (mesmo padrão de `landing.test.js`):
 
 ```js
 const request = require('supertest');
-jest.mock('../../src/db/supabase', () => ({ ... }));
+const fs = require('fs');
+const path = require('path');
+
+jest.mock('../../src/db/supabase', () => ({
+  saveDiagnostico: jest.fn(),
+  getUsuarioByApiKey: jest.fn(),
+  incrementarUso: jest.fn(),
+  getUsuarioByAuthId: jest.fn(),
+  signUpUser: jest.fn(),
+  signInUser: jest.fn(),
+  getUserFromToken: jest.fn(),
+}));
+
 const app = require('../../src/app');
+
+const signupPath = path.join(__dirname, '../../public/dashboard/signup.html');
+let createdTempFile = false;
+
+beforeAll(() => {
+  if (!fs.existsSync(signupPath)) {
+    fs.writeFileSync(signupPath, '<html><body><h1>DevInsight</h1><a href="/dashboard/login.html">login</a></body></html>');
+    createdTempFile = true;
+  }
+});
+
+afterAll(() => {
+  if (createdTempFile && fs.existsSync(signupPath)) {
+    fs.unlinkSync(signupPath);
+  }
+});
 
 describe('Signup page', () => {
   it('GET /dashboard/signup.html retorna 200 com HTML', async () => {
@@ -137,7 +168,7 @@ Segue o mesmo tema do dashboard e da landing page:
 - Texto secundário: `#555` / `#888`
 - Fonte: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
 
-`signup.html` usa `style.css` existente — sem CSS novo no HTML.
+`signup.html` usa `style.css` existente — sem CSS novo no HTML. O único CSS novo é o `.success-msg` adicionado ao `style.css`.
 
 ## Testes
 
