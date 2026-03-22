@@ -94,6 +94,7 @@ describe("Engine SQL", () => {
       dados: { query: "SELECT id FROM users WHERE name LIKE '%silva'", tempo_execucao: 50 },
     });
     expect(r.sugestoes.join(" ")).toMatch(/wildcard|índice|LIKE/i);
+    expect(r.nivel).toBe("médio");
   });
 
   it("detecta ORDER BY sem LIMIT em query simples", () => {
