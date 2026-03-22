@@ -43,7 +43,7 @@ function diagnosticarSQL({ mensagem = "", dados = {} }) {
 
   // DELETE/UPDATE sem WHERE — retorno antecipado, risco de destruição de dados
   if (
-    (query.startsWith("DELETE") || query.startsWith("UPDATE")) &&
+    (query.trimStart().startsWith("DELETE") || query.trimStart().startsWith("UPDATE")) &&
     !query.includes("WHERE")
   ) {
     return {

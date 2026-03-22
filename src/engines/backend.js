@@ -7,7 +7,7 @@ function diagnosticarBackend({ tipo, mensagem = "", dados = {} }) {
     let causa = "Exceção capturada mas não tratada adequadamente";
     let confianca = 0.85;
 
-    if (msg.includes("cannot read propert") || msg.includes("of null") || msg.includes("of undefined")) {
+    if (msg.includes("cannot read propert") || msg.includes("properties of null") || msg.includes("properties of undefined")) {
       causa = "Acesso a propriedade de objeto null ou undefined — verifique se o dado existe antes de acessá-lo";
       confianca = 0.95;
     } else if (msg.includes("is not a function")) {

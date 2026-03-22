@@ -93,6 +93,7 @@ function diagnosticarFrontend({ tipo, mensagem = "", status, dados = {} }) {
           "Checar validade e expiração do token",
           "Renovar o token de acesso",
         ],
+        confianca: 0.9,
       };
     }
     if (status === 403) {
