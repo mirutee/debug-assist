@@ -15,21 +15,32 @@ A diferença é importante para o copy: a mensagem é "integre uma vez, debug en
 
 ## Solução
 
-Página estática em `public/index.html`, servida pelo Express na raiz `/` via `express.static`. Mesmo padrão já utilizado pelo dashboard. Sem build step, sem framework frontend, sem dependência nova.
+Página estática em `public/index.html`, servida pelo Express na raiz `/`. Sem build step, sem framework frontend, sem dependência nova.
 
 ## Arquitetura
 
-```
-GET /
-  → Express serve public/index.html via express.static('public')
+O `src/app.js` atual monta o dashboard assim:
 
-GET /dashboard/
-  → Express serve public/dashboard/index.html (já existente)
+```js
+app.use("/dashboard", express.static(path.join(__dirname, "../public/dashboard")));
 ```
 
-O `express.static('public')` já está configurado para o dashboard em `/dashboard`. Ajustar para servir também a raiz, ou adicionar uma segunda rota estática para `/`.
+Para servir a landing page em `/`, adicionar **antes das rotas de API** (após `app.use(express.json())`):
+
+```js
+app.use(express.static(path.join(__dirname, "../public")));
+```
+
+Isso serve `public/index.html` em `GET /` e mantém `public/dashboard/` acessível em `/dashboard/` como antes. A rota `/dashboard` com `express.static` explícita pode ser removida pois `express.static('public')` já cobre o subdiretório, mas por segurança mantê-las as duas não causa conflito.
+
+**Ordem de middleware importante:** `express.static` deve ser adicionado **antes** das rotas de API (`/v1/diagnosticos`, `/v1/auth`) para que requisições a arquivos estáticos não passem pelos middlewares de auth e rate limit. Rotas de API ainda funcionam normalmente pois o static middleware só intercepta caminhos que correspondem a arquivos existentes em `public/`.
 
 ## Estrutura da página
+
+### `<title>`
+```html
+<title>DevInsight — API de diagnóstico para desenvolvedores</title>
+```
 
 ### 1. Navbar
 - Logo: ponto roxo (`#6366f1`) + texto "DevInsight"
@@ -55,14 +66,16 @@ O `express.static('public')` já está configurado para o dashboard em `/dashboa
 2. Envie os erros para `POST /v1/diagnosticos`
 3. Receba causa, nível e sugestões de correção
 
-### 5. Pricing — 3 cards
+### 5. Pricing — 3 cards (id="pricing")
 | Plano | Req/mês | Preço | Destaque |
 |-------|---------|-------|----------|
 | Grátis | 100 | R$0 | — |
 | Pro | 1.000 | R$29/mês | ✓ (borda roxa) |
 | Scale | 10.000 | R$99/mês | — |
 
-CTA de cada card: "Criar conta" → `/dashboard/signup.html`
+CTA de cada card: `Criar conta` → `/dashboard/signup.html`
+
+**Nota:** `/dashboard/signup.html` ainda não existe (próximo passo). Os links apontam para esse destino final — quando o signup for implementado, os links já estarão corretos.
 
 ### 6. Footer
 `© 2026 DevInsight · Docs · Dashboard · contato@devinsight.com`
@@ -71,31 +84,34 @@ CTA de cada card: "Criar conta" → `/dashboard/signup.html`
 
 Segue o mesmo tema do dashboard:
 - Fundo: `#0d0d0d`
-- Cards/sidebar: `#111`
+- Cards: `#111`
 - Bordas: `#222`
 - Accent: `#6366f1` (indigo)
 - Texto primário: `#fff`
 - Texto secundário: `#555` / `#888`
 - Fonte: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
 
+**CSS:** bloco `<style>` dentro do próprio `public/index.html`. Não usa arquivo CSS separado.
+
 ## Arquivos
 
 | Arquivo | Ação | Responsabilidade |
 |---------|------|-----------------|
-| `public/index.html` | Criar | Landing page completa com CSS inline |
-| `src/app.js` | Verificar | Confirmar que `express.static('public')` serve a raiz |
-| `tests/routes/landing.test.js` | Criar | Verifica que `GET /` retorna 200 com HTML |
+| `public/index.html` | Criar | Landing page completa com CSS em bloco `<style>` |
+| `src/app.js` | Modificar | Adicionar `express.static(path.join(__dirname, "../public"))` antes das rotas de API |
+| `tests/routes/landing.test.js` | Criar | Verifica que `GET /` retorna 200 com HTML (mesmo padrão de `tests/routes/dashboard.test.js`) |
 
 ## Testes
 
 - `GET /` → status 200, content-type `text/html`
-- Página contém "DevInsight" no título
-- Página contém link para `/docs`
-- Página contém link para `/dashboard/signup.html`
+- Body contém `DevInsight` (presente no `<title>` e no conteúdo da página)
+- Body contém `/docs`
+- Body contém `/dashboard/signup.html`
+- Rotas de API existentes (`GET /health`, `POST /v1/diagnosticos`) continuam funcionando após a mudança no `app.js`
 
 ## Não está no escopo
 
 - `/dashboard/signup.html` — próximo passo separado
-- Animações ou interatividade JavaScript além de smooth scroll
-- Versão mobile responsiva detalhada (layout responsivo básico sim, breakpoint específico não)
+- Animações ou interatividade JavaScript além de smooth scroll para `#pricing`
+- Versão mobile responsiva detalhada (layout responsivo básico sim)
 - Analytics ou tracking
