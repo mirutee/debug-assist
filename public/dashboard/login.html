@@ -24,8 +24,9 @@
         </div>
         <button type="submit" class="btn-primary" id="btn-login">Entrar</button>
         <div class="error-msg" id="error-msg"></div>
+        <div class="success-msg" id="success-msg"></div>
         <p style="margin-top:16px;text-align:center;font-size:12px;color:#555;">
-          Não tem conta? <a href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener" style="color:#6366f1;text-decoration:none;">Cadastre-se</a>
+          Não tem conta? <a href="/dashboard/signup.html" style="color:#6366f1;text-decoration:none;">Criar conta</a>
         </p>
       </form>
     </div>
@@ -33,6 +34,15 @@
 
   <script>
     const API = '';
+
+    const _params = new URLSearchParams(window.location.search);
+    if (_params.get('msg') === 'verifique-email') {
+      const _banner = document.getElementById('success-msg');
+      if (_banner) {
+        _banner.textContent = 'Conta criada! Verifique seu email para ativar.';
+        _banner.classList.add('show');
+      }
+    }
 
     if (localStorage.getItem('devinsight_token')) {
       window.location.replace('/dashboard/');
