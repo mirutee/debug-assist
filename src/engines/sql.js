@@ -41,6 +41,25 @@ function diagnosticarSQL({ mensagem = "", dados = {} }) {
     };
   }
 
+  // DELETE/UPDATE sem WHERE — retorno antecipado, risco de destruição de dados
+  if (
+    (query.startsWith("DELETE") || query.startsWith("UPDATE")) &&
+    !query.includes("WHERE")
+  ) {
+    return {
+      ...base,
+      problema: "DELETE/UPDATE sem cláusula WHERE detectado",
+      causa: "Query pode afetar ou apagar TODOS os registros da tabela",
+      nivel: "alto",
+      sugestoes: [
+        "Sempre incluir WHERE em DELETE e UPDATE",
+        "Testar a cláusula WHERE com SELECT antes de executar",
+        "Usar transação para poder fazer rollback se necessário",
+      ],
+      confianca: 0.98,
+    };
+  }
+
   // Slow query
   if (tempo > 500) {
     problemas.push("Query lenta");
@@ -60,7 +79,19 @@ function diagnosticarSQL({ mensagem = "", dados = {} }) {
 
   // No LIMIT
   if (query.includes("SELECT") && !query.includes("LIMIT")) {
-    sugestoes.push("Adicionar LIMIT para evitar retorno de grandes volumes de dados");
+    if (query.includes("ORDER BY")) {
+      sugestoes.push("ORDER BY sem LIMIT pode ser muito custoso — adicione LIMIT para paginar resultados");
+    } else {
+      sugestoes.push("Adicionar LIMIT para evitar retorno de grandes volumes de dados");
+    }
+  }
+
+  // LIKE com wildcard à esquerda — impede uso de índice
+  if (query.includes("LIKE '%") || query.includes('LIKE "%')) {
+    if (nivel === "baixo") nivel = "médio";
+    sugestoes.push("LIKE com '%' à esquerda não usa índice — considere Full Text Search");
+    sugestoes.push("Se a busca for comum, avalie pg_trgm ou índice GIN no PostgreSQL");
+    problemas.push("LIKE com wildcard à esquerda");
   }
 
   if (problemas.length === 0) {

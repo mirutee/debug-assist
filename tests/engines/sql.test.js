@@ -66,4 +66,42 @@ describe("Engine SQL", () => {
     expect(r.nivel).toBe("baixo");
     expect(r.categoria).toBe("sql");
   });
+
+  it("detecta DELETE sem WHERE — nivel alto", () => {
+    const r = diagnosticarSQL({
+      tipo: "sql_analysis",
+      mensagem: "",
+      dados: { query: "DELETE FROM users", tempo_execucao: 5 },
+    });
+    expect(r.nivel).toBe("alto");
+    expect(r.problema).toMatch(/WHERE/i);
+  });
+
+  it("detecta UPDATE sem WHERE — nivel alto", () => {
+    const r = diagnosticarSQL({
+      tipo: "sql_analysis",
+      mensagem: "",
+      dados: { query: "UPDATE users SET active = false", tempo_execucao: 5 },
+    });
+    expect(r.nivel).toBe("alto");
+    expect(r.problema).toMatch(/WHERE/i);
+  });
+
+  it("detecta LIKE com wildcard à esquerda — nivel médio", () => {
+    const r = diagnosticarSQL({
+      tipo: "sql_analysis",
+      mensagem: "",
+      dados: { query: "SELECT id FROM users WHERE name LIKE '%silva'", tempo_execucao: 50 },
+    });
+    expect(r.sugestoes.join(" ")).toMatch(/wildcard|índice|LIKE/i);
+  });
+
+  it("detecta ORDER BY sem LIMIT em query simples", () => {
+    const r = diagnosticarSQL({
+      tipo: "sql_analysis",
+      mensagem: "",
+      dados: { query: "SELECT id, name FROM logs ORDER BY created_at DESC", tempo_execucao: 50 },
+    });
+    expect(r.sugestoes.join(" ")).toMatch(/LIMIT/i);
+  });
 });
