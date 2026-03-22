@@ -8,6 +8,9 @@ const path = require("path");
 
 const app = express();
 app.use(express.json());
+
+// Serve arquivos estáticos de public/ (landing page em /, dashboard em /dashboard/)
+app.use(express.static(path.join(__dirname, "../public")));
 app.use("/dashboard", express.static(path.join(__dirname, "../public/dashboard")));
 
 const limiter = rateLimit({
