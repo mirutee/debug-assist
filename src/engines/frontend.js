@@ -29,7 +29,7 @@ function diagnosticarFrontend({ tipo, mensagem = "", status, dados = {} }) {
       causa = "Acesso a API do browser (window/localStorage/document) durante SSR — não existe no servidor";
       confianca = 0.97;
       sugestoes.unshift("Mover acesso a window/localStorage/document para dentro de useEffect");
-      sugestoes.unshift("Verificar com 'typeof window !== undefined' antes de acessar APIs do browser");
+      sugestoes.unshift("Verificar com 'typeof window !== \"undefined\"' antes de acessar APIs do browser");
     } else if (htmlServer && htmlClient && htmlServer !== htmlClient) {
       causa = "Conteúdo HTML do servidor difere do cliente — dado dinâmico renderizado no SSR com valor inconsistente";
       confianca = 0.92;
@@ -48,7 +48,7 @@ function diagnosticarFrontend({ tipo, mensagem = "", status, dados = {} }) {
   if (tipo === "request_error") {
     const msg = mensagem.toLowerCase();
 
-    // CORS — detected from message content, independent of status
+    // CORS — detectado pelo conteúdo da mensagem, independe do status
     if (msg.includes("cors") || msg.includes("access-control") || msg.includes("has been blocked by cors")) {
       return {
         ...base,
