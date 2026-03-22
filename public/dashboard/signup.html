@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar conta — DevInsight</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DevInsight</span>
+      </div>
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="seu@email.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" placeholder="••••••••" required minlength="6">
+        </div>
+        <button type="submit" class="btn-primary" id="btn-signup">Criar conta</button>
+        <div class="error-msg" id="error-msg"></div>
+        <p style="margin-top:16px;text-align:center;font-size:12px;color:#555;">
+          Já tem conta? <a href="/dashboard/login.html" style="color:#6366f1;text-decoration:none;">Entrar</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+
+    if (localStorage.getItem('devinsight_token')) {
+      window.location.replace('/dashboard/');
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-signup');
+      const errorEl = document.getElementById('error-msg');
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+
+      btn.disabled = true;
+      btn.textContent = 'Criando conta...';
+      errorEl.classList.remove('show');
+
+      try {
+        const res = await fetch(`${API}/v1/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha }),
+        });
+        const data = await res.json();
+
+        if (res.status === 201) {
+          window.location.replace('/dashboard/login.html?msg=verifique-email');
+          return;
+        }
+
+        if (data.erro === 'Email já cadastrado') {
+          errorEl.textContent = 'Email já cadastrado';
+        } else if (data.erro && data.erro.includes('Senha inválida')) {
+          errorEl.textContent = 'Senha deve ter no mínimo 6 caracteres';
+        } else if (data.erro === 'Email inválido') {
+          errorEl.textContent = 'Email inválido';
+        } else {
+          errorEl.textContent = 'Erro ao criar conta. Tente novamente.';
+        }
+        errorEl.classList.add('show');
+      } catch (err) {
+        errorEl.textContent = 'Erro de conexão. Tente novamente.';
+        errorEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Criar conta';
+      }
+    });
+  </script>
+</body>
+</html>
