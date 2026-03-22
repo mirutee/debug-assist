@@ -73,4 +73,14 @@ describe("Engine Backend", () => {
     expect(r.causa).toMatch(/rate limit|limite|429/i);
     expect(r.sugestoes.join(" ")).toMatch(/retry|espera|backoff/i);
   });
+
+  it("silent_backend_error com ReferenceError 'is not defined'", () => {
+    const r = diagnosticarBackend({
+      tipo: "silent_backend_error",
+      mensagem: "ReferenceError: db is not defined",
+      dados: {},
+    });
+    expect(r.causa).toMatch(/variável|módulo|declarado|escopo/i);
+    expect(r.confianca).toBe(0.92);
+  });
 });
