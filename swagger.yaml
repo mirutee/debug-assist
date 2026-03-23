@@ -32,6 +32,25 @@ info:
     await client.report({ tipo: 'silent_backend_error', mensagem: err.message });
     ```
 
+    ## SDK (Python)
+
+    Sem dependências externas — funciona com qualquer app Python 3.8+:
+
+    ```bash
+    pip install devinsight
+    ```
+
+    ```python
+    from devinsight import DevInsight
+
+    # Captura automaticamente qualquer exceção não tratada que derrube o app
+    DevInsight.init(api_key='SUA_API_KEY', project_name='meu-projeto')
+
+    # Ou envie manualmente
+    client = DevInsight(api_key='SUA_API_KEY')
+    client.report(tipo='silent_backend_error', mensagem=str(e))
+    ```
+
     ## Limites por plano
 
     | Plano  | Diagnósticos/mês | Preço     |
