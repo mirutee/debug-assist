@@ -13,6 +13,11 @@ const mockStripeInstance = {
   webhooks: {
     constructEvent: jest.fn(),
   },
+  billingPortal: {
+    sessions: {
+      create: jest.fn().mockResolvedValue({ url: 'https://billing.stripe.com/session/test' }),
+    },
+  },
 };
 
 jest.mock('stripe', () => jest.fn().mockImplementation(() => mockStripeInstance));
@@ -156,5 +161,41 @@ describe('POST /v1/billing/webhook', () => {
 
     expect(res.status).toBe(200);
     expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
+  });
+});
+
+// --- portal ---
+
+describe('POST /v1/billing/portal', () => {
+  it('retorna 401 sem token', async () => {
+    const res = await request(app).post('/v1/billing/portal');
+    expect(res.status).toBe(401);
+  });
+
+  it('retorna 400 se usuário não tem stripe_customer_id', async () => {
+    mockJwt(USUARIO_FREE);
+    const res = await request(app)
+      .post('/v1/billing/portal')
+      .set('Authorization', 'Bearer token-valido');
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/assinatura/i);
+  });
+
+  it('retorna url do portal para usuário com assinatura', async () => {
+    mockJwt(USUARIO_PRO);
+    const res = await request(app)
+      .post('/v1/billing/portal')
+      .set('Authorization', 'Bearer token-valido');
+    expect(res.status).toBe(200);
+    expect(res.body.url).toContain('billing.stripe.com');
+  });
+
+  it('retorna 502 quando Stripe lança erro', async () => {
+    mockJwt(USUARIO_PRO);
+    mockStripeInstance.billingPortal.sessions.create.mockRejectedValueOnce(new Error('stripe error'));
+    const res = await request(app)
+      .post('/v1/billing/portal')
+      .set('Authorization', 'Bearer token-valido');
+    expect(res.status).toBe(502);
   });
 });

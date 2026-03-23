@@ -56,6 +56,25 @@ router.post("/checkout", authJwt, async (req, res) => {
   }
 });
 
+// POST /v1/billing/portal
+router.post("/portal", authJwt, async (req, res) => {
+  if (!req.usuario.stripe_customer_id) {
+    return res.status(400).json({ erro: "Nenhuma assinatura ativa" });
+  }
+
+  try {
+    const session = await getStripe().billingPortal.sessions.create({
+      customer: req.usuario.stripe_customer_id,
+      return_url: `${process.env.APP_BASE_URL}/dashboard/`,
+    });
+
+    return res.json({ url: session.url });
+  } catch (err) {
+    console.error("[billing] Erro ao abrir portal:", err.message);
+    return res.status(502).json({ erro: "Erro ao abrir portal. Tente novamente." });
+  }
+});
+
 // POST /v1/billing/webhook
 // Body recebido como raw buffer (configurado em app.js com express.raw)
 router.post("/webhook", async (req, res) => {
