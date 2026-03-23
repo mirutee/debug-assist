@@ -35,7 +35,7 @@ describe("POST /v1/auth/signup", () => {
       .send({ email: "user@gmail.com", senha: "senha123" });
 
     expect(res.status).toBe(201);
-    expect(res.body.mensagem).toMatch(/verifique/i);
+    expect(res.body.mensagem).toMatch(/conta criada/i);
   });
 
   it("retorna 400 para email descartável", async () => {
