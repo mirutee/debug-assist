@@ -2,9 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
+const authJwt = require("../middleware/authJwt");
 const validate = require("../middleware/validate");
 const diagnosticar = require("../engines/index");
-const { saveDiagnostico, incrementarUso } = require("../db/supabase");
+const { saveDiagnostico, incrementarUso, getDiagnosticosByUsuario } = require("../db/supabase");
 
 router.post("/", auth, validate, async (req, res) => {
   try {
@@ -16,6 +17,7 @@ router.post("/", auth, validate, async (req, res) => {
       mensagem: req.body.mensagem,
       contexto: req.body.contexto,
       resposta: resultado,
+      usuario_id: req.usuario.id,
     }).catch(() => {});
 
     // Incrementa cota após resposta bem-sucedida
@@ -28,6 +30,16 @@ router.post("/", auth, validate, async (req, res) => {
     return res.json(resultado);
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno ao processar diagnóstico" });
+  }
+});
+
+router.get("/historico", authJwt, async (req, res) => {
+  try {
+    const { after } = req.query;
+    const items = await getDiagnosticosByUsuario(req.usuario.id, { after });
+    return res.json(items);
+  } catch (err) {
+    return res.status(500).json({ erro: "Erro ao buscar histórico" });
   }
 });
 
