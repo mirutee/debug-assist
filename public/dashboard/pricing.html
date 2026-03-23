@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planos — DevInsight</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .pricing-container { max-width: 900px; margin: 60px auto; padding: 0 24px; }
+    .pricing-title { text-align: center; font-size: 28px; font-weight: 700; color: #f1f1f1; margin-bottom: 8px; }
+    .pricing-subtitle { text-align: center; color: #888; margin-bottom: 48px; }
+    .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+    .plan-card { background: #1a1a2e; border: 1px solid #2a2a40; border-radius: 12px; padding: 32px 24px; display: flex; flex-direction: column; gap: 16px; }
+    .plan-card.destaque { border-color: #6366f1; }
+    .plan-badge { font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; }
+    .plan-name { font-size: 22px; font-weight: 700; color: #f1f1f1; }
+    .plan-price { font-size: 36px; font-weight: 800; color: #f1f1f1; }
+    .plan-price span { font-size: 14px; font-weight: 400; color: #888; }
+    .plan-limit { font-size: 14px; color: #aaa; }
+    .plan-btn { margin-top: auto; }
+    .btn-outline { display: block; text-align: center; padding: 12px; border: 1px solid #6366f1; border-radius: 8px; color: #6366f1; text-decoration: none; font-weight: 600; cursor: pointer; background: none; width: 100%; font-size: 14px; transition: background 0.2s; }
+    .btn-outline:hover { background: rgba(99,102,241,0.1); }
+    .error-msg { color: #f87171; font-size: 13px; text-align: center; display: none; margin-top: 8px; }
+    .error-msg.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="pricing-container">
+    <div class="logo" style="text-align:center;margin-bottom:32px;">
+      <a href="/dashboard/" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DevInsight</span>
+      </a>
+    </div>
+    <h1 class="pricing-title">Escolha seu plano</h1>
+    <p class="pricing-subtitle">Comece grátis. Faça upgrade quando precisar.</p>
+
+    <div class="plans">
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">R$0 <span>/mês</span></div>
+        <div class="plan-limit">100 diagnósticos/mês</div>
+        <div class="plan-btn">
+          <a href="/dashboard/signup.html" class="btn-outline">Criar conta grátis</a>
+        </div>
+      </div>
+
+      <div class="plan-card destaque">
+        <div class="plan-badge">Mais popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">R$49 <span>/mês</span></div>
+        <div class="plan-limit">1.000 diagnósticos/mês</div>
+        <div class="plan-btn">
+          <button class="btn-primary btn-assinar" data-plano="pro">Assinar Pro</button>
+          <div class="error-msg" id="error-pro"></div>
+        </div>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-name">Scale</div>
+        <div class="plan-price">R$149 <span>/mês</span></div>
+        <div class="plan-limit">10.000 diagnósticos/mês</div>
+        <div class="plan-btn">
+          <button class="btn-primary btn-assinar" data-plano="scale">Assinar Scale</button>
+          <div class="error-msg" id="error-scale"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    const token = localStorage.getItem('devinsight_token');
+
+    document.querySelectorAll('.btn-assinar').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const plano = btn.dataset.plano;
+        const errorEl = document.getElementById(`error-${plano}`);
+        errorEl.classList.remove('show');
+
+        if (!token) {
+          window.location.href = '/dashboard/signup.html';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Aguarde...';
+
+        try {
+          const res = await fetch(`${API}/v1/billing/checkout`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ plano }),
+          });
+          const data = await res.json();
+
+          if (!res.ok) {
+            errorEl.textContent = data.erro || 'Erro ao iniciar pagamento.';
+            errorEl.classList.add('show');
+            return;
+          }
+
+          window.location.href = data.url;
+        } catch (err) {
+          errorEl.textContent = 'Erro de conexão. Tente novamente.';
+          errorEl.classList.add('show');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = plano === 'pro' ? 'Assinar Pro' : 'Assinar Scale';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
