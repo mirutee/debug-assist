@@ -72,8 +72,13 @@ router.post("/webhook", async (req, res) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const { usuario_id, plano } = session.metadata;
+      const { usuario_id, plano } = session.metadata || {};
       const stripe_customer_id = session.customer;
+
+      if (!usuario_id || !plano) {
+        console.error("[billing] checkout.session.completed: metadata ausente", session.id);
+        return res.status(500).send();
+      }
 
       await updatePlanoBilling(usuario_id, { plano_id: plano, stripe_customer_id });
     }
