@@ -106,6 +106,18 @@ router.post("/webhook", async (req, res) => {
       await updatePlanoBilling(usuario_id, { plano_id: plano, stripe_customer_id });
     }
 
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object;
+      if (subscription.cancel_at) {
+        const usuario = await getUsuarioByStripeCustomerId(subscription.customer);
+        if (usuario) {
+          await updatePlanoBilling(usuario.id, { plano_id: "free" });
+        } else {
+          console.warn("[billing] subscription.updated: usuário não encontrado para customer", subscription.customer);
+        }
+      }
+    }
+
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object;
       const usuario = await getUsuarioByStripeCustomerId(subscription.customer);

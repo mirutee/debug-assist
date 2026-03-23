@@ -162,6 +162,40 @@ describe('POST /v1/billing/webhook', () => {
     expect(res.status).toBe(200);
     expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
   });
+
+  it('retorna 200 e rebaixa plano para customer.subscription.updated com cancel_at', async () => {
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'customer.subscription.updated',
+      data: { object: { customer: 'cus_test123', cancel_at: 1776909320 } },
+    });
+    getUsuarioByStripeCustomerId.mockResolvedValue({ id: 'user-uuid', plano_id: 'pro' });
+    updatePlanoBilling.mockResolvedValue(undefined);
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(200);
+    expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
+  });
+
+  it('não rebaixa plano para customer.subscription.updated sem cancel_at', async () => {
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'customer.subscription.updated',
+      data: { object: { customer: 'cus_test123', cancel_at: null } },
+    });
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(200);
+    expect(updatePlanoBilling).not.toHaveBeenCalled();
+  });
 });
 
 // --- portal ---
