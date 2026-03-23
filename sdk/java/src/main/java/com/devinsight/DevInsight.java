@@ -9,7 +9,7 @@ import java.time.Duration;
 public final class DevInsight {
 
     private static final String DEFAULT_BASE_URL = "https://devinsight-api.onrender.com";
-    private static volatile boolean initialized = false;
+    private static boolean initialized = false;
 
     private DevInsight() {}
 
@@ -34,13 +34,22 @@ public final class DevInsight {
         final String project = projectName != null ? projectName : "unknown";
         final String base    = envOr("DEVINSIGHT_BASE_URL", DEFAULT_BASE_URL).replaceAll("/+$", "");
 
+        final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+        Thread.UncaughtExceptionHandler previous = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            send(key, base, project, throwable);
-            System.exit(1);
+            send(key, base, project, throwable, httpClient);
+            if (previous != null) {
+                previous.uncaughtException(thread, throwable);
+            } else {
+                System.exit(1);
+            }
         });
     }
 
-    private static void send(String apiKey, String baseUrl, String projectName, Throwable t) {
+    private static void send(String apiKey, String baseUrl, String projectName, Throwable t, HttpClient httpClient) {
         try {
             StringBuilder sb = new StringBuilder();
             for (StackTraceElement el : t.getStackTrace()) {
@@ -48,16 +57,12 @@ public final class DevInsight {
             }
             String body = "{"
                 + "\"tipo\":\"silent_backend_error\","
-                + "\"mensagem\":" + jsonStr(t.getMessage()) + ","
+                + "\"mensagem\":" + jsonStr(t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName()) + ","
                 + "\"contexto\":{"
                 +   "\"project_name\":"    + jsonStr(projectName) + ","
                 +   "\"exception_type\":"  + jsonStr(t.getClass().getName()) + ","
                 +   "\"stack\":"           + jsonStr(sb.toString())
                 + "}}";
-
-            HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
 
             HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/v1/diagnosticos"))
@@ -67,7 +72,7 @@ public final class DevInsight {
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
-            client.send(req, HttpResponse.BodyHandlers.discarding());
+            httpClient.send(req, HttpResponse.BodyHandlers.discarding());
         } catch (Exception e) {
             System.err.println("[DevInsight] Falha ao enviar diagnóstico: " + e.getMessage());
         }
@@ -80,12 +85,23 @@ public final class DevInsight {
 
     private static String jsonStr(String value) {
         if (value == null) return "null";
-        return "\"" + value
-            .replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r")
-            .replace("\t", "\\t")
-            + "\"";
+        StringBuilder sb = new StringBuilder("\"");
+        for (char c : value.toCharArray()) {
+            switch (c) {
+                case '\\': sb.append("\\\\"); break;
+                case '"':  sb.append("\\\""); break;
+                case '\n': sb.append("\\n");  break;
+                case '\r': sb.append("\\r");  break;
+                case '\t': sb.append("\\t");  break;
+                default:
+                    if (c < 0x20) {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+            }
+        }
+        sb.append('"');
+        return sb.toString();
     }
 }
