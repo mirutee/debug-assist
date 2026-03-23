@@ -66,12 +66,14 @@ func send(message, exceptionType, stack string) {
 
 	body, err := json.Marshal(payload)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "[DevInsight] Falha ao serializar payload: %v\n", err)
 		return
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest(http.MethodPost, baseURL+"/v1/diagnosticos", bytes.NewReader(body))
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "[DevInsight] Falha ao criar requisição: %v\n", err)
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -83,4 +85,8 @@ func send(message, exceptionType, stack string) {
 		return
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		fmt.Fprintf(os.Stderr, "[DevInsight] Servidor retornou erro: status %d\n", resp.StatusCode)
+	}
 }
