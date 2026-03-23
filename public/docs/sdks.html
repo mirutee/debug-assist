@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDKs — DevInsight</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d0d; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
+
+    .navbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 40px; border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; background: rgba(13,13,13,0.95); backdrop-filter: blur(8px); z-index: 100; }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: #6366f1; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: #888; font-size: 14px; transition: color 0.15s; }
+    .nav-links a:hover { color: #fff; }
+    .btn-nav { background: #6366f1; color: #fff !important; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    .btn-nav:hover { background: #4f52d9 !important; }
+
+    .hero { text-align: center; padding: 64px 24px 48px; max-width: 720px; margin: 0 auto; }
+    .hero-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #555; text-transform: uppercase; margin-bottom: 16px; }
+    .hero h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; margin-bottom: 16px; }
+    .hero p { font-size: 16px; color: #666; max-width: 500px; margin: 0 auto; }
+
+    .content { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+    .sdk-card { background: #111; border: 1px solid #1e1e1e; border-radius: 12px; padding: 32px; margin-bottom: 24px; }
+    .sdk-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .sdk-icon { font-size: 28px; }
+    .sdk-name { font-size: 20px; font-weight: 700; }
+    .sdk-tag { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #6366f1; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); padding: 2px 8px; border-radius: 4px; }
+
+    .sdk-desc { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.7; }
+
+    .install-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #555; margin-bottom: 8px; }
+    pre { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 16px 20px; overflow-x: auto; margin-bottom: 16px; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 13px; line-height: 1.6; color: #e2e8f0; }
+    .comment { color: #555; }
+    .keyword { color: #6366f1; }
+    .string { color: #86efac; }
+
+    .env-box { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); border-radius: 8px; padding: 16px 20px; margin-top: 16px; }
+    .env-box h4 { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #6366f1; margin-bottom: 10px; }
+    .env-row { display: flex; gap: 12px; font-size: 13px; margin-bottom: 6px; }
+    .env-key { color: #a5b4fc; font-family: monospace; min-width: 220px; }
+    .env-val { color: #666; }
+
+    .divider { border: none; border-top: 1px solid #1a1a1a; margin: 0 0 24px; }
+    footer { text-align: center; padding: 32px 24px; color: #444; font-size: 13px; }
+    footer a { color: #555; margin: 0 8px; }
+    footer a:hover { color: #888; }
+
+    @media (max-width: 600px) {
+      .navbar { padding: 16px 20px; }
+      .nav-links a:not(.btn-nav) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="nav-logo"><div class="logo-dot"></div>DevInsight</a>
+    <div class="nav-links">
+      <a href="/docs">Docs</a>
+      <a href="/docs/sdks.html">SDKs</a>
+      <a href="/#pricing">Preços</a>
+      <a href="/dashboard/login.html">Entrar</a>
+      <a href="/dashboard/signup.html" class="btn-nav">Criar conta</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-label">Integração</div>
+    <h1>SDKs para todas as linguagens</h1>
+    <p>Configure sua API Key uma vez. O SDK captura automaticamente qualquer erro que derrube sua aplicação e envia para o dashboard.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- Node.js -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">🟢</div>
+        <div class="sdk-name">Node.js</div>
+        <div class="sdk-tag">npm</div>
+      </div>
+      <p class="sdk-desc">Captura <code>uncaughtException</code> e <code>unhandledRejection</code> automaticamente.</p>
+      <div class="install-label">Instalação</div>
+      <pre><code>npm install devinsight-sdk</code></pre>
+      <div class="install-label">Uso</div>
+      <pre><code><span class="keyword">const</span> DevInsight = <span class="keyword">require</span>(<span class="string">'devinsight-sdk'</span>);
+
+<span class="comment">// Uma linha — captura todos os crashes automaticamente</span>
+DevInsight.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-projeto'</span> });</code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK (útil em CI/testes)</span></div>
+      </div>
+    </div>
+
+    <!-- Python -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">🐍</div>
+        <div class="sdk-name">Python</div>
+        <div class="sdk-tag">pip</div>
+      </div>
+      <p class="sdk-desc">Registra <code>sys.excepthook</code> para capturar qualquer exceção não tratada. Python 3.8+, sem dependências.</p>
+      <div class="install-label">Instalação</div>
+      <pre><code>pip install devinsight</code></pre>
+      <div class="install-label">Uso via variável de ambiente (recomendado)</div>
+      <pre><code><span class="comment"># No terminal ou .env:</span>
+export DEVINSIGHT_API_KEY=<span class="string">'SUA_API_KEY'</span>
+
+<span class="comment"># No código — só importar já basta:</span>
+<span class="keyword">import</span> devinsight</code></pre>
+      <div class="install-label">Ou explicitamente</div>
+      <pre><code><span class="keyword">from</span> devinsight <span class="keyword">import</span> DevInsight
+DevInsight.init(api_key=<span class="string">'SUA_API_KEY'</span>, project_name=<span class="string">'meu-projeto'</span>)</code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+      </div>
+    </div>
+
+    <!-- Java -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">☕</div>
+        <div class="sdk-name">Java</div>
+        <div class="sdk-tag">Maven</div>
+      </div>
+      <p class="sdk-desc">Registra <code>Thread.setDefaultUncaughtExceptionHandler</code>. Java 11+, sem dependências externas.</p>
+      <div class="install-label">Maven (pom.xml)</div>
+      <pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;com.devinsight&lt;/groupId&gt;
+  &lt;artifactId&gt;devinsight&lt;/artifactId&gt;
+  &lt;version&gt;1.0.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+      <div class="install-label">Uso</div>
+      <pre><code><span class="keyword">import</span> com.devinsight.DevInsight;
+
+<span class="comment">// Via env var DEVINSIGHT_API_KEY:</span>
+DevInsight.init();
+
+<span class="comment">// Ou explicitamente:</span>
+DevInsight.init(<span class="string">"SUA_API_KEY"</span>, <span class="string">"meu-projeto"</span>);</code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+      </div>
+    </div>
+
+    <!-- Go -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">🐹</div>
+        <div class="sdk-name">Go</div>
+        <div class="sdk-tag">go get</div>
+      </div>
+      <p class="sdk-desc">Captura panics via <code>defer recover()</code> e re-panic após enviar. Go 1.21+, sem dependências externas.</p>
+      <div class="install-label">Instalação</div>
+      <pre><code>go get github.com/devinsight/sdk/go</code></pre>
+      <div class="install-label">Uso</div>
+      <pre><code><span class="keyword">import</span> <span class="string">"github.com/devinsight/sdk/go/devinsight"</span>
+
+<span class="keyword">func</span> main() {
+    devinsight.Wrap(run) <span class="comment">// uma linha</span>
+}
+
+<span class="keyword">func</span> run() {
+    <span class="comment">// seu código aqui</span>
+}</code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+      </div>
+    </div>
+
+    <!-- PHP -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">🐘</div>
+        <div class="sdk-name">PHP</div>
+        <div class="sdk-tag">require</div>
+      </div>
+      <p class="sdk-desc">Registra <code>set_exception_handler</code> e <code>register_shutdown_function</code> para capturar exceções e erros fatais. PHP 7.4+, sem Composer.</p>
+      <div class="install-label">Instalação — copie o arquivo para seu projeto</div>
+      <pre><code><span class="comment"># Ou via Composer (em breve):</span>
+composer require devinsight/devinsight-php</code></pre>
+      <div class="install-label">Uso</div>
+      <pre><code><span class="keyword">require_once</span> <span class="string">'devinsight.php'</span>; <span class="comment">// só isso</span></code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente ou constantes PHP</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+      </div>
+    </div>
+
+    <!-- Ruby -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">💎</div>
+        <div class="sdk-name">Ruby</div>
+        <div class="sdk-tag">gem</div>
+      </div>
+      <p class="sdk-desc">Usa <code>at_exit</code> com <code>$!</code> para capturar exceções não tratadas. MRI Ruby 2.7+, sem gems externas.</p>
+      <div class="install-label">Instalação</div>
+      <pre><code>gem install devinsight</code></pre>
+      <div class="install-label">Uso</div>
+      <pre><code><span class="keyword">require</span> <span class="string">'devinsight'</span> <span class="comment"># só isso</span></code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+      </div>
+    </div>
+
+    <!-- C# -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">🔷</div>
+        <div class="sdk-name">C#</div>
+        <div class="sdk-tag">NuGet</div>
+      </div>
+      <p class="sdk-desc">Registra <code>AppDomain.UnhandledException</code> e <code>TaskScheduler.UnobservedTaskException</code>. .NET 6+, sem pacotes externos.</p>
+      <div class="install-label">Instalação</div>
+      <pre><code>dotnet add package DevInsight</code></pre>
+      <div class="install-label">Uso</div>
+      <pre><code><span class="keyword">using</span> DevInsightSDK;
+
+<span class="comment">// Uma linha no topo de Program.cs:</span>
+DevInsight.EnsureInitialized();
+
+<span class="comment">// Ou explicitamente:</span>
+DevInsight.Init(<span class="string">"SUA_API_KEY"</span>, <span class="string">"meu-projeto"</span>);</code></pre>
+      <div class="env-box">
+        <h4>Variáveis de ambiente</h4>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+  <footer>
+    <p>© 2026 DevInsight
+      <a href="/docs">Docs</a>
+      <a href="/docs/sdks.html">SDKs</a>
+      <a href="/dashboard/">Dashboard</a>
+      <a href="mailto:contato@devinsight.com">contato@devinsight.com</a>
+    </p>
+  </footer>
+
+</body>
+</html>
