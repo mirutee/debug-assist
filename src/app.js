@@ -7,6 +7,8 @@ const YAML = require("yamljs");
 const path = require("path");
 
 const app = express();
+// Raw body para validação de assinatura do Stripe (deve vir antes do express.json)
+app.use('/v1/billing/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 // Serve arquivos estáticos de public/ (landing page em /, dashboard em /dashboard/)
@@ -27,5 +29,6 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/health", require("./routes/health"));
 app.use("/v1/auth", require("./routes/auth"));
 app.use("/v1/diagnosticos", limiter, require("./routes/diagnosticos"));
+app.use("/v1/billing", require("./routes/billing"));
 
 module.exports = app;
