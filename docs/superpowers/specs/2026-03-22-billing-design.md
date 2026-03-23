@@ -180,7 +180,7 @@ stripe listen --forward-to localhost:3000/v1/billing/webhook
 ## Fora do Escopo (versão inicial)
 
 - Créditos proporcionais em upgrades no meio do ciclo
-- Tela de gerenciamento de assinatura (cancelar, trocar plano via portal Stripe)
+- Tela de gerenciamento de assinatura (cancelar, trocar plano via portal Stripe) — downgrade ocorre no fim do ciclo já pago (Opção B); cliente mantém o plano atual até o vencimento
 - Notificação por email em falha de pagamento
 - Plano Enterprise (ativação manual)
 - Notas fiscais
