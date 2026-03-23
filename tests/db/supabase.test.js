@@ -3,8 +3,6 @@ jest.mock("@supabase/supabase-js", () => ({
   createClient: jest.fn(() => mockSupabaseClient),
 }));
 
-// billing functions (getUsuarioById, updatePlanoBilling, getUsuarioByStripeCustomerId)
-// are also required below after the mock is in place
 
 const mockSupabaseClient = {
   from: jest.fn(),
@@ -139,8 +137,22 @@ describe("getUsuarioById", () => {
 });
 
 describe("updatePlanoBilling", () => {
-  it("é uma função exportada", () => {
-    expect(typeof updatePlanoBilling).toBe("function");
+  it("lança erro quando Supabase retorna erro", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: { message: "db error" } }),
+      }),
+    });
+
+    await expect(
+      updatePlanoBilling("user-uuid", { plano_id: "pro" })
+    ).rejects.toThrow("db error");
+  });
+
+  it("retorna sem chamar update quando ambos os campos são undefined", async () => {
+    await updatePlanoBilling("user-uuid", {});
+
+    expect(mockSupabaseClient.from).not.toHaveBeenCalled();
   });
 });
 

@@ -80,6 +80,8 @@ async function updatePlanoBilling(usuarioId, { plano_id, stripe_customer_id }) {
   if (plano_id !== undefined) updates.plano_id = plano_id;
   if (stripe_customer_id !== undefined) updates.stripe_customer_id = stripe_customer_id;
 
+  if (Object.keys(updates).length === 0) return;
+
   const { error } = await supabase
     .from("usuarios")
     .update(updates)
