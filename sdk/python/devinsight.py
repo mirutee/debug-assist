@@ -3,20 +3,24 @@ DevInsight Python SDK
 
 Captura automaticamente exceções não tratadas e envia para a API DevInsight.
 
-Uso rápido:
+Modo mais simples — via variável de ambiente:
+    export DEVINSIGHT_API_KEY='SUA_API_KEY'
+    import devinsight  # só isso já basta, monitoramento ativado
+
+Modo explícito (quando a chave vem do código):
     from devinsight import DevInsight
     DevInsight.init(api_key='SUA_API_KEY', project_name='meu-projeto')
 
-Ou manualmente:
+Envio manual:
     client = DevInsight(api_key='SUA_API_KEY')
     client.report(tipo='silent_backend_error', mensagem=str(e))
 """
 
 import json
+import os
 import sys
 import traceback
 import urllib.request
-import urllib.error
 
 DEFAULT_BASE_URL = 'https://devinsight-api.onrender.com'
 
@@ -101,3 +105,13 @@ class DevInsight:
             original_excepthook(exc_type, exc_value, exc_traceback)
 
         sys.excepthook = _excepthook
+
+
+# Auto-inicializa se DEVINSIGHT_API_KEY estiver no ambiente
+_env_key = os.getenv('DEVINSIGHT_API_KEY')
+if _env_key and os.getenv('DEVINSIGHT_ENABLED', '1') != '0':
+    DevInsight.init(
+        api_key=_env_key,
+        project_name=os.getenv('DEVINSIGHT_PROJECT', 'unknown'),
+        base_url=os.getenv('DEVINSIGHT_BASE_URL'),
+    )
