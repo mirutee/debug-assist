@@ -51,6 +51,71 @@ info:
     client.report(tipo='silent_backend_error', mensagem=str(e))
     ```
 
+    ## SDK (Java)
+
+    Java 11+, sem dependências externas:
+
+    ```xml
+    <dependency>
+      <groupId>com.devinsight</groupId>
+      <artifactId>devinsight</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    ```
+
+    ```java
+    import com.devinsight.DevInsight;
+    DevInsight.init(); // lê DEVINSIGHT_API_KEY do ambiente
+    ```
+
+    ## SDK (Go)
+
+    Go 1.21+, sem dependências externas:
+
+    ```bash
+    go get github.com/devinsight/sdk/go
+    ```
+
+    ```go
+    import "github.com/devinsight/sdk/go/devinsight"
+
+    func main() { devinsight.Wrap(run) }
+    func run()   { /* seu código */ }
+    ```
+
+    ## SDK (PHP)
+
+    PHP 7.4+, sem Composer:
+
+    ```php
+    require_once 'devinsight.php'; // só isso
+    ```
+
+    ## SDK (Ruby)
+
+    MRI Ruby 2.7+, sem gems externas:
+
+    ```bash
+    gem install devinsight
+    ```
+
+    ```ruby
+    require 'devinsight' # só isso
+    ```
+
+    ## SDK (C#)
+
+    .NET 6+, sem pacotes externos:
+
+    ```bash
+    dotnet add package DevInsight
+    ```
+
+    ```csharp
+    using DevInsightSDK;
+    DevInsight.EnsureInitialized(); // topo do Program.cs
+    ```
+
     ## Limites por plano
 
     | Plano  | Diagnósticos/mês | Preço     |
