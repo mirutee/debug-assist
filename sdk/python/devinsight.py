@@ -60,7 +60,7 @@ class DevInsight:
         req.add_header('Content-Type', 'application/json')
         req.add_header('Authorization', f'Bearer {self.api_key}')
 
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode('utf-8'))
 
     @classmethod
