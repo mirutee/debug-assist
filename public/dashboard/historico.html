@@ -77,9 +77,9 @@
         const items = await res.json();
         renderItems(items, false);
 
-        if (items.length > 0) {
-          mostRecentCriadoEm = items[0].criado_em;
-        }
+        mostRecentCriadoEm = items.length > 0
+          ? items[0].criado_em
+          : new Date().toISOString();
 
         document.getElementById('user-email').textContent =
           localStorage.getItem('devinsight_email') || '';
