@@ -64,4 +64,50 @@ async function getUserFromToken(token) {
   return supabase.auth.getUser(token);
 }
 
-module.exports = { saveDiagnostico, getUsuarioByApiKey, incrementarUso, getUsuarioByAuthId, signUpUser, signInUser, getUserFromToken };
+async function getUsuarioById(usuarioId) {
+  const { data, error } = await supabase
+    .from("usuarios")
+    .select("id, email, plano_id, stripe_customer_id")
+    .eq("id", usuarioId)
+    .single();
+
+  if (error || !data) return null;
+  return data;
+}
+
+async function updatePlanoBilling(usuarioId, { plano_id, stripe_customer_id }) {
+  const updates = {};
+  if (plano_id !== undefined) updates.plano_id = plano_id;
+  if (stripe_customer_id !== undefined) updates.stripe_customer_id = stripe_customer_id;
+
+  const { error } = await supabase
+    .from("usuarios")
+    .update(updates)
+    .eq("id", usuarioId);
+
+  if (error) throw new Error(error.message);
+}
+
+async function getUsuarioByStripeCustomerId(stripeCustomerId) {
+  const { data, error } = await supabase
+    .from("usuarios")
+    .select("id, plano_id")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .single();
+
+  if (error || !data) return null;
+  return data;
+}
+
+module.exports = {
+  saveDiagnostico,
+  getUsuarioByApiKey,
+  incrementarUso,
+  getUsuarioByAuthId,
+  signUpUser,
+  signInUser,
+  getUserFromToken,
+  getUsuarioById,
+  updatePlanoBilling,
+  getUsuarioByStripeCustomerId,
+};

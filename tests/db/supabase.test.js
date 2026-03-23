@@ -3,6 +3,9 @@ jest.mock("@supabase/supabase-js", () => ({
   createClient: jest.fn(() => mockSupabaseClient),
 }));
 
+// billing functions (getUsuarioById, updatePlanoBilling, getUsuarioByStripeCustomerId)
+// are also required below after the mock is in place
+
 const mockSupabaseClient = {
   from: jest.fn(),
   auth: { getUser: jest.fn() },
@@ -11,7 +14,7 @@ const mockSupabaseClient = {
 
 beforeEach(() => jest.clearAllMocks());
 
-const { getUsuarioByApiKey, incrementarUso, getUsuarioByAuthId } =
+const { getUsuarioByApiKey, incrementarUso, getUsuarioByAuthId, getUsuarioById, updatePlanoBilling, getUsuarioByStripeCustomerId } =
   require("../../src/db/supabase");
 
 describe("getUsuarioByApiKey", () => {
@@ -114,6 +117,44 @@ describe("getUsuarioByAuthId", () => {
     });
 
     const result = await getUsuarioByAuthId("auth-uuid-invalido");
+    expect(result).toBeNull();
+  });
+});
+
+// --- billing functions ---
+
+describe("getUsuarioById", () => {
+  it("retorna null quando usuário não encontrado", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({ data: null, error: { message: "not found" } }),
+        }),
+      }),
+    });
+
+    const result = await getUsuarioById("uuid-inexistente");
+    expect(result).toBeNull();
+  });
+});
+
+describe("updatePlanoBilling", () => {
+  it("é uma função exportada", () => {
+    expect(typeof updatePlanoBilling).toBe("function");
+  });
+});
+
+describe("getUsuarioByStripeCustomerId", () => {
+  it("retorna null quando customer não encontrado", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({ data: null, error: { message: "not found" } }),
+        }),
+      }),
+    });
+
+    const result = await getUsuarioByStripeCustomerId("cus_inexistente");
     expect(result).toBeNull();
   });
 });
