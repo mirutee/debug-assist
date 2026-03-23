@@ -45,7 +45,7 @@ Implementar o fluxo completo de upgrade de plano usando Stripe Checkout com redi
   Stripe → POST /v1/billing/webhook
   backend valida assinatura → atualiza plano_id + stripe_customer_id no banco
         ↓
-  Stripe redireciona → /dashboard/?upgrade=sucesso
+  Stripe redireciona → {APP_BASE_URL}/dashboard/?upgrade=sucesso
   dashboard exibe banner "Plano ativado com sucesso!"
 ```
 
@@ -58,34 +58,44 @@ Implementar o fluxo completo de upgrade de plano usando Stripe Checkout com redi
 **`src/routes/billing.js`** — novo arquivo com dois endpoints:
 
 #### `POST /v1/billing/checkout`
-- Autenticação: Bearer JWT (mesmo middleware de `/v1/auth/me`)
-- Body: `{ "plano": "pro" | "scale" }`
+
+- **Autenticação:** Bearer JWT via Supabase (`getUserFromToken`) — **novo middleware JWT**, diferente do `src/middleware/auth.js` existente que usa API key. O novo middleware resolve o usuário a partir do token e popula `req.usuario` com `{ id, email, plano_id }`.
+- **Body:** `{ "plano": "pro" | "scale" }`
+- Valida se `plano` é `"pro"` ou `"scale"` → `400` se inválido
 - Valida se usuário já tem o plano solicitado → `400`
-- Cria ou recupera `stripe_customer_id` para o usuário
+- Busca `stripe_customer_id` em `usuarios`; se nulo, cria novo cliente no Stripe via `stripe.customers.create` e salva o ID resultante no banco antes de criar a sessão
 - Cria Stripe Checkout Session com:
   - `mode: "subscription"`
   - `price_id` do plano (via env `STRIPE_PRICE_PRO` / `STRIPE_PRICE_SCALE`)
-  - `success_url`: `/dashboard/?upgrade=sucesso`
-  - `cancel_url`: `/dashboard/pricing.html`
-  - `metadata`: `{ usuario_id: <uuid> }`
+  - `success_url`: `${APP_BASE_URL}/dashboard/?upgrade=sucesso` (URL absoluta via env)
+  - `cancel_url`: `${APP_BASE_URL}/dashboard/pricing.html` (URL absoluta via env)
+  - `metadata`: `{ usuario_id: req.usuario.id, plano: "pro" | "scale" }` — o `plano` é armazenado aqui para evitar lookup de `line_items` no webhook
 - Retorna `{ url: "<stripe_checkout_url>" }`
 
 #### `POST /v1/billing/webhook`
-- Sem autenticação JWT — validado pela assinatura Stripe (`STRIPE_WEBHOOK_SECRET`)
-- Body raw (não parseado como JSON — necessário para validação de assinatura)
-- Eventos tratados:
-  - `checkout.session.completed` → atualiza `plano_id` e `stripe_customer_id` em `usuarios`
-  - `customer.subscription.deleted` → rebaixa para `plano_id = 'free'`
-  - `invoice.payment_failed` → log (notificação ao usuário fora do escopo inicial)
-- Sempre retorna `200` para eventos reconhecidos (evita reentrega do Stripe)
-- Retorna `400` apenas para assinatura inválida
+
+- **Sem autenticação JWT** — validado exclusivamente pela assinatura Stripe (`STRIPE_WEBHOOK_SECRET`)
+- Body recebido como **raw buffer** (não parseado como JSON — obrigatório para validação de assinatura)
+- Retorna `400` para assinatura inválida
+- Para eventos reconhecidos: retorna `200` em caso de sucesso, `500` em caso de falha de banco (para que o Stripe retente a entrega)
+
+**Eventos tratados:**
+
+| Evento | Ação |
+|--------|------|
+| `checkout.session.completed` | Obtém `usuario_id` via `session.metadata.usuario_id` e `plano_id` via `session.metadata.plano`. Obtém `stripe_customer_id` via `session.customer` (campo nativo do evento). Atualiza `plano_id` e `stripe_customer_id` em `usuarios`. |
+| `customer.subscription.deleted` | Obtém `stripe_customer_id` via `subscription.customer`. Busca usuário por `stripe_customer_id` no banco. Se não encontrado (ex: replay antes do `checkout.session.completed` escrever o ID), loga e retorna `200`. Caso contrário, atualiza `plano_id = 'free'`. |
+| `invoice.payment_failed` | Apenas loga. Nota: se o Stripe esgotar as retentativas de cobrança, ele dispara `customer.subscription.deleted` automaticamente, que será tratado pelo handler acima. |
 
 ### Banco de dados
 
 **Migração em `usuarios`:**
 ```sql
-ALTER TABLE public.usuarios ADD COLUMN stripe_customer_id text;
+ALTER TABLE public.usuarios
+  ADD COLUMN stripe_customer_id text UNIQUE;
 ```
+
+O constraint `UNIQUE` garante que dois usuários não sejam vinculados ao mesmo cliente Stripe, evitando corrupção silenciosa de billing.
 
 ### Frontend
 
@@ -109,7 +119,10 @@ STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_PRO=price_...
 STRIPE_PRICE_SCALE=price_...
+APP_BASE_URL=http://localhost:3000
 ```
+
+> `APP_BASE_URL` é usado para montar as URLs absolutas de `success_url` e `cancel_url` exigidas pelo Stripe.
 
 **Setup no Stripe Dashboard (modo teste):**
 1. Criar produto "DevInsight Pro" com preço recorrente R$49/mês
@@ -123,11 +136,11 @@ STRIPE_PRICE_SCALE=price_...
 | Situação | Resposta |
 |----------|----------|
 | Usuário já tem o plano solicitado | `400 { erro: "Você já possui este plano" }` |
-| Token ausente ou inválido em `/checkout` | `401` |
 | Plano inválido no body | `400 { erro: "Plano inválido" }` |
+| Token ausente ou inválido em `/checkout` | `401` |
 | Stripe indisponível | `502 { erro: "Erro ao processar pagamento. Tente novamente." }` |
-| Webhook com assinatura inválida | `400` silencioso |
-| `usuario_id` do webhook não encontrado no banco | loga erro, retorna `200` |
+| Webhook com assinatura inválida | `400` |
+| `usuario_id` do webhook não encontrado no banco | loga erro, retorna `200` (evita reentrega infinita) |
 | Falha ao atualizar banco no webhook | loga erro, retorna `500` (Stripe retentará) |
 | Usuário fecha Stripe sem pagar | redireciona para `/dashboard/pricing.html` sem mensagem |
 
@@ -148,23 +161,27 @@ stripe listen --forward-to localhost:3000/v1/billing/webhook
 ```
 
 ### Cenários manuais
-1. Pagamento bem-sucedido → `plano_id` atualizado no banco
+1. Pagamento bem-sucedido → `plano_id` e `stripe_customer_id` atualizados no banco
 2. Pagamento recusado → plano não muda
 3. Fechar Stripe sem pagar → volta para pricing sem alteração
 4. Webhook com assinatura inválida → rejeitado com `400`
+5. Stripe dispara `customer.subscription.deleted` após falhas de cobrança → `plano_id` volta para `'free'`
 
 ### Testes automatizados
 - `POST /v1/billing/checkout` com JWT válido → retorna `{ url }`
 - `POST /v1/billing/checkout` sem JWT → `401`
 - `POST /v1/billing/checkout` com plano já ativo → `400`
+- `POST /v1/billing/checkout` com plano inválido → `400`
 - `POST /v1/billing/webhook` com assinatura inválida → `400`
+- `POST /v1/billing/webhook` com evento `checkout.session.completed` válido → plano atualizado no banco
 
 ---
 
 ## Fora do Escopo (versão inicial)
 
 - Créditos proporcionais em upgrades no meio do ciclo
-- Tela de gerenciamento de assinatura (cancelar, trocar plano)
+- Tela de gerenciamento de assinatura (cancelar, trocar plano via portal Stripe)
 - Notificação por email em falha de pagamento
 - Plano Enterprise (ativação manual)
 - Notas fiscais
+- Armazenamento de `stripe_subscription_id` — necessário futuramente para cancelamentos programáticos; exigirá migração de banco quando implementado

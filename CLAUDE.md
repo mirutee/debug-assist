@@ -47,7 +47,7 @@ Response shape:
 
 **Auth:** Bearer token (API key per tier)
 
-**Rate limits:** Free=100/mo, Pro=1 000/mo (R$29), Scale=10 000/mo (R$99), Enterprise=custom
+**Rate limits:** Free=100/mo, Pro=1 000/mo (R$49), Scale=10 000/mo (R$149), Enterprise=custom
 
 ## Development Setup (to be implemented)
 
