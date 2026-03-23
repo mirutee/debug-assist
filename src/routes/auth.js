@@ -28,7 +28,7 @@ router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
       return res.status(500).json({ erro: "Erro interno. Tente novamente." });
     }
 
-    return res.status(201).json({ mensagem: "Verifique seu email para ativar a conta" });
+    return res.status(201).json({ mensagem: "Conta criada com sucesso! Você já pode fazer login." });
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno. Tente novamente." });
   }
