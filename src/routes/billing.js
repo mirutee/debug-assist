@@ -59,7 +59,7 @@ router.post("/checkout", authJwt, async (req, res) => {
 // POST /v1/billing/portal
 router.post("/portal", authJwt, async (req, res) => {
   if (!req.usuario.stripe_customer_id) {
-    return res.status(400).json({ erro: "Nenhuma assinatura ativa" });
+    return res.status(400).json({ erro: "Nenhuma assinatura encontrada" });
   }
 
   try {
