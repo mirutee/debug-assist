@@ -7,20 +7,23 @@
 
 ## Goal
 
-Provide auto-capture SDKs for Java, Go, PHP, Ruby, and C# that match the behavior of the existing Node.js and Python SDKs: one line of import/require activates crash monitoring, no other code changes required.
+Provide auto-capture SDKs for Java, Go, PHP, Ruby, and C# that match the behavior of the existing Node.js and Python SDKs: minimal setup activates crash monitoring, no other code changes required.
 
 ---
 
 ## Principle
 
-> Configured API key + one import = crashes appear on the dashboard.
+> Configured API key + minimal setup = crashes appear on the dashboard.
 
 All SDKs share the same contract:
-- Auto-initialize on import/require when `DEVINSIGHT_API_KEY` env var is set (or key is hardcoded)
+- Auto-initialize when `DEVINSIGHT_API_KEY` env var is set, or when `init()` is called explicitly
 - On crash: POST to `/v1/diagnosticos` with `tipo: "silent_backend_error"`, error message, stack trace, exception type, project name
 - Never suppress or alter the original crash — only observe it
+- After sending, the process must terminate normally (no hanging). Java must call `System.exit(1)` after the handler runs (same pattern as Node.js `process.exit(1)` — the default uncaught exception handler is replaced, so explicit exit is required). In C#, `AppDomain.UnhandledException` is a notification event and the runtime terminates the process automatically — no `Environment.Exit()` needed
 - Silently ignore send failures (network errors must not cascade)
 - No external dependencies — stdlib HTTP only
+- All SDKs respect `DEVINSIGHT_ENABLED=0` to disable in CI/test environments
+- HTTP timeout: 10 seconds on all SDKs (balances Render cold start vs. hanging crash handler)
 
 ---
 
@@ -53,19 +56,24 @@ sdk/
 
 **Hook:** `Thread.setDefaultUncaughtExceptionHandler()`
 
-**Auto-init:** Static initializer block reads `DEVINSIGHT_API_KEY` env var. If set, registers handler immediately on class load.
-
-**Usage:**
+**One-liner setup:**
 ```java
-// Option 1: env var DEVINSIGHT_API_KEY set → just import and touch the class
-import com.devinsight.DevInsight;
-static { DevInsight.class.getName(); } // triggers static init
-
-// Option 2: explicit
 DevInsight.init("SUA_API_KEY", "meu-projeto");
 ```
 
-**HTTP:** `java.net.http.HttpClient` (Java 11+), no external deps.
+Java does not execute static initializers on bare `import` statements, so one explicit call is required. This is the accepted trade-off for the language. When `DEVINSIGHT_API_KEY` env var is set, `init()` can be called without arguments:
+```java
+DevInsight.init(); // reads DEVINSIGHT_API_KEY from environment
+```
+
+**After handler runs:** call `System.exit(1)` to ensure the process terminates (same as Node.js `process.exit(1)` — the default uncaught exception handler is replaced, so explicit exit is required).
+
+**Env vars supported:**
+- `DEVINSIGHT_API_KEY` — API key
+- `DEVINSIGHT_PROJECT` — project name (default: `"unknown"`)
+- `DEVINSIGHT_ENABLED=0` — disables SDK
+
+**HTTP:** `java.net.http.HttpClient` (Java 11+), timeout 10s, no external deps.
 
 **Build:** `pom.xml` with `groupId: com.devinsight`, `artifactId: devinsight`, `version: 1.0.0`, Java 11 target.
 
@@ -75,16 +83,16 @@ DevInsight.init("SUA_API_KEY", "meu-projeto");
 
 **Hook:** Go has no global panic handler. Panics are captured via `defer recover()` in the entry goroutine.
 
-**Pattern:** `devinsight.Wrap(fn)` — wraps the main function, recovers panics, sends diagnostic, re-panics.
+**Pattern:** `devinsight.Wrap(fn)` — wraps the main function, recovers panics, sends diagnostic, then re-panics (so the original panic stack trace is still printed and the process exits non-zero).
 
-**Auto-init:** `DEVINSIGHT_API_KEY` env var read at package init time.
+**Note on "auto-init":** Go reads `DEVINSIGHT_API_KEY` at package `init()` time to configure the client, but the developer must still call `Wrap()`. There is no way to intercept panics without a code change in Go — `Wrap()` is the required one-liner.
 
 **Usage:**
 ```go
 import "github.com/devinsight/sdk/go/devinsight"
 
 func main() {
-    devinsight.Wrap(run)
+    devinsight.Wrap(run) // one line
 }
 
 func run() {
@@ -92,7 +100,12 @@ func run() {
 }
 ```
 
-**HTTP:** `net/http` stdlib, no external deps.
+**Env vars supported:**
+- `DEVINSIGHT_API_KEY`
+- `DEVINSIGHT_PROJECT` (default: `"unknown"`)
+- `DEVINSIGHT_ENABLED=0`
+
+**HTTP:** `net/http` stdlib, timeout 10s, no external deps.
 
 **Module:** `go.mod` with `module github.com/devinsight/sdk/go`, `go 1.21`.
 
@@ -100,33 +113,40 @@ func run() {
 
 ### PHP (`sdk/php/`)
 
-**Hook:** `set_exception_handler()` + `register_shutdown_function()` (catches fatal errors too).
+**Hook:** `set_exception_handler()` + `register_shutdown_function()` (catches fatal errors too via `error_get_last()`).
 
-**Auto-init:** Registers hooks immediately on `require 'devinsight.php'`. API key from `DEVINSIGHT_API_KEY` env var or `define('DEVINSIGHT_API_KEY', '...')` before require.
-
-**Usage:**
+**One-liner setup:**
 ```php
 require_once 'devinsight.php'; // só isso
 ```
+Hooks are registered immediately on require. API key from `DEVINSIGHT_API_KEY` env var or `define('DEVINSIGHT_API_KEY', '...')` before require.
 
-**HTTP:** `file_get_contents()` with stream context, or `curl` if available. No Composer needed.
+**Fatal errors:** `register_shutdown_function` checks `error_get_last()` for `E_ERROR`, `E_PARSE`, `E_CORE_ERROR`, `E_COMPILE_ERROR`.
 
-**Fatal errors:** `register_shutdown_function` checks `error_get_last()` for fatal errors (E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR).
+**Env vars supported:**
+- `DEVINSIGHT_API_KEY`
+- `DEVINSIGHT_PROJECT` (default: `"unknown"`)
+- `DEVINSIGHT_ENABLED=0`
+
+**HTTP:** `file_get_contents()` with stream context (timeout 10s). Falls back to `curl` if `allow_url_fopen` is disabled. No Composer needed.
 
 ---
 
 ### Ruby (`sdk/ruby/`)
 
-**Hook:** `at_exit { send_if_crash($!) }` — `$!` holds the exception that caused exit, nil on clean exit.
+**Hook:** `at_exit` block that checks `$!`. In MRI Ruby (2.7+, 3.x), when the process is exiting due to an unhandled exception, `$!` holds that exception in the `at_exit` callback. This is reliable in MRI Ruby for uncaught exceptions that propagate to the top level. The block guards with `$! && !$!.is_a?(SystemExit)` to skip clean exits and `exit` calls.
 
-**Auto-init:** Registers hook on `require 'devinsight'`. API key from `DEVINSIGHT_API_KEY` env var or `Devinsight.api_key = '...'` before require.
-
-**Usage:**
+**One-liner setup:**
 ```ruby
 require 'devinsight' # só isso
 ```
 
-**HTTP:** `Net::HTTP` stdlib, no gems needed.
+**Env vars supported:**
+- `DEVINSIGHT_API_KEY`
+- `DEVINSIGHT_PROJECT` (default: `"unknown"`)
+- `DEVINSIGHT_ENABLED=0`
+
+**HTTP:** `Net::HTTP` stdlib, timeout 10s, no gems needed.
 
 ---
 
@@ -136,25 +156,31 @@ require 'devinsight' # só isso
 - `AppDomain.CurrentDomain.UnhandledException` — unhandled exceptions in any thread
 - `TaskScheduler.UnobservedTaskException` — unhandled async task exceptions
 
-**Auto-init:** `DevInsight.Init()` called from `static DevInsight()` constructor if `DEVINSIGHT_API_KEY` env var is set.
-
-**Usage:**
+**How auto-init works:** The static constructor `static DevInsight()` fires on first access to the class. `EnsureInitialized()` is a no-op method whose sole purpose is to trigger that first access. One line in `Program.cs`:
 ```csharp
-// Option 1: env var DEVINSIGHT_API_KEY set
-using DevInsightSDK;
-DevInsight.EnsureInitialized(); // one line in Program.cs
-
-// Option 2: explicit
+DevInsight.EnsureInitialized(); // triggers static constructor → reads DEVINSIGHT_API_KEY
+```
+Or explicit:
+```csharp
 DevInsight.Init("SUA_API_KEY", "meu-projeto");
 ```
 
-**HTTP:** `System.Net.Http.HttpClient`, no NuGet deps.
+**After handler runs:** `AppDomain.UnhandledException` fires but the process terminates regardless in .NET — no explicit `Environment.Exit()` needed. `TaskScheduler.UnobservedTaskException` handler should mark the exception as observed to prevent silent swallowing.
+
+**Env vars supported:**
+- `DEVINSIGHT_API_KEY`
+- `DEVINSIGHT_PROJECT` (default: `"unknown"`)
+- `DEVINSIGHT_ENABLED=0`
+
+**HTTP:** `System.Net.Http.HttpClient`, timeout 10s, no NuGet deps.
 
 **Project:** `DevInsight.csproj` targeting `net6.0`, no external packages.
 
 ---
 
 ## Payload (all SDKs)
+
+All SDKs send identical payload shape. Field names use `snake_case` consistently (existing Node.js SDK sends `projectName` — this inconsistency is noted but out of scope for this implementation; Node.js SDK alignment is a separate task):
 
 ```json
 POST /v1/diagnosticos
@@ -180,14 +206,14 @@ New page linked from the main `/docs` page and sidebar. Sections:
 
 1. **Overview** — what the SDKs do, one-paragraph intro
 2. **Node.js** — npm install + 2-line usage
-3. **Python** — pip install + 1-line usage (env var approach)
-4. **Java** — Maven dependency + 1-line usage
-5. **Go** — go get + Wrap pattern
+3. **Python** — pip install + env var or 1-line usage
+4. **Java** — Maven dependency + `DevInsight.init()` one-liner
+5. **Go** — go get + `devinsight.Wrap(run)` one-liner
 6. **PHP** — require + 1-line usage
 7. **Ruby** — require + 1-line usage
-8. **C#** — NuGet + 1-line usage
+8. **C#** — NuGet + `DevInsight.EnsureInitialized()` one-liner
 
-Style: matches existing dashboard dark theme (`#0d0d0d` background, `#6366f1` accent). Code blocks use monospace with syntax highlighting via inline `<pre><code>`.
+Style: matches existing dark theme (`#0d0d0d` background, `#6366f1` accent, `#111` cards). Code blocks use `<pre><code>` monospace blocks with copy-friendly formatting.
 
 ---
 
@@ -195,12 +221,15 @@ Style: matches existing dashboard dark theme (`#0d0d0d` background, `#6366f1` ac
 
 | Scenario | Behavior |
 |---|---|
-| API key not set | SDK does nothing — no hooks registered |
-| Network timeout | Silently ignored — original crash propagates normally |
+| `DEVINSIGHT_ENABLED=0` | No hooks registered, SDK is silent |
+| API key not set | No hooks registered |
+| Network timeout (10s) | Silently ignored — original crash propagates normally |
 | API returns error | Silently ignored — original crash propagates normally |
-| Hook throws | Wrapped in try/catch — original crash propagates normally |
+| Handler throws | Wrapped in try/catch — original crash propagates normally |
 | Go: non-panic exit | Nothing sent — `Wrap` only catches panics |
 | PHP: non-fatal error | Nothing sent — only uncaught exceptions and fatal errors |
+| Ruby: clean exit / `exit` call | `$!` is nil or `SystemExit` — nothing sent |
+| C#: observed task exception | Nothing sent — only unobserved async exceptions |
 
 ---
 
@@ -217,5 +246,5 @@ Style: matches existing dashboard dark theme (`#0d0d0d` background, `#6366f1` ac
 | Create | `sdk/csharp/DevInsight.cs` |
 | Create | `sdk/csharp/DevInsight.csproj` |
 | Create | `public/docs/sdks.html` |
-| Modify | `public/docs/index.html` (add SDK link) |
+| Modify | `public/docs/index.html` (add SDK link in sidebar/nav) |
 | Modify | `swagger.yaml` (add SDK section for all languages) |
