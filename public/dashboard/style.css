@@ -159,6 +159,11 @@ input:focus { border-color: #6366f1; }
 }
 .btn-upgrade:hover { background: #1e1e2e; }
 
+#btn-portal {
+  margin-top: 12px;
+  width: 100%;
+}
+
 .apikey-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .apikey-field {
   flex: 1;

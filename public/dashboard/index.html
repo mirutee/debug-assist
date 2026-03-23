@@ -44,7 +44,7 @@
           <div class="plan-badge" id="plano-nome">—</div>
           <div class="card-sub" id="plano-limite">—</div>
           <a class="btn-upgrade" id="btn-upgrade" href="/dashboard/pricing.html">Fazer upgrade →</a>
-          <button class="btn-sm" id="btn-portal" style="display:none;margin-top:8px;width:100%;">Gerenciar assinatura</button>
+          <button class="btn-sm" id="btn-portal" style="display:none;">Gerenciar assinatura</button>
           <div class="error-msg" id="portal-error"></div>
         </div>
       </div>
@@ -134,6 +134,9 @@
       if (data.plano !== 'free') {
         btnUpgrade.style.display = 'none';
         btnPortal.style.display = 'block';
+      } else {
+        btnUpgrade.style.display = '';
+        btnPortal.style.display = 'none';
       }
 
       // Banner de sucesso de upgrade
@@ -206,12 +209,20 @@
       const errorEl = document.getElementById('portal-error');
       errorEl.classList.remove('show');
 
+      if (!token) {
+        window.location.replace('/dashboard/login.html');
+        return;
+      }
+
+      const btn = document.getElementById('btn-portal');
+      btn.disabled = true;
       try {
         const res = await fetch(`${API}/v1/billing/portal`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json();
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
 
         if (!res.ok) {
           errorEl.textContent = data.erro || 'Erro ao abrir portal.';
@@ -223,6 +234,8 @@
       } catch (err) {
         errorEl.textContent = 'Erro de conexão. Tente novamente.';
         errorEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
       }
     });
   </script>
