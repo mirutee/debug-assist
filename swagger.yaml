@@ -1,18 +1,67 @@
 openapi: 3.0.3
 info:
   title: DevInsight API
-  description: API de diagnóstico inteligente para frontend, backend e SQL.
+  description: |
+    API de diagnóstico inteligente para frontend, backend e SQL.
+
+    Envie um erro ou log para a API e receba de volta a causa raiz, nível de severidade e sugestões de correção em linguagem humana.
+
+    ## Como começar
+
+    1. Crie uma conta em [devinsight-api.onrender.com/dashboard/signup.html](https://devinsight-api.onrender.com/dashboard/signup.html)
+    2. Faça login e copie sua **API Key** no dashboard
+    3. Use a API Key no header `Authorization: Bearer SUA_API_KEY`
+    4. Envie erros via `POST /v1/diagnosticos`
+
+    ## SDK (Node.js)
+
+    Para captura automática de erros em runtime, instale o SDK:
+
+    ```bash
+    npm install devinsight-sdk
+    ```
+
+    ```js
+    const DevInsight = require('devinsight-sdk');
+
+    // Captura automaticamente uncaughtException e unhandledRejection
+    DevInsight.init({ apiKey: 'SUA_API_KEY', projectName: 'meu-projeto' });
+
+    // Ou envie manualmente
+    const client = new DevInsight({ apiKey: 'SUA_API_KEY' });
+    await client.report({ tipo: 'silent_backend_error', mensagem: err.message });
+    ```
+
+    ## Limites por plano
+
+    | Plano  | Diagnósticos/mês | Preço     |
+    |--------|-----------------|-----------|
+    | Free   | 100             | Grátis    |
+    | Pro    | 1.000           | R$49/mês  |
+    | Scale  | 10.000          | R$149/mês |
+
   version: 1.0.0
+  contact:
+    email: contato@devinsight.com
 
 servers:
+  - url: https://devinsight-api.onrender.com
+    description: Produção
   - url: http://localhost:3000
     description: Local
-  - url: https://api.devinsight.com
-    description: Produção
+
+tags:
+  - name: Auth
+    description: Cadastro, login e perfil do usuário
+  - name: Diagnósticos
+    description: Envio e histórico de diagnósticos
+  - name: Health
+    description: Status da API
 
 paths:
   /health:
     get:
+      tags: [Health]
       summary: Health check
       responses:
         "200":
@@ -26,9 +75,157 @@ paths:
                     type: boolean
                     example: true
 
+  /v1/auth/signup:
+    post:
+      tags: [Auth]
+      summary: Criar conta
+      description: Cria uma nova conta. Após o cadastro, faça login para obter o token e acessar sua API Key no dashboard.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, senha]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: dev@empresa.com
+                senha:
+                  type: string
+                  minLength: 6
+                  example: minhasenha123
+      responses:
+        "201":
+          description: Conta criada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Conta criada com sucesso! Você já pode fazer login."
+        "400":
+          description: Email inválido, senha curta ou email já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              examples:
+                emailJaCadastrado:
+                  summary: Email já cadastrado
+                  value:
+                    erro: "Email já cadastrado"
+                senhaInvalida:
+                  summary: Senha muito curta
+                  value:
+                    erro: "Senha inválida. Mínimo 6 caracteres."
+
+  /v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Autentica o usuário e retorna um token JWT. Use este token para acessar `/v1/auth/me` e obter sua API Key.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, senha]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: dev@empresa.com
+                senha:
+                  type: string
+                  example: minhasenha123
+      responses:
+        "200":
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT para usar no header Authorization ao chamar /v1/auth/me
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  token_type:
+                    type: string
+                    example: Bearer
+        "401":
+          description: Email ou senha incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+        "403":
+          description: Email não confirmado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "Confirme seu email antes de fazer login"
+
+  /v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Perfil e API Key
+      description: |
+        Retorna os dados do usuário autenticado, incluindo a **API Key** necessária para chamar `POST /v1/diagnosticos`.
+
+        Use o token JWT retornado pelo login no header Authorization.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: dev@empresa.com
+                  plano:
+                    type: string
+                    enum: [free, pro, scale]
+                    example: free
+                  uso_mensal:
+                    type: integer
+                    example: 12
+                  limite_mensal:
+                    type: integer
+                    description: -1 significa ilimitado
+                    example: 100
+                  api_key:
+                    type: string
+                    description: Use esta chave no header Authorization das chamadas a POST /v1/diagnosticos
+                    example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        "401":
+          description: Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+
   /v1/diagnosticos:
     post:
-      summary: Envia um erro para diagnóstico
+      tags: [Diagnósticos]
+      summary: Enviar diagnóstico
+      description: |
+        Envia um erro ou log para análise e recebe diagnóstico com causa raiz, severidade e sugestões de correção.
+
+        **Autenticação:** use sua **API Key** (obtida em `/v1/auth/me`) no header `Authorization: Bearer SUA_API_KEY`.
+
+        > Nota: este endpoint usa API Key, não o token JWT do login.
       security:
         - bearerAuth: []
       requestBody:
@@ -38,19 +235,39 @@ paths:
             schema:
               $ref: "#/components/schemas/DiagnosticoRequest"
             examples:
+              backendError:
+                summary: Erro silencioso de backend
+                value:
+                  tipo: silent_backend_error
+                  mensagem: "Cannot read properties of undefined (reading 'id')"
+                  contexto:
+                    rota: /usuarios/99
+                    method: GET
               hydration:
-                summary: Erro de hidratação
+                summary: Erro de hidratação (React/Next.js)
                 value:
                   tipo: hydration_error
-                  mensagem: "Hydration failed because the initial UI does not match..."
-              sql:
+                  mensagem: "Hydration failed because the initial UI does not match what was rendered on the server"
+                  contexto:
+                    framework: Next.js
+                    pagina: /produtos
+              sqlLento:
                 summary: Query SQL lenta
                 value:
                   tipo: sql_analysis
                   mensagem: ""
                   dados:
-                    query: "SELECT * FROM users"
-                    tempo_execucao: 900
+                    query: "SELECT * FROM pedidos JOIN usuarios ON pedidos.usuario_id = usuarios.id"
+                    tempo_execucao: 1200
+                    tabela: pedidos
+              fetchError:
+                summary: Erro de requisição no frontend
+                value:
+                  tipo: request_error
+                  mensagem: "Failed to fetch"
+                  contexto:
+                    url: /api/checkout
+                    status: 0
       responses:
         "200":
           description: Diagnóstico gerado
@@ -59,16 +276,83 @@ paths:
               schema:
                 $ref: "#/components/schemas/DiagnosticoResponse"
         "400":
-          description: Requisição inválida
+          description: Campo `tipo` ausente ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
         "401":
-          description: Não autorizado
+          description: API Key ausente ou inválida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "API Key inválida"
+        "429":
+          description: Cota mensal esgotada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "Cota mensal esgotada. Faça upgrade do seu plano."
+
+  /v1/diagnosticos/historico:
+    get:
+      tags: [Diagnósticos]
+      summary: Histórico de diagnósticos
+      description: |
+        Retorna os últimos 50 diagnósticos enviados pelo usuário autenticado, ordenados do mais recente para o mais antigo.
+
+        **Autenticação:** use o token JWT do login (não a API Key).
+
+        Suporta polling incremental via parâmetro `after` — passe o `criado_em` do item mais recente para receber apenas os novos.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: after
+          in: query
+          required: false
+          description: Timestamp ISO 8601. Retorna apenas diagnósticos criados após esta data. Útil para polling.
+          schema:
+            type: string
+            format: date-time
+            example: "2026-03-23T10:00:00Z"
+      responses:
+        "200":
+          description: Lista de diagnósticos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DiagnosticoHistorico"
+        "401":
+          description: Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+      description: |
+        Dois tipos de token são usados:
+        - **API Key** — para `POST /v1/diagnosticos`. Obtida em `/v1/auth/me`.
+        - **JWT** — para rotas do dashboard (`/v1/auth/me`, `/v1/diagnosticos/historico`). Obtido via `/v1/auth/login`.
+
   schemas:
+    Erro:
+      type: object
+      properties:
+        erro:
+          type: string
+          example: "Mensagem de erro"
+
     DiagnosticoRequest:
       type: object
       required:
@@ -76,6 +360,7 @@ components:
       properties:
         tipo:
           type: string
+          description: Categoria do erro
           enum:
             - hydration_error
             - request_error
@@ -88,45 +373,80 @@ components:
             - sql_analysis
         mensagem:
           type: string
-        status:
-          type: integer
+          description: Mensagem de erro (ex: err.message). Para sql_analysis, deixe vazio e use o campo `dados`.
+          example: "Cannot read properties of undefined (reading 'id')"
         contexto:
           type: object
-          properties:
-            url:
-              type: string
-            plataforma:
-              type: string
-            framework:
-              type: string
+          description: Dados adicionais de contexto (rota, método, plataforma, etc.)
+          example:
+            rota: /usuarios/99
+            method: GET
         dados:
           type: object
+          description: Usado apenas para sql_analysis. Passe a query e o tempo de execução.
+          properties:
+            query:
+              type: string
+              example: "SELECT * FROM users"
+            tempo_execucao:
+              type: integer
+              description: Tempo em milissegundos
+              example: 1200
+
     DiagnosticoResponse:
       type: object
       properties:
         problema:
           type: string
-          example: "Erro de hidratação"
+          description: Descrição do problema detectado
+          example: "Acesso a propriedade de objeto null ou undefined"
         causa:
           type: string
+          description: Causa raiz identificada
+          example: "O objeto `usuario` não foi verificado antes de acessar sua propriedade"
         nivel:
           type: string
-          enum:
-            - baixo
-            - médio
-            - alto
+          description: Severidade do problema
+          enum: [baixo, médio, alto]
+          example: alto
         categoria:
           type: string
-          enum:
-            - frontend
-            - backend
-            - sql
-            - desconhecido
+          enum: [frontend, backend, sql, desconhecido]
+          example: backend
         sugestoes:
           type: array
+          description: Lista de ações recomendadas para corrigir o problema
           items:
             type: string
+          example:
+            - "Verifique se o objeto existe antes de acessar suas propriedades"
+            - "Use optional chaining: usuario?.id"
+            - "Retorne 404 quando o recurso não for encontrado"
         confianca:
           type: number
+          description: Nível de confiança do diagnóstico, de 0 a 1
           minimum: 0
           maximum: 1
+          example: 0.95
+
+    DiagnosticoHistorico:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        tipo:
+          type: string
+          example: "silent_backend_error"
+        mensagem:
+          type: string
+          example: "Cannot read properties of undefined"
+        contexto:
+          type: object
+        resposta:
+          $ref: "#/components/schemas/DiagnosticoResponse"
+        criado_em:
+          type: string
+          format: date-time
+          example: "2026-03-23T10:00:00Z"
