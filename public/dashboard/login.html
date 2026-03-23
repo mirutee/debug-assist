@@ -35,15 +35,16 @@
   <script>
     const API = '';
 
-    if (localStorage.getItem('devinsight_token')) {
-      window.location.replace('/dashboard/');
-    }
-
     const _params = new URLSearchParams(window.location.search);
-    if (_params.get('msg') === 'verifique-email') {
+
+    if (localStorage.getItem('devinsight_token')) {
+      const _dest = _params.get('redirect') === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
+      window.location.replace(_dest);
+    }
+    if (_params.get('msg') === 'conta-criada') {
       const _banner = document.getElementById('success-msg');
       if (_banner) {
-        _banner.textContent = 'Conta criada! Verifique seu email para ativar.';
+        _banner.textContent = 'Conta criada! Você já pode fazer login.';
         _banner.classList.add('show');
       }
     }
@@ -74,7 +75,8 @@
         }
 
         localStorage.setItem('devinsight_token', data.token);
-        window.location.replace('/dashboard/');
+        const dest = _params.get('redirect') === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
+        window.location.replace(dest);
       } catch (err) {
         errorEl.textContent = 'Erro de conexão. Tente novamente.';
         errorEl.classList.add('show');

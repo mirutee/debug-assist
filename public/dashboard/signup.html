@@ -33,6 +33,7 @@
 
   <script>
     const API = '';
+    const _signupParams = new URLSearchParams(window.location.search);
 
     if (localStorage.getItem('devinsight_token')) {
       window.location.replace('/dashboard/');
@@ -58,7 +59,8 @@
         const data = await res.json();
 
         if (res.status === 201) {
-          window.location.replace('/dashboard/login.html?msg=verifique-email');
+          const _redirectParam = _signupParams.get('redirect') ? `&redirect=${_signupParams.get('redirect')}` : '';
+          window.location.replace(`/dashboard/login.html?msg=conta-criada${_redirectParam}`);
           return;
         }
 
