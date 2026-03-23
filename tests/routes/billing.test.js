@@ -19,12 +19,12 @@ jest.mock('stripe', () => jest.fn().mockImplementation(() => mockStripeInstance)
 
 jest.mock('../../src/db/supabase', () => ({
   getUserFromToken: jest.fn(),
-  getUsuarioById: jest.fn(),
+  getUsuarioByAuthId: jest.fn(),
   updatePlanoBilling: jest.fn(),
   getUsuarioByStripeCustomerId: jest.fn(),
 }));
 
-const { getUserFromToken, getUsuarioById, updatePlanoBilling, getUsuarioByStripeCustomerId } = require('../../src/db/supabase');
+const { getUserFromToken, getUsuarioByAuthId, updatePlanoBilling, getUsuarioByStripeCustomerId } = require('../../src/db/supabase');
 const request = require('supertest');
 const app = require('../../src/app');
 
@@ -33,7 +33,7 @@ const USUARIO_PRO  = { id: 'user-uuid', email: 'user@test.com', plano_id: 'pro',
 
 function mockJwt(usuario) {
   getUserFromToken.mockResolvedValue({ data: { user: { id: 'auth-uuid' } }, error: null });
-  getUsuarioById.mockResolvedValue(usuario);
+  getUsuarioByAuthId.mockResolvedValue(usuario);
 }
 
 beforeEach(() => jest.clearAllMocks());

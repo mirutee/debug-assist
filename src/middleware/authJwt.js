@@ -1,5 +1,5 @@
 // src/middleware/authJwt.js
-const { getUserFromToken, getUsuarioById } = require("../db/supabase");
+const { getUserFromToken, getUsuarioByAuthId } = require("../db/supabase");
 
 async function authJwt(req, res, next) {
   const header = req.headers["authorization"];
@@ -17,7 +17,7 @@ async function authJwt(req, res, next) {
       return res.status(401).json({ erro: "Token inválido" });
     }
 
-    const usuario = await getUsuarioById(user.id);
+    const usuario = await getUsuarioByAuthId(user.id);
 
     if (!usuario) {
       return res.status(401).json({ erro: "Token inválido" });

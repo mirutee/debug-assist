@@ -1,9 +1,9 @@
 jest.mock('../../src/db/supabase', () => ({
   getUserFromToken: jest.fn(),
-  getUsuarioById: jest.fn(),
+  getUsuarioByAuthId: jest.fn(),
 }));
 
-const { getUserFromToken, getUsuarioById } = require('../../src/db/supabase');
+const { getUserFromToken, getUsuarioByAuthId } = require('../../src/db/supabase');
 const authJwt = require('../../src/middleware/authJwt');
 
 function mockRes() {
@@ -41,7 +41,7 @@ it('retorna 401 se token inválido', async () => {
 
 it('retorna 401 se usuário não encontrado no banco', async () => {
   getUserFromToken.mockResolvedValue({ data: { user: { id: 'auth-uuid' } }, error: null });
-  getUsuarioById.mockResolvedValue(null);
+  getUsuarioByAuthId.mockResolvedValue(null);
 
   const req = { headers: { authorization: 'Bearer token-valido' } };
   const res = mockRes();
@@ -54,7 +54,7 @@ it('retorna 401 se usuário não encontrado no banco', async () => {
 
 it('popula req.usuario e chama next() com token válido', async () => {
   getUserFromToken.mockResolvedValue({ data: { user: { id: 'auth-uuid' } }, error: null });
-  getUsuarioById.mockResolvedValue({ id: 'user-uuid', email: 'user@test.com', plano_id: 'free', stripe_customer_id: null });
+  getUsuarioByAuthId.mockResolvedValue({ id: 'user-uuid', email: 'user@test.com', plano_id: 'free', stripe_customer_id: null });
 
   const req = { headers: { authorization: 'Bearer token-valido' } };
   const res = mockRes();
