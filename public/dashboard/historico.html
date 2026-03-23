@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico — DevInsight</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DevInsight</span>
+      </div>
+      <a class="nav-item" href="/dashboard/">🏠 Visão Geral</a>
+      <a class="nav-item active" href="/dashboard/historico.html">📋 Histórico</a>
+      <a class="nav-item" href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
+      <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
+      <div class="sidebar-footer" id="user-email">Carregando...</div>
+    </nav>
+
+    <main class="main">
+      <div class="page-title">Histórico de Diagnósticos</div>
+      <div class="page-subtitle" id="page-subtitle">Erros capturados automaticamente pelo SDK e via API</div>
+
+      <div class="error-msg" id="fetch-error" style="margin-bottom:16px;"></div>
+
+      <div class="history-list" id="history-list">
+        <div class="history-empty" id="empty-state" style="display:none;">
+          Nenhum diagnóstico ainda.<br>
+          <a href="https://devinsight-api.onrender.com/docs" target="_blank">Integre o SDK no seu projeto →</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = '';
+    let mostRecentCriadoEm = null;
+    let pollInterval = null;
+
+    async function init() {
+      const token = localStorage.getItem('devinsight_token');
+      if (!token) {
+        window.location.replace('/dashboard/login.html');
+        return;
+      }
+
+      document.getElementById('btn-sair').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('devinsight_token');
+        window.location.replace('/dashboard/login.html');
+      });
+
+      await loadHistory(token);
+      pollInterval = setInterval(() => poll(token), 5000);
+    }
+
+    async function loadHistory(token) {
+      try {
+        const res = await fetch(`${API}/v1/diagnosticos/historico`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('devinsight_token');
+          window.location.replace('/dashboard/login.html');
+          return;
+        }
+
+        if (!res.ok) {
+          showError('Erro ao carregar histórico. Tente recarregar.');
+          return;
+        }
+
+        const items = await res.json();
+        renderItems(items, false);
+
+        if (items.length > 0) {
+          mostRecentCriadoEm = items[0].criado_em;
+        }
+
+        document.getElementById('user-email').textContent =
+          localStorage.getItem('devinsight_email') || '';
+
+        if (items.length === 0) {
+          document.getElementById('empty-state').style.display = 'block';
+        }
+      } catch (err) {
+        showError('Erro de conexão. Verifique sua internet.');
+      }
+    }
+
+    async function poll(token) {
+      if (!mostRecentCriadoEm) return;
+
+      try {
+        const res = await fetch(
+          `${API}/v1/diagnosticos/historico?after=${encodeURIComponent(mostRecentCriadoEm)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (!res.ok) return;
+
+        const items = await res.json();
+        if (items.length === 0) return;
+
+        renderItems(items, true);
+        mostRecentCriadoEm = items[0].criado_em;
+
+        document.getElementById('empty-state').style.display = 'none';
+      } catch (err) {
+        // Silent — retry on next interval
+      }
+    }
+
+    function renderItems(items, prepend) {
+      const list = document.getElementById('history-list');
+      const emptyState = document.getElementById('empty-state');
+
+      items.forEach(item => {
+        const el = buildItem(item);
+        if (prepend) {
+          list.insertBefore(el, list.firstChild);
+        } else {
+          list.appendChild(el);
+        }
+      });
+    }
+
+    function buildItem(item) {
+      const resposta = item.resposta || {};
+      const nivel = resposta.nivel || 'baixo';
+      const problema = resposta.problema || '—';
+      const causa = resposta.causa || '—';
+      const sugestoes = resposta.sugestoes || [];
+      const confianca = resposta.confianca != null ? Math.round(resposta.confianca * 100) : null;
+
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = `
+        <div class="history-header" onclick="toggleDetail(this)">
+          <span class="severity-badge nivel-${nivel}">${escHtml(nivel)}</span>
+          <span class="history-tipo">${escHtml(item.tipo)}</span>
+          <span class="history-problema">${escHtml(problema)}</span>
+          <span class="history-time">${formatDate(item.criado_em)}</span>
+        </div>
+        <div class="history-detail">
+          <div class="detail-row"><strong>Causa:</strong> ${escHtml(causa)}</div>
+          ${sugestoes.length > 0 ? `
+          <div class="detail-row">
+            <strong>Sugestões:</strong>
+            <ul class="detail-sugestoes">
+              ${sugestoes.map(s => `<li>${escHtml(s)}</li>`).join('')}
+            </ul>
+          </div>` : ''}
+          ${confianca != null ? `
+          <div class="detail-row">
+            <strong>Confiança:</strong> ${confianca}%
+            <div class="confianca-bar-wrap">
+              <div class="confianca-bar"><div class="confianca-fill" style="width:${confianca}%"></div></div>
+            </div>
+          </div>` : ''}
+          ${item.mensagem ? `<div class="detail-row"><strong>Mensagem:</strong> ${escHtml(item.mensagem)}</div>` : ''}
+          ${item.contexto && Object.keys(item.contexto).length > 0 ? `
+          <div class="detail-row">
+            <strong>Contexto:</strong>
+            <pre class="detail-code">${escHtml(JSON.stringify(item.contexto, null, 2))}</pre>
+          </div>` : ''}
+        </div>
+      `;
+      return div;
+    }
+
+    function toggleDetail(header) {
+      const detail = header.nextElementSibling;
+      detail.classList.toggle('open');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('fetch-error');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+
+    init();
+  </script>
+</body>
+</html>
