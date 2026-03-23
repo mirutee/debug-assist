@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>DevInsightSDK</RootNamespace>
+    <AssemblyName>DevInsight</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Description>Auto-capture runtime errors and send diagnostics to DevInsight API</Description>
+  </PropertyGroup>
+</Project>
