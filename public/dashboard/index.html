@@ -23,6 +23,9 @@
       <div class="page-title">Visão Geral</div>
       <div class="page-subtitle" id="user-subtitle">Carregando...</div>
 
+      <div id="success-upgrade" class="success-upgrade"></div>
+      <div id="uso-banner" class="uso-banner" style="display:none"></div>
+
       <div class="cards-grid">
         <div class="card">
           <div class="card-label">Uso este mês</div>
@@ -122,6 +125,30 @@
       document.getElementById('plano-nome').textContent = capitalize(data.plano);
       document.getElementById('plano-limite').textContent =
         data.limite_mensal === -1 ? 'Ilimitado' : data.limite_mensal + ' req/mês';
+
+      // Banner de sucesso de upgrade
+      const upgradeParams = new URLSearchParams(window.location.search);
+      if (upgradeParams.get('upgrade') === 'sucesso') {
+        const banner = document.getElementById('success-upgrade');
+        banner.textContent = 'Plano ativado com sucesso! Bem-vindo ao novo plano.';
+        banner.style.display = 'block';
+        window.history.replaceState({}, '', '/dashboard/');
+      }
+
+      // Banner de uso mensal
+      const usoBanner = document.getElementById('uso-banner');
+      if (usoBanner && data.limite_mensal > 0) {
+        const pct = data.uso_mensal / data.limite_mensal;
+        usoBanner.textContent = `${data.uso_mensal} de ${data.limite_mensal} diagnósticos usados este mês.`;
+        if (pct >= 1) {
+          usoBanner.className = 'uso-banner danger';
+          usoBanner.innerHTML += ' <a href="/dashboard/pricing.html">Faça upgrade agora →</a>';
+        } else if (pct >= 0.8) {
+          usoBanner.className = 'uso-banner warning';
+          usoBanner.innerHTML += ' <a href="/dashboard/pricing.html">Fazer upgrade →</a>';
+        }
+        usoBanner.style.display = 'block';
+      }
     }
 
     function diasAteReset() {
