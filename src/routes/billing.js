@@ -5,7 +5,11 @@ const Stripe = require("stripe");
 const authJwt = require("../middleware/authJwt");
 const { updatePlanoBilling, getUsuarioByStripeCustomerId } = require("../db/supabase");
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+let _stripe;
+function getStripe() {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+  return _stripe;
+}
 
 const PLANOS_VALIDOS = ["pro", "scale"];
 
@@ -31,12 +35,12 @@ router.post("/checkout", authJwt, async (req, res) => {
     let stripeCustomerId = req.usuario.stripe_customer_id;
 
     if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({ email: req.usuario.email });
+      const customer = await getStripe().customers.create({ email: req.usuario.email });
       stripeCustomerId = customer.id;
       await updatePlanoBilling(req.usuario.id, { stripe_customer_id: stripeCustomerId });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: stripeCustomerId,
       mode: "subscription",
       line_items: [{ price: priceIdParaPlano(plano), quantity: 1 }],
@@ -59,7 +63,7 @@ router.post("/webhook", async (req, res) => {
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET || ""
