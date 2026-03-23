@@ -30,9 +30,9 @@ class DevInsight {
 
   static init({ apiKey, projectName = 'unknown', baseUrl } = {}) {
     if (DevInsight._initialized) return;
-    DevInsight._initialized = true;
 
     const client = new DevInsight({ apiKey, baseUrl });
+    DevInsight._initialized = true;
 
     async function sendSilently(err) {
       try {
