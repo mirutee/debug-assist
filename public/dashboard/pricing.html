@@ -70,11 +70,12 @@
 
   <script>
     const API = '';
-    const token = localStorage.getItem('devinsight_token');
 
     document.querySelectorAll('.btn-assinar').forEach(btn => {
       btn.addEventListener('click', async () => {
+        const token = localStorage.getItem('devinsight_token');
         const plano = btn.dataset.plano;
+        const originalText = btn.textContent;
         const errorEl = document.getElementById(`error-${plano}`);
         errorEl.classList.remove('show');
 
@@ -109,7 +110,7 @@
           errorEl.classList.add('show');
         } finally {
           btn.disabled = false;
-          btn.textContent = plano === 'pro' ? 'Assinar Pro' : 'Assinar Scale';
+          btn.textContent = originalText;
         }
       });
     });
