@@ -10,14 +10,29 @@ const supabase = createClient(
   process.env.SUPABASE_KEY || ""
 );
 
-async function saveDiagnostico({ tipo, mensagem, contexto, resposta }) {
+async function saveDiagnostico({ tipo, mensagem, contexto, resposta, usuario_id }) {
   const { error } = await supabase
     .from("diagnosticos")
-    .insert({ tipo, mensagem, contexto, resposta });
+    .insert({ tipo, mensagem, contexto, resposta, usuario_id: usuario_id || null });
 
   if (error) {
     console.error("Erro ao salvar diagnóstico no Supabase:", error.message);
   }
+}
+
+async function getDiagnosticosByUsuario(usuarioId, { after } = {}) {
+  let query = supabase
+    .from("diagnosticos")
+    .select("id, tipo, criado_em, resposta, mensagem, contexto")
+    .eq("usuario_id", usuarioId)
+    .order("criado_em", { ascending: false })
+    .limit(50);
+
+  if (after) query = query.gt("criado_em", after);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message || "Erro ao buscar diagnósticos");
+  return data || [];
 }
 
 async function getUsuarioByApiKey(apiKey) {
@@ -103,6 +118,7 @@ async function getUsuarioByStripeCustomerId(stripeCustomerId) {
 
 module.exports = {
   saveDiagnostico,
+  getDiagnosticosByUsuario,
   getUsuarioByApiKey,
   incrementarUso,
   getUsuarioByAuthId,

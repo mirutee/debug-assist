@@ -170,3 +170,69 @@ describe("getUsuarioByStripeCustomerId", () => {
     expect(result).toBeNull();
   });
 });
+
+describe("getDiagnosticosByUsuario", () => {
+  it("retorna diagnósticos do usuário sem filtro after", async () => {
+    const fakeDiagnosticos = [
+      { id: "d1", tipo: "silent_backend_error", criado_em: "2026-03-23T10:00:00Z", resposta: {}, mensagem: "err", contexto: {} },
+    ];
+
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue({ data: fakeDiagnosticos, error: null }),
+          }),
+        }),
+      }),
+    });
+
+    const { getDiagnosticosByUsuario } = require("../../src/db/supabase");
+    const result = await getDiagnosticosByUsuario("user-uuid");
+    expect(result).toEqual(fakeDiagnosticos);
+  });
+
+  it("aplica filtro gt quando after é fornecido", async () => {
+    // When `after` is provided, getDiagnosticosByUsuario calls query.gt("criado_em", after)
+    // The Supabase chain is: from → select → eq → order → limit → gt (when after present)
+    const mockGt = jest.fn().mockResolvedValue({ data: [], error: null });
+    const mockLimitWithAfter = jest.fn().mockReturnValue({ gt: mockGt });
+    const mockOrderWithAfter = jest.fn().mockReturnValue({ limit: mockLimitWithAfter });
+    const mockEqWithAfter = jest.fn().mockReturnValue({ order: mockOrderWithAfter });
+    const mockSelectWithAfter = jest.fn().mockReturnValue({ eq: mockEqWithAfter });
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelectWithAfter });
+
+    const { getDiagnosticosByUsuario } = require("../../src/db/supabase");
+    await getDiagnosticosByUsuario("user-uuid", { after: "2026-03-23T10:00:00Z" });
+    expect(mockGt).toHaveBeenCalledWith("criado_em", "2026-03-23T10:00:00Z");
+  });
+
+  it("lança erro quando Supabase retorna erro", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue({ data: null, error: { message: "db error" } }),
+          }),
+        }),
+      }),
+    });
+
+    const { getDiagnosticosByUsuario } = require("../../src/db/supabase");
+    await expect(getDiagnosticosByUsuario("user-uuid")).rejects.toThrow();
+  });
+});
+
+describe("saveDiagnostico com usuario_id", () => {
+  it("passa usuario_id para o insert", async () => {
+    const mockInsert = jest.fn().mockResolvedValue({ error: null });
+    mockSupabaseClient.from.mockReturnValue({ insert: mockInsert });
+
+    const { saveDiagnostico } = require("../../src/db/supabase");
+    await saveDiagnostico({ tipo: "silent_backend_error", mensagem: "err", contexto: {}, resposta: {}, usuario_id: "user-uuid" });
+
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ usuario_id: "user-uuid" })
+    );
+  });
+});
