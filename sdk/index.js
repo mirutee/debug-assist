@@ -27,6 +27,36 @@ class DevInsight {
 
     return response.json();
   }
+
+  static init({ apiKey, projectName = 'unknown', baseUrl } = {}) {
+    if (DevInsight._initialized) return;
+    DevInsight._initialized = true;
+
+    const client = new DevInsight({ apiKey, baseUrl });
+
+    async function sendSilently(err) {
+      try {
+        await client.report({
+          tipo: 'silent_backend_error',
+          mensagem: err && err.message ? err.message : String(err),
+          contexto: { projectName, stack: err && err.stack ? err.stack : undefined },
+        });
+      } catch (_) {
+        // Never throw — capturing errors must not cause new errors
+      }
+    }
+
+    process.on('uncaughtException', async (err) => {
+      await sendSilently(err);
+      process.exit(1);
+    });
+
+    process.on('unhandledRejection', async (reason) => {
+      await sendSilently(reason instanceof Error ? reason : new Error(String(reason)));
+    });
+  }
 }
+
+DevInsight._initialized = false;
 
 module.exports = DevInsight;

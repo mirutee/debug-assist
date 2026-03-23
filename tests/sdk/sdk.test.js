@@ -80,3 +80,87 @@ describe('DevInsight SDK', () => {
     );
   });
 });
+
+describe("DevInsight.init() auto-capture", () => {
+  let originalListeners;
+
+  beforeEach(() => {
+    // Save and remove existing listeners to avoid interference
+    originalListeners = {
+      uncaughtException: process.listeners('uncaughtException').slice(),
+      unhandledRejection: process.listeners('unhandledRejection').slice(),
+    };
+    process.removeAllListeners('uncaughtException');
+    process.removeAllListeners('unhandledRejection');
+
+    // Reset the initialized flag between tests
+    DevInsight._initialized = false;
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    });
+  });
+
+  afterEach(() => {
+    process.removeAllListeners('uncaughtException');
+    process.removeAllListeners('unhandledRejection');
+    originalListeners.uncaughtException.forEach(l => process.on('uncaughtException', l));
+    originalListeners.unhandledRejection.forEach(l => process.on('unhandledRejection', l));
+    DevInsight._initialized = false;
+  });
+
+  it("registra listener de uncaughtException ao chamar init()", () => {
+    DevInsight.init({ apiKey: 'test-key' });
+    expect(process.listenerCount('uncaughtException')).toBe(1);
+  });
+
+  it("registra listener de unhandledRejection ao chamar init()", () => {
+    DevInsight.init({ apiKey: 'test-key' });
+    expect(process.listenerCount('unhandledRejection')).toBe(1);
+  });
+
+  it("não registra listeners duplicados se init() chamado duas vezes", () => {
+    DevInsight.init({ apiKey: 'test-key' });
+    DevInsight.init({ apiKey: 'test-key' });
+    expect(process.listenerCount('uncaughtException')).toBe(1);
+    expect(process.listenerCount('unhandledRejection')).toBe(1);
+  });
+
+  it("envia diagnóstico silent_backend_error ao capturar uncaughtException", async () => {
+    DevInsight.init({ apiKey: 'test-key', projectName: 'meu-projeto' });
+
+    const err = new Error('test crash');
+    // Emit uncaughtException but prevent actual process exit
+    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    process.emit('uncaughtException', err);
+
+    // Wait for async send
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/v1/diagnosticos'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer test-key' }),
+      })
+    );
+    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(body.tipo).toBe('silent_backend_error');
+    expect(body.mensagem).toBe('test crash');
+    expect(body.contexto.projectName).toBe('meu-projeto');
+
+    mockExit.mockRestore();
+  });
+
+  it("não lança erro se o envio do diagnóstico falhar", async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('network error'));
+    DevInsight.init({ apiKey: 'test-key' });
+
+    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    expect(() => process.emit('uncaughtException', new Error('crash'))).not.toThrow();
+
+    await new Promise(resolve => setTimeout(resolve, 50));
+    mockExit.mockRestore();
+  });
+});
