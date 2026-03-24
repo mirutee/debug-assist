@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Histórico — DevInsight</title>
+  <title>Alertas — DevInsight</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,23 +14,41 @@
         <span class="logo-text">DevInsight</span>
       </div>
       <a class="nav-item" href="/dashboard/">🏠 Visão Geral</a>
-      <a class="nav-item active" href="/dashboard/historico.html">📋 Histórico</a>
-      <a class="nav-item" href="/dashboard/alertas.html" id="nav-alertas">🔔 Alertas<span class="nav-badge" id="alert-badge"></span></a>
+      <a class="nav-item" href="/dashboard/historico.html">📋 Histórico</a>
+      <a class="nav-item active" href="/dashboard/alertas.html">🔔 Alertas</a>
       <a class="nav-item" href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
     </nav>
 
     <main class="main">
-      <div class="page-title">Histórico de Diagnósticos</div>
-      <div class="page-subtitle" id="page-subtitle">Erros capturados automaticamente pelo SDK e via API</div>
+      <div class="page-title">Alertas Críticos</div>
+      <div class="page-subtitle">Diagnósticos de nível alto — ação recomendada</div>
 
       <div class="error-msg" id="fetch-error" style="margin-bottom:16px;"></div>
 
-      <div class="history-list" id="history-list">
-        <div class="history-empty" id="empty-state" style="display:none;">
-          Nenhum diagnóstico ainda.<br>
-          <a href="https://devinsight-api.onrender.com/docs" target="_blank">Integre o SDK no seu projeto →</a>
+      <div class="alert-stats">
+        <div class="alert-stat">
+          <div class="alert-stat-label">Total carregado</div>
+          <div class="alert-stat-value" id="stat-total">—</div>
+          <div class="alert-stat-sub">últimos 50 diagnósticos</div>
+        </div>
+        <div class="alert-stat">
+          <div class="alert-stat-label">Últimas 24h</div>
+          <div class="alert-stat-value" id="stat-24h">—</div>
+          <div class="alert-stat-sub">alertas críticos</div>
+        </div>
+        <div class="alert-stat">
+          <div class="alert-stat-label">Mais recente</div>
+          <div class="alert-stat-value" id="stat-recente" style="font-size:16px;margin-top:4px;">—</div>
+          <div class="alert-stat-sub" id="stat-recente-tipo">—</div>
+        </div>
+      </div>
+
+      <div class="history-list" id="alert-list">
+        <div class="alert-empty" id="empty-state" style="display:none;">
+          Nenhum alerta crítico encontrado. 🎉<br>
+          <a href="/dashboard/historico.html">Ver histórico completo →</a>
         </div>
       </div>
     </main>
@@ -48,17 +66,20 @@
         return;
       }
 
+      // Marcar como visto — zera o badge nas outras páginas
+      localStorage.setItem('devinsight_last_alert_seen', new Date().toISOString());
+
       document.getElementById('btn-sair').addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem('devinsight_token');
         window.location.replace('/dashboard/login.html');
       });
 
-      await loadHistory(token);
+      await loadAlerts(token);
       pollInterval = setInterval(() => poll(token), 5000);
     }
 
-    async function loadHistory(token) {
+    async function loadAlerts(token) {
       try {
         const res = await fetch(`${API}/v1/diagnosticos/historico`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -71,21 +92,24 @@
         }
 
         if (!res.ok) {
-          showError('Erro ao carregar histórico. Tente recarregar.');
+          showError('Erro ao carregar alertas. Tente recarregar.');
           return;
         }
 
         const items = await res.json();
-        renderItems(items, false);
+        const altos = items.filter(i => i.resposta && i.resposta.nivel === 'alto');
 
-        mostRecentCriadoEm = items.length > 0
-          ? items[0].criado_em
-          : new Date().toISOString();
+        renderStats(altos);
+        renderItems(altos, false);
+
+        if (altos.length > 0) {
+          mostRecentCriadoEm = altos[0].criado_em;
+        }
 
         document.getElementById('user-email').textContent =
           localStorage.getItem('devinsight_email') || '';
 
-        if (items.length === 0) {
+        if (altos.length === 0) {
           document.getElementById('empty-state').style.display = 'block';
         }
       } catch (err) {
@@ -105,23 +129,59 @@
         if (!res.ok) return;
 
         const items = await res.json();
-        if (items.length === 0) return;
+        const altos = items.filter(i => i.resposta && i.resposta.nivel === 'alto');
+        if (altos.length === 0) return;
 
-        renderItems(items, true);
-        mostRecentCriadoEm = items[0].criado_em;
-
+        renderItems(altos, true);
+        mostRecentCriadoEm = altos[0].criado_em;
         document.getElementById('empty-state').style.display = 'none';
-      } catch (err) {
-        // Silent — retry on next interval
+
+        // Atualizar stats após novos itens
+        refreshStats();
+
+        // Atualizar last_seen para não mostrar badge nas outras abas
+        localStorage.setItem('devinsight_last_alert_seen', new Date().toISOString());
+      } catch (_) {}
+    }
+
+    function renderStats(altos) {
+      const agora = new Date();
+      const h24 = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+
+      document.getElementById('stat-total').textContent = altos.length;
+      document.getElementById('stat-24h').textContent =
+        altos.filter(i => new Date(i.criado_em) > h24).length;
+
+      if (altos.length > 0) {
+        const rec = altos[0];
+        document.getElementById('stat-recente').textContent = formatDate(rec.criado_em);
+        document.getElementById('stat-recente-tipo').textContent = rec.tipo || '—';
+      } else {
+        document.getElementById('stat-recente').textContent = 'Nenhum';
+        document.getElementById('stat-recente-tipo').textContent = '—';
+      }
+    }
+
+    function refreshStats() {
+      const items = Array.from(document.querySelectorAll('.alert-item')).map(el => ({
+        criado_em: el.dataset.criadoEm,
+        tipo: el.dataset.tipo,
+      }));
+      const agora = new Date();
+      const h24 = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+      document.getElementById('stat-total').textContent = items.length;
+      document.getElementById('stat-24h').textContent =
+        items.filter(i => new Date(i.criado_em) > h24).length;
+      if (items.length > 0) {
+        document.getElementById('stat-recente').textContent = formatDate(items[0].criado_em);
+        document.getElementById('stat-recente-tipo').textContent = items[0].tipo || '—';
       }
     }
 
     function renderItems(items, prepend) {
-      const list = document.getElementById('history-list');
-      const emptyState = document.getElementById('empty-state');
-
+      const list = document.getElementById('alert-list');
       items.forEach(item => {
-        const el = buildItem(item);
+        const el = buildItem(item, prepend);
         if (prepend) {
           list.insertBefore(el, list.firstChild);
         } else {
@@ -130,22 +190,25 @@
       });
     }
 
-    function buildItem(item) {
+    function buildItem(item, isNew) {
       const resposta = item.resposta || {};
-      const nivel = resposta.nivel || 'baixo';
       const problema = resposta.problema || '—';
       const causa = resposta.causa || '—';
       const sugestoes = resposta.sugestoes || [];
       const confianca = resposta.confianca != null ? Math.round(resposta.confianca * 100) : null;
 
       const div = document.createElement('div');
-      div.className = 'history-item';
+      div.className = 'alert-item history-item' + (isNew ? ' is-new' : '');
+      div.dataset.criadoEm = item.criado_em;
+      div.dataset.tipo = item.tipo;
+
       div.innerHTML = `
-        <div class="history-header" onclick="toggleDetail(this)">
-          <span class="severity-badge nivel-${nivel}">${escHtml(nivel)}</span>
-          <span class="history-tipo">${escHtml(item.tipo)}</span>
-          <span class="history-problema">${escHtml(problema)}</span>
-          <span class="history-time">${formatDate(item.criado_em)}</span>
+        <div class="alert-header history-header" onclick="toggleDetail(this)">
+          <span class="alert-new-dot"></span>
+          <span class="severity-badge nivel-alto">alto</span>
+          <span class="alert-tipo history-tipo">${escHtml(item.tipo)}</span>
+          <span class="alert-problema history-problema">${escHtml(problema)}</span>
+          <span class="alert-time history-time">${formatDate(item.criado_em)}</span>
         </div>
         <div class="history-detail">
           <div class="detail-row"><strong>Causa:</strong> ${escHtml(causa)}</div>
@@ -175,8 +238,7 @@
     }
 
     function toggleDetail(header) {
-      const detail = header.nextElementSibling;
-      detail.classList.toggle('open');
+      header.nextElementSibling.classList.toggle('open');
     }
 
     function formatDate(iso) {
@@ -197,26 +259,6 @@
     }
 
     init();
-    checkAlertBadge();
-
-    async function checkAlertBadge() {
-      try {
-        const token = localStorage.getItem('devinsight_token');
-        if (!token) return;
-        const res = await fetch(`${API}/v1/diagnosticos/historico`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return;
-        const items = await res.json();
-        const lastSeen = localStorage.getItem('devinsight_last_alert_seen') || '1970-01-01T00:00:00Z';
-        const count = items.filter(i => i.resposta && i.resposta.nivel === 'alto' && i.criado_em > lastSeen).length;
-        if (count > 0) {
-          const badge = document.getElementById('alert-badge');
-          badge.textContent = count > 9 ? '9+' : count;
-          badge.classList.add('visible');
-        }
-      } catch (_) {}
-    }
   </script>
 </body>
 </html>

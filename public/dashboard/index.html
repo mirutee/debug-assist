@@ -15,6 +15,7 @@
       </div>
       <a class="nav-item active">🏠 Visão Geral</a>
       <a class="nav-item" href="/dashboard/historico.html">📋 Histórico</a>
+      <a class="nav-item" href="/dashboard/alertas.html" id="nav-alertas">🔔 Alertas<span class="nav-badge" id="alert-badge"></span></a>
       <a class="nav-item" href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
@@ -204,6 +205,26 @@
     });
 
     loadDashboard();
+    checkAlertBadge();
+
+    async function checkAlertBadge() {
+      try {
+        const token = localStorage.getItem('devinsight_token');
+        if (!token) return;
+        const res = await fetch(`${API}/v1/diagnosticos/historico`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const items = await res.json();
+        const lastSeen = localStorage.getItem('devinsight_last_alert_seen') || '1970-01-01T00:00:00Z';
+        const count = items.filter(i => i.resposta && i.resposta.nivel === 'alto' && i.criado_em > lastSeen).length;
+        if (count > 0) {
+          const badge = document.getElementById('alert-badge');
+          badge.textContent = count > 9 ? '9+' : count;
+          badge.classList.add('visible');
+        }
+      } catch (_) {}
+    }
 
     document.getElementById('btn-portal').addEventListener('click', async () => {
       const token = localStorage.getItem('devinsight_token');
