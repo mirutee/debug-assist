@@ -1,0 +1,28 @@
+{
+  "name": "devinsight-browser",
+  "version": "1.0.0",
+  "description": "DevInsight browser SDK — auto-captures frontend errors",
+  "main": "devinsight.browser.js",
+  "module": "devinsight.browser.esm.js",
+  "exports": {
+    ".": {
+      "import": "./devinsight.browser.esm.js",
+      "require": "./devinsight.browser.js"
+    },
+    "./react": "./react.js",
+    "./vue": "./vue.js",
+    "./svelte": "./svelte.js"
+  },
+  "files": [
+    "devinsight.browser.js",
+    "devinsight.browser.esm.js",
+    "react.js",
+    "vue.js",
+    "svelte.js"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirutee/devinsight-api.git"
+  }
+}
