@@ -17,6 +17,7 @@
 
 | File | Action | Responsibility |
 |------|--------|----------------|
+| `public/images/logo.png` | Copy from `OUTROS/logomarca.png` | Brand logo used in navbar and footer |
 | `public/style.css` | Create | Landing page CSS: variables, nav, hero, stats, features, pricing, footer, responsive |
 | `public/index.html` | Full rewrite | Landing page HTML: Nav, Hero, Stats, Features, Pricing, Footer |
 | `public/dashboard/style.css` | Modify | CSS variables updated to new palette; Google Fonts import added; logo cursor animation added |
@@ -31,7 +32,34 @@
 
 ---
 
-## Task 1: Create `public/style.css` (landing page CSS)
+## Task 1: Copy logo to public folder
+
+**Files:**
+- Copy: `OUTROS/logomarca.png` → `public/images/logo.png`
+
+- [ ] **Step 1: Create images directory and copy logo**
+
+```bash
+mkdir -p public/images && cp OUTROS/logomarca.png public/images/logo.png
+```
+
+- [ ] **Step 2: Verify**
+
+```bash
+ls -lh public/images/logo.png
+```
+Expected: file exists with non-zero size.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add public/images/logo.png
+git commit -m "feat: add DEBUG_Assist brand logo to public assets"
+```
+
+---
+
+## Task 2: Create `public/style.css` (landing page CSS)
 
 **Files:**
 - Create: `public/style.css`
@@ -97,13 +125,19 @@ a { color: inherit; text-decoration: none; }
   background: rgba(15,23,42,0.92);
   backdrop-filter: blur(12px);
   z-index: 100;
+  overflow: visible;
+  height: 72px;
 }
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 2px;
-  font-size: 18px;
-  font-weight: 500;
+}
+.nav-logo-img {
+  height: 200px;
+  width: auto;
+  display: block;
+  position: relative;
+  z-index: 101;
 }
 .nav-links { display: flex; align-items: center; gap: 32px; }
 .nav-links a { color: var(--muted); font-size: 14px; transition: color .15s; }
@@ -460,7 +494,7 @@ Replace the entire file with the following. Note: CSS is in external `public/sty
 <!-- NAV -->
 <nav class="navbar">
   <a href="/" class="nav-logo">
-    <span class="logo-debug">DEBUG_</span><span>Assist</span><span class="logo-cursor"></span>
+    <img src="/images/logo.png" alt="DEBUG_Assist" class="nav-logo-img">
   </a>
   <div class="nav-links">
     <a href="/docs">Docs</a>
@@ -615,7 +649,7 @@ Replace the entire file with the following. Note: CSS is in external `public/sty
 
 <!-- FOOTER -->
 <footer>
-  <span class="footer-logo">DEBUG_Assist</span>
+  <img src="/images/logo.png" alt="DEBUG_Assist" style="height:40px;width:auto;display:block;">
   <span>© 2026 · Diagnóstico de APIs para devs</span>
   <div class="footer-links">
     <a href="/docs">Docs</a>
