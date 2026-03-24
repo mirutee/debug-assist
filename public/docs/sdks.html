@@ -78,6 +78,58 @@
 
   <div class="content">
 
+    <!-- Browser / Frontend -->
+    <div class="sdk-card">
+      <div class="sdk-header">
+        <div class="sdk-icon">🌐</div>
+        <div class="sdk-name">Browser / Frontend</div>
+        <div class="sdk-tag">CDN · npm</div>
+      </div>
+      <p class="sdk-desc">Captura <code>window.onerror</code> e <code>unhandledrejection</code> automaticamente. Funciona em qualquer projeto JS, React, Vue ou Svelte.</p>
+
+      <div class="install-label">Vanilla JS — via CDN (sem build)</div>
+      <pre><code><span class="comment">&lt;!-- Adicione no &lt;head&gt; do seu HTML --&gt;</span>
+&lt;script src=<span class="string">"https://devinsight-api.onrender.com/sdk/browser.js"</span>
+        data-api-key=<span class="string">"SUA_API_KEY"</span>
+        data-project=<span class="string">"meu-app"</span>&gt;&lt;/script&gt;</code></pre>
+
+      <div class="install-label">npm (React, Vue, Svelte, etc.)</div>
+      <pre><code>npm install devinsight-browser</code></pre>
+      <pre><code><span class="comment">// Inicialização manual (ES module)</span>
+<span class="keyword">import</span> DevInsight <span class="keyword">from</span> <span class="string">'devinsight-browser'</span>;
+DevInsight.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
+
+      <div class="install-label">React — ErrorBoundary</div>
+      <pre><code><span class="keyword">import</span> { ErrorBoundary } <span class="keyword">from</span> <span class="string">'devinsight-browser/react'</span>;
+
+<span class="comment">// Envolva seu componente raiz:</span>
+&lt;ErrorBoundary apiKey=<span class="string">"SUA_API_KEY"</span> projectName=<span class="string">"meu-app"</span>
+               fallback={&lt;p&gt;Algo deu errado.&lt;/p&gt;}&gt;
+  &lt;App /&gt;
+&lt;/ErrorBoundary&gt;</code></pre>
+
+      <div class="install-label">Vue 3 — plugin</div>
+      <pre><code><span class="keyword">import</span> DevInsightPlugin <span class="keyword">from</span> <span class="string">'devinsight-browser/vue'</span>;
+
+app.use(DevInsightPlugin, { apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
+
+      <div class="install-label">Svelte</div>
+      <pre><code><span class="keyword">import</span> { initDevInsight } <span class="keyword">from</span> <span class="string">'devinsight-browser/svelte'</span>;
+
+<span class="comment">// Em main.js ou componente raiz:</span>
+initDevInsight({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
+
+      <div class="env-box">
+        <h4>Configuração</h4>
+        <div class="env-row"><span class="env-key">data-api-key / apiKey</span><span class="env-val">Sua API Key (obrigatória)</span></div>
+        <div class="env-row"><span class="env-key">data-project / projectName</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">data-base-url / baseUrl</span><span class="env-val">URL base da API (default: https://devinsight-api.onrender.com)</span></div>
+        <div class="env-row"><span class="env-key">&lt;meta name="devinsight-enabled" content="0"&gt;</span><span class="env-val">Desliga o SDK em qualquer ambiente</span></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
     <!-- Node.js -->
     <div class="sdk-card">
       <div class="sdk-header">
