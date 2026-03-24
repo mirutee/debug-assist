@@ -116,6 +116,52 @@ info:
     DevInsight.EnsureInitialized(); // topo do Program.cs
     ```
 
+    ## SDK (Browser / Frontend)
+
+    Captura `window.onerror` e `unhandledrejection` automaticamente. Suporta React, Vue e Svelte.
+
+    **Via CDN (zero build):**
+
+    ```html
+    <script src="https://devinsight-api.onrender.com/sdk/browser.js"
+            data-api-key="SUA_API_KEY"
+            data-project="meu-app"></script>
+    ```
+
+    **Via npm:**
+
+    ```bash
+    npm install devinsight-browser
+    ```
+
+    ```js
+    import DevInsight from 'devinsight-browser';
+    DevInsight.init({ apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
+    ```
+
+    **React — ErrorBoundary:**
+
+    ```jsx
+    import { ErrorBoundary } from 'devinsight-browser/react';
+    <ErrorBoundary apiKey="SUA_API_KEY" projectName="meu-app">
+      <App />
+    </ErrorBoundary>
+    ```
+
+    **Vue 3:**
+
+    ```js
+    import DevInsightPlugin from 'devinsight-browser/vue';
+    app.use(DevInsightPlugin, { apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
+    ```
+
+    **Svelte:**
+
+    ```js
+    import { initDevInsight } from 'devinsight-browser/svelte';
+    initDevInsight({ apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
+    ```
+
     ## Limites por plano
 
     | Plano  | Diagnósticos/mês | Preço     |
@@ -139,6 +185,8 @@ tags:
     description: Cadastro, login e perfil do usuário
   - name: Diagnósticos
     description: Envio e histórico de diagnósticos
+  - name: Billing
+    description: Checkout, planos e portal de assinatura (Stripe)
   - name: Health
     description: Status da API
 
@@ -419,6 +467,57 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erro"
 
+  /v1/billing/portal:
+    post:
+      tags: [Billing]
+      summary: Abrir portal de assinatura
+      description: |
+        Cria uma sessão no Stripe Billing Portal e retorna a URL de redirecionamento.
+
+        Permite ao usuário cancelar a assinatura, atualizar o método de pagamento e visualizar faturas — tudo gerenciado pelo Stripe.
+
+        **Requer:** usuário com plano pago (Pro ou Scale). Retorna 400 para contas Free.
+
+        **Autenticação:** JWT (token do login, não a API Key).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+      responses:
+        "200":
+          description: URL do portal gerada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    example: "https://billing.stripe.com/session/test_abc123"
+        "400":
+          description: Usuário não possui assinatura ativa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "Nenhuma assinatura ativa"
+        "401":
+          description: Token ausente ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+        "502":
+          description: Erro ao comunicar com o Stripe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "Erro ao abrir portal. Tente novamente."
+
 components:
   securitySchemes:
     bearerAuth:
@@ -427,7 +526,7 @@ components:
       description: |
         Dois tipos de token são usados:
         - **API Key** — para `POST /v1/diagnosticos`. Obtida em `/v1/auth/me`.
-        - **JWT** — para rotas do dashboard (`/v1/auth/me`, `/v1/diagnosticos/historico`). Obtido via `/v1/auth/login`.
+        - **JWT** — para rotas do dashboard (`/v1/auth/me`, `/v1/diagnosticos/historico`, `/v1/billing/portal`). Obtido via `/v1/auth/login`.
 
   schemas:
     Erro:
@@ -457,7 +556,7 @@ components:
             - sql_analysis
         mensagem:
           type: string
-          description: Mensagem de erro (ex: err.message). Para sql_analysis, deixe vazio e use o campo `dados`.
+          description: "Mensagem de erro (ex: err.message). Para sql_analysis, deixe vazio e use o campo dados."
           example: "Cannot read properties of undefined (reading 'id')"
         contexto:
           type: object
