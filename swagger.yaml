@@ -167,8 +167,8 @@ info:
     | Plano  | Diagnósticos/mês | Preço     |
     |--------|-----------------|-----------|
     | Free   | 100             | Grátis    |
-    | Pro    | 1.000           | R$49/mês  |
-    | Scale  | 10.000          | R$149/mês |
+    | Pro    | 1.000           | R$99/mês  |
+    | Scale  | 10.000          | R$349/mês |
 
   version: 1.0.0
   contact:
