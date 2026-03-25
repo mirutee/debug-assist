@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { validarDominio, signupLimiter } = require("../middleware/antiAbuse");
 const { signUpUser, signInUser, getUserFromToken, getUsuarioByAuthId } = require("../db/supabase");
+const { sendWelcomeEmail } = require('../email/resend');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,7 +20,7 @@ router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
   }
 
   try {
-    const { error } = await signUpUser(email, senha);
+    const { data, error } = await signUpUser(email, senha);
 
     if (error) {
       if (error.message.includes("already registered")) {
@@ -27,6 +28,17 @@ router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
       }
       return res.status(500).json({ erro: "Erro interno. Tente novamente." });
     }
+
+    // Buscar API key para o email (fire-and-forget — nunca bloqueia o signup)
+    const authId = data?.user?.id;
+    let apiKey = null;
+    if (authId) {
+      try {
+        const usuario = await getUsuarioByAuthId(authId);
+        apiKey = usuario?.api_key || null;
+      } catch (_) {}
+    }
+    sendWelcomeEmail(email, apiKey).catch(() => {});
 
     return res.status(201).json({ mensagem: "Conta criada com sucesso! Você já pode fazer login." });
   } catch (err) {

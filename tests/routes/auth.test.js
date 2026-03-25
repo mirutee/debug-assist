@@ -21,6 +21,12 @@ const {
   getUsuarioByAuthId,
 } = require("../../src/db/supabase");
 
+jest.mock('../../src/email/resend', () => ({
+  sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
+}));
+
+const { sendWelcomeEmail } = require('../../src/email/resend');
+
 beforeEach(() => jest.clearAllMocks());
 
 const request = require("supertest");
@@ -76,6 +82,35 @@ describe("POST /v1/auth/signup", () => {
       .send({ email: "invalido", senha: "senha123" });
 
     expect(res.status).toBe(400);
+  });
+
+  it('chama sendWelcomeEmail com o email e api_key corretos após signup válido', async () => {
+    signUpUser.mockResolvedValue({
+      data: { user: { id: 'auth-uuid' } },
+      error: null,
+    });
+    getUsuarioByAuthId.mockResolvedValue({ api_key: 'key-abc123' });
+
+    await request(app)
+      .post('/v1/auth/signup')
+      .send({ email: 'user@gmail.com', senha: 'senha123' });
+
+    expect(sendWelcomeEmail).toHaveBeenCalledWith('user@gmail.com', 'key-abc123');
+  });
+
+  it('retorna 201 mesmo quando sendWelcomeEmail lança erro', async () => {
+    signUpUser.mockResolvedValue({
+      data: { user: { id: 'auth-uuid' } },
+      error: null,
+    });
+    getUsuarioByAuthId.mockResolvedValue({ api_key: 'key-abc123' });
+    sendWelcomeEmail.mockRejectedValueOnce(new Error('resend error'));
+
+    const res = await request(app)
+      .post('/v1/auth/signup')
+      .send({ email: 'user@gmail.com', senha: 'senha123' });
+
+    expect(res.status).toBe(201);
   });
 });
 
