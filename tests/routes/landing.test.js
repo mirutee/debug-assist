@@ -39,9 +39,9 @@ describe('Landing page', () => {
     expect(res.headers['content-type']).toMatch(/html/);
   });
 
-  it('GET / contém DevInsight', async () => {
+  it('GET / contém DEBUG_Assist', async () => {
     const res = await request(app).get('/');
-    expect(res.text).toMatch(/DevInsight/i);
+    expect(res.text).toMatch(/DEBUG_Assist/i);
   });
 
   it('GET / contém link para /docs', async () => {
