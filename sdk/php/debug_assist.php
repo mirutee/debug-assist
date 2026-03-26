@@ -1,24 +1,24 @@
 <?php
 /**
- * DevInsight SDK for PHP
+ * DebugAssist SDK for PHP
  *
- * Captures uncaught exceptions and fatal errors, reporting them to DevInsight.
+ * Captures uncaught exceptions and fatal errors, reporting them to DebugAssist.
  *
  * Usage:
- *   require_once 'devinsight.php'; // só isso
+ *   require_once 'debug_assist.php'; // só isso
  *
  * Configuration (env vars or constants defined before require):
- *   DEVINSIGHT_API_KEY   — your API key
- *   DEVINSIGHT_BASE_URL  — base URL (default: https://devinsight-api.onrender.com)
- *   DEVINSIGHT_PROJECT   — project name (default: unknown)
- *   DEVINSIGHT_ENABLED=0 — disable SDK
+ *   DEBUG_ASSIST_API_KEY   — your API key
+ *   DEBUG_ASSIST_BASE_URL  — base URL (default: https://api.debug-assist.app)
+ *   DEBUG_ASSIST_PROJECT   — project name (default: unknown)
+ *   DEBUG_ASSIST_ENABLED=0 — disable SDK
  */
 
 (static function (): void {
-    $apiKey  = (string) (getenv('DEVINSIGHT_API_KEY')  ?: (defined('DEVINSIGHT_API_KEY')  ? DEVINSIGHT_API_KEY  : ''));
-    $baseUrl = rtrim((string) (getenv('DEVINSIGHT_BASE_URL') ?: (defined('DEVINSIGHT_BASE_URL') ? DEVINSIGHT_BASE_URL : 'https://devinsight-api.onrender.com')), '/');
-    $project = (string) (getenv('DEVINSIGHT_PROJECT')  ?: (defined('DEVINSIGHT_PROJECT')  ? DEVINSIGHT_PROJECT  : 'unknown'));
-    $enabled = getenv('DEVINSIGHT_ENABLED') !== '0';
+    $apiKey  = (string) (getenv('DEBUG_ASSIST_API_KEY')  ?: (defined('DEBUG_ASSIST_API_KEY')  ? DEBUG_ASSIST_API_KEY  : ''));
+    $baseUrl = rtrim((string) (getenv('DEBUG_ASSIST_BASE_URL') ?: (defined('DEBUG_ASSIST_BASE_URL') ? DEBUG_ASSIST_BASE_URL : 'https://api.debug-assist.app')), '/');
+    $project = (string) (getenv('DEBUG_ASSIST_PROJECT')  ?: (defined('DEBUG_ASSIST_PROJECT')  ? DEBUG_ASSIST_PROJECT  : 'unknown'));
+    $enabled = getenv('DEBUG_ASSIST_ENABLED') !== '0';
 
     if (!$enabled || $apiKey === '') {
         return;

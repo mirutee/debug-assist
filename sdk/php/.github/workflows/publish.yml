@@ -1,0 +1,17 @@
+name: Notify Packagist
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Packagist of new release
+        run: |
+          curl -s -X POST \
+            -H "Content-Type: application/json" \
+            "https://packagist.org/api/update-package?username=debug-assist&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
+            -d '{"repository":{"url":"https://github.com/debug-assist/sdk-php"}}'

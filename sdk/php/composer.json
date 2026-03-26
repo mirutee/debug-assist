@@ -1,0 +1,19 @@
+{
+    "name": "debug-assist/debug-assist",
+    "description": "Auto-capture runtime errors and send diagnostics to DebugAssist API",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "files": ["debug_assist.php"]
+    },
+    "homepage": "https://github.com/debug-assist/sdk-php",
+    "authors": [
+        {
+            "name": "DebugAssist",
+            "email": "hi@debug-assist.app"
+        }
+    ]
+}
