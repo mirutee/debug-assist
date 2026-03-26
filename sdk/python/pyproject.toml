@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "debug-assist"
+version = "1.0.0"
+description = "Auto-capture runtime errors and send diagnostics to DebugAssist API"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/debug-assist/sdk-python"
+
+[tool.setuptools]
+py-modules = ["debug_assist"]

@@ -1,18 +1,18 @@
 """
-DevInsight Python SDK
+DebugAssist Python SDK
 
-Captura automaticamente exceções não tratadas e envia para a API DevInsight.
+Captura automaticamente exceções não tratadas e envia para a API DebugAssist.
 
 Modo mais simples — via variável de ambiente:
-    export DEVINSIGHT_API_KEY='SUA_API_KEY'
-    import devinsight  # só isso já basta, monitoramento ativado
+    export DEBUG_ASSIST_API_KEY='SUA_API_KEY'
+    import debug_assist  # só isso já basta, monitoramento ativado
 
 Modo explícito (quando a chave vem do código):
-    from devinsight import DevInsight
-    DevInsight.init(api_key='SUA_API_KEY', project_name='meu-projeto')
+    from debug_assist import DebugAssist
+    DebugAssist.init(api_key='SUA_API_KEY', project_name='meu-projeto')
 
 Envio manual:
-    client = DevInsight(api_key='SUA_API_KEY')
+    client = DebugAssist(api_key='SUA_API_KEY')
     client.report(tipo='silent_backend_error', mensagem=str(e))
 """
 
@@ -22,20 +22,20 @@ import sys
 import traceback
 import urllib.request
 
-DEFAULT_BASE_URL = 'https://devinsight-api.onrender.com'
+DEFAULT_BASE_URL = 'https://api.debug-assist.app'
 
 
-class DevInsight:
+class DebugAssist:
     _initialized = False
 
     def __init__(self, api_key, base_url=None):
         if not api_key:
-            raise ValueError('DevInsight: api_key é obrigatória')
+            raise ValueError('DebugAssist: api_key é obrigatória')
         self.api_key = api_key
         self.base_url = (base_url or DEFAULT_BASE_URL).rstrip('/')
 
     def report(self, tipo, mensagem='', contexto=None, dados=None):
-        """Envia um diagnóstico para a API DevInsight.
+        """Envia um diagnóstico para a API DebugAssist.
 
         Args:
             tipo: Categoria do erro (ex: 'silent_backend_error', 'sql_analysis').
@@ -47,7 +47,7 @@ class DevInsight:
             Dict com o diagnóstico retornado pela API.
         """
         if not tipo:
-            raise ValueError("DevInsight: campo 'tipo' é obrigatório")
+            raise ValueError("DebugAssist: campo 'tipo' é obrigatório")
 
         body = {'tipo': tipo, 'mensagem': mensagem}
         if contexto:
@@ -69,16 +69,7 @@ class DevInsight:
 
     @classmethod
     def init(cls, api_key, project_name='unknown', base_url=None):
-        """Registra o hook de exceções não tratadas.
-
-        Após chamar init(), qualquer exceção que derrube o processo é
-        automaticamente enviada para a API antes de encerrar.
-
-        Args:
-            api_key: Sua API Key (obtida em /v1/auth/me).
-            project_name: Nome do projeto (aparece no contexto do diagnóstico).
-            base_url: URL base da API (padrão: https://devinsight-api.onrender.com).
-        """
+        """Registra o hook de exceções não tratadas."""
         if cls._initialized:
             return
 
@@ -100,18 +91,17 @@ class DevInsight:
                     },
                 )
             except Exception:
-                # Nunca suprimir o erro original
                 pass
             original_excepthook(exc_type, exc_value, exc_traceback)
 
         sys.excepthook = _excepthook
 
 
-# Auto-inicializa se DEVINSIGHT_API_KEY estiver no ambiente
-_env_key = os.getenv('DEVINSIGHT_API_KEY')
-if _env_key and os.getenv('DEVINSIGHT_ENABLED', '1') != '0':
-    DevInsight.init(
+# Auto-inicializa se DEBUG_ASSIST_API_KEY estiver no ambiente
+_env_key = os.getenv('DEBUG_ASSIST_API_KEY')
+if _env_key and os.getenv('DEBUG_ASSIST_ENABLED', '1') != '0':
+    DebugAssist.init(
         api_key=_env_key,
-        project_name=os.getenv('DEVINSIGHT_PROJECT', 'unknown'),
-        base_url=os.getenv('DEVINSIGHT_BASE_URL'),
+        project_name=os.getenv('DEBUG_ASSIST_PROJECT', 'unknown'),
+        base_url=os.getenv('DEBUG_ASSIST_BASE_URL'),
     )
