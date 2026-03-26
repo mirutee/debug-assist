@@ -69,7 +69,16 @@ class DebugAssist:
 
     @classmethod
     def init(cls, api_key, project_name='unknown', base_url=None):
-        """Registra o hook de exceções não tratadas."""
+        """Registra o hook de exceções não tratadas.
+
+        Após chamar init(), qualquer exceção que derrube o processo é
+        automaticamente enviada para a API antes de encerrar.
+
+        Args:
+            api_key: Sua API Key (obtida em /v1/auth/me).
+            project_name: Nome do projeto (aparece no contexto do diagnóstico).
+            base_url: URL base da API (padrão: https://api.debug-assist.app).
+        """
         if cls._initialized:
             return
 
