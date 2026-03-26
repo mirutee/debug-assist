@@ -43,6 +43,7 @@
 
   <build>
     <plugins>
+      <!-- Sources JAR (obrigatório no Maven Central) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -55,6 +56,7 @@
         </executions>
       </plugin>
 
+      <!-- Javadoc JAR (obrigatório no Maven Central) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -67,6 +69,7 @@
         </executions>
       </plugin>
 
+      <!-- GPG signing (obrigatório no Maven Central) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
@@ -80,6 +83,7 @@
         </executions>
       </plugin>
 
+      <!-- Central Publishing Plugin (novo portal Maven Central) -->
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
