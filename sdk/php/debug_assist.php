@@ -64,8 +64,14 @@
     };
 
     // Uncaught exceptions
-    set_exception_handler(static function (\Throwable $e) use ($send): void {
+    $previousHandler = set_exception_handler(null);
+    set_exception_handler(static function (\Throwable $e) use ($send, $previousHandler): void {
         $send($e->getMessage(), \get_class($e), $e->getTraceAsString());
+        if ($previousHandler !== null) {
+            ($previousHandler)($e);
+        } else {
+            throw $e; // restore default behavior
+        }
     });
 
     // Fatal errors (E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR)

@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Notify Packagist of new release
         run: |
-          curl -s -X POST \
+          curl -s --fail -X POST \
             -H "Content-Type: application/json" \
             "https://packagist.org/api/update-package?username=debug-assist&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
             -d '{"repository":{"url":"https://github.com/debug-assist/sdk-php"}}'
