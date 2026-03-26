@@ -1,3 +1,3 @@
-module github.com/devinsight/sdk/go
+module github.com/debug-assist/sdk-go
 
 go 1.21

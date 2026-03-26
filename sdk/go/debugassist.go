@@ -1,15 +1,15 @@
-// Package devinsight captures panics and reports them to the DevInsight API.
+// Package debugassist captures panics and reports them to the DebugAssist API.
 //
 // Usage:
 //
 //	func main() {
-//	    devinsight.Wrap(run)
+//	    debugassist.Wrap(run)
 //	}
 //
 //	func run() {
 //	    // your app code
 //	}
-package devinsight
+package debugassist
 
 import (
 	"bytes"
@@ -23,10 +23,10 @@ import (
 )
 
 var (
-	apiKey      = os.Getenv("DEVINSIGHT_API_KEY")
-	baseURL     = strings.TrimRight(getEnv("DEVINSIGHT_BASE_URL", "https://devinsight-api.onrender.com"), "/")
-	projectName = getEnv("DEVINSIGHT_PROJECT", "unknown")
-	enabled     = os.Getenv("DEVINSIGHT_ENABLED") != "0"
+	apiKey      = os.Getenv("DEBUG_ASSIST_API_KEY")
+	baseURL     = strings.TrimRight(getEnv("DEBUG_ASSIST_BASE_URL", "https://api.debug-assist.app"), "/")
+	projectName = getEnv("DEBUG_ASSIST_PROJECT", "unknown")
+	enabled     = os.Getenv("DEBUG_ASSIST_ENABLED") != "0"
 )
 
 func getEnv(key, fallback string) string {
@@ -36,7 +36,7 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-// Wrap runs fn and captures any panic, reporting it to DevInsight before re-panicking.
+// Wrap runs fn and captures any panic, reporting it to DebugAssist before re-panicking.
 // This is the required one-liner for Go apps — place it as the first call in main().
 func Wrap(fn func()) {
 	defer func() {
@@ -66,14 +66,14 @@ func send(message, exceptionType, stack string) {
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[DevInsight] Falha ao serializar payload: %v\n", err)
+		fmt.Fprintf(os.Stderr, "[DebugAssist] Falha ao serializar payload: %v\n", err)
 		return
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest(http.MethodPost, baseURL+"/v1/diagnosticos", bytes.NewReader(body))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[DevInsight] Falha ao criar requisição: %v\n", err)
+		fmt.Fprintf(os.Stderr, "[DebugAssist] Falha ao criar requisição: %v\n", err)
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -81,12 +81,12 @@ func send(message, exceptionType, stack string) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[DevInsight] Falha ao enviar diagnóstico: %v\n", err)
+		fmt.Fprintf(os.Stderr, "[DebugAssist] Falha ao enviar diagnóstico: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		fmt.Fprintf(os.Stderr, "[DevInsight] Servidor retornou erro: status %d\n", resp.StatusCode)
+		fmt.Fprintf(os.Stderr, "[DebugAssist] Servidor retornou erro: status %d\n", resp.StatusCode)
 	}
 }
