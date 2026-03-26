@@ -11,7 +11,7 @@ go get github.com/debug-assist/sdk-go
 ## Usage
 
 ```go
-import "github.com/debug-assist/sdk-go"
+import debugassist "github.com/debug-assist/sdk-go"
 
 func main() {
     debugassist.Wrap(run)
