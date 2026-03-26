@@ -22,7 +22,7 @@ import sys
 import traceback
 import urllib.request
 
-DEFAULT_BASE_URL = 'https://api.debug-assist.app'
+DEFAULT_BASE_URL = 'https://debug-assist.onrender.com'
 
 
 class DebugAssist:
@@ -77,7 +77,7 @@ class DebugAssist:
         Args:
             api_key: Sua API Key (obtida em /v1/auth/me).
             project_name: Nome do projeto (aparece no contexto do diagnóstico).
-            base_url: URL base da API (padrão: https://api.debug-assist.app).
+            base_url: URL base da API (padrão: https://debug-assist.onrender.com).
         """
         if cls._initialized:
             return

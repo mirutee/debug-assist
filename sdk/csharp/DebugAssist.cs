@@ -16,14 +16,14 @@ namespace DebugAssistSDK
     ///
     /// Configuration via env vars:
     ///   DEBUG_ASSIST_API_KEY   — your API key
-    ///   DEBUG_ASSIST_BASE_URL  — base URL (default: https://api.debug-assist.app)
+    ///   DEBUG_ASSIST_BASE_URL  — base URL (default: https://debug-assist.onrender.com)
     ///   DEBUG_ASSIST_PROJECT   — project name (default: unknown)
     ///   DEBUG_ASSIST_ENABLED=0 — disable SDK
     /// </summary>
     public static class DebugAssist
     {
         private static string _apiKey      = Environment.GetEnvironmentVariable("DEBUG_ASSIST_API_KEY") ?? string.Empty;
-        private static string _baseUrl     = (Environment.GetEnvironmentVariable("DEBUG_ASSIST_BASE_URL") ?? "https://api.debug-assist.app").TrimEnd('/');
+        private static string _baseUrl     = (Environment.GetEnvironmentVariable("DEBUG_ASSIST_BASE_URL") ?? "https://debug-assist.onrender.com").TrimEnd('/');
         private static string _projectName = Environment.GetEnvironmentVariable("DEBUG_ASSIST_PROJECT") ?? "unknown";
         private static bool   _enabled     = Environment.GetEnvironmentVariable("DEBUG_ASSIST_ENABLED") != "0";
         private static bool   _initialized = false;

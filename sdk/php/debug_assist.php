@@ -9,14 +9,14 @@
  *
  * Configuration (env vars or constants defined before require):
  *   DEBUG_ASSIST_API_KEY   — your API key
- *   DEBUG_ASSIST_BASE_URL  — base URL (default: https://api.debug-assist.app)
+ *   DEBUG_ASSIST_BASE_URL  — base URL (default: https://debug-assist.onrender.com)
  *   DEBUG_ASSIST_PROJECT   — project name (default: unknown)
  *   DEBUG_ASSIST_ENABLED=0 — disable SDK
  */
 
 (static function (): void {
     $apiKey  = (string) (getenv('DEBUG_ASSIST_API_KEY')  ?: (defined('DEBUG_ASSIST_API_KEY')  ? DEBUG_ASSIST_API_KEY  : ''));
-    $baseUrl = rtrim((string) (getenv('DEBUG_ASSIST_BASE_URL') ?: (defined('DEBUG_ASSIST_BASE_URL') ? DEBUG_ASSIST_BASE_URL : 'https://api.debug-assist.app')), '/');
+    $baseUrl = rtrim((string) (getenv('DEBUG_ASSIST_BASE_URL') ?: (defined('DEBUG_ASSIST_BASE_URL') ? DEBUG_ASSIST_BASE_URL : 'https://debug-assist.onrender.com')), '/');
     $project = (string) (getenv('DEBUG_ASSIST_PROJECT')  ?: (defined('DEBUG_ASSIST_PROJECT')  ? DEBUG_ASSIST_PROJECT  : 'unknown'));
     $enabled = getenv('DEBUG_ASSIST_ENABLED') !== '0';
 

@@ -24,7 +24,7 @@ import (
 
 var (
 	apiKey      = os.Getenv("DEBUG_ASSIST_API_KEY")
-	baseURL     = strings.TrimRight(getEnv("DEBUG_ASSIST_BASE_URL", "https://api.debug-assist.app"), "/")
+	baseURL     = strings.TrimRight(getEnv("DEBUG_ASSIST_BASE_URL", "https://debug-assist.onrender.com"), "/")
 	projectName = getEnv("DEBUG_ASSIST_PROJECT", "unknown")
 	enabled     = os.Getenv("DEBUG_ASSIST_ENABLED") != "0"
 )

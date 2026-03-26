@@ -9,7 +9,7 @@
 #
 # Configuration (env vars):
 #   DEBUG_ASSIST_API_KEY   — your API key
-#   DEBUG_ASSIST_BASE_URL  — base URL (default: https://api.debug-assist.app)
+#   DEBUG_ASSIST_BASE_URL  — base URL (default: https://debug-assist.onrender.com)
 #   DEBUG_ASSIST_PROJECT   — project name (default: unknown)
 #   DEBUG_ASSIST_ENABLED=0 — disable SDK
 
@@ -19,7 +19,7 @@ require 'uri'
 
 module DebugAssist
   API_KEY  = ENV.fetch('DEBUG_ASSIST_API_KEY', '').freeze
-  BASE_URL = ENV.fetch('DEBUG_ASSIST_BASE_URL', 'https://api.debug-assist.app').chomp('/').freeze
+  BASE_URL = ENV.fetch('DEBUG_ASSIST_BASE_URL', 'https://debug-assist.onrender.com').chomp('/').freeze
   PROJECT  = ENV.fetch('DEBUG_ASSIST_PROJECT', 'unknown').freeze
   ENABLED  = ENV['DEBUG_ASSIST_ENABLED'] != '0'
 

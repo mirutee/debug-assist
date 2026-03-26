@@ -31,5 +31,5 @@ client.report(tipo='silent_backend_error', mensagem='something went wrong')
 |----------|-------------|---------|
 | `DEBUG_ASSIST_API_KEY` | Your API key | — |
 | `DEBUG_ASSIST_PROJECT` | Project name shown in diagnostics | `unknown` |
-| `DEBUG_ASSIST_BASE_URL` | API base URL | `https://api.debug-assist.app` |
+| `DEBUG_ASSIST_BASE_URL` | API base URL | `https://debug-assist.onrender.com` |
 | `DEBUG_ASSIST_ENABLED` | Set to `0` to disable | `1` |

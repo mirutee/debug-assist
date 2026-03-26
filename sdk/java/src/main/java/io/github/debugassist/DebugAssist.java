@@ -8,7 +8,7 @@ import java.time.Duration;
 
 public final class DebugAssist {
 
-    private static final String DEFAULT_BASE_URL = "https://api.debug-assist.app";
+    private static final String DEFAULT_BASE_URL = "https://debug-assist.onrender.com";
     private static boolean initialized = false;
 
     private DebugAssist() {}
