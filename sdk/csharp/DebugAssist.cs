@@ -3,33 +3,32 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
-namespace DevInsightSDK
+namespace DebugAssistSDK
 {
     /// <summary>
-    /// DevInsight SDK for C# — auto-captures unhandled exceptions and reports them to DevInsight.
+    /// DebugAssist SDK for C# — auto-captures unhandled exceptions and reports them to DebugAssist.
     ///
     /// Usage (one line in Program.cs):
-    ///   DevInsight.EnsureInitialized();
+    ///   DebugAssist.EnsureInitialized();
     ///
     /// Or with explicit key:
-    ///   DevInsight.Init("SUA_API_KEY", "meu-projeto");
+    ///   DebugAssist.Init("YOUR_API_KEY", "my-project");
     ///
     /// Configuration via env vars:
-    ///   DEVINSIGHT_API_KEY   — your API key
-    ///   DEVINSIGHT_BASE_URL  — base URL (default: https://devinsight-api.onrender.com)
-    ///   DEVINSIGHT_PROJECT   — project name (default: unknown)
-    ///   DEVINSIGHT_ENABLED=0 — disable SDK
+    ///   DEBUG_ASSIST_API_KEY   — your API key
+    ///   DEBUG_ASSIST_BASE_URL  — base URL (default: https://api.debug-assist.app)
+    ///   DEBUG_ASSIST_PROJECT   — project name (default: unknown)
+    ///   DEBUG_ASSIST_ENABLED=0 — disable SDK
     /// </summary>
-    public static class DevInsight
+    public static class DebugAssist
     {
-        private static string _apiKey      = Environment.GetEnvironmentVariable("DEVINSIGHT_API_KEY") ?? string.Empty;
-        private static string _baseUrl     = (Environment.GetEnvironmentVariable("DEVINSIGHT_BASE_URL") ?? "https://devinsight-api.onrender.com").TrimEnd('/');
-        private static string _projectName = Environment.GetEnvironmentVariable("DEVINSIGHT_PROJECT") ?? "unknown";
-        private static bool   _enabled     = Environment.GetEnvironmentVariable("DEVINSIGHT_ENABLED") != "0";
+        private static string _apiKey      = Environment.GetEnvironmentVariable("DEBUG_ASSIST_API_KEY") ?? string.Empty;
+        private static string _baseUrl     = (Environment.GetEnvironmentVariable("DEBUG_ASSIST_BASE_URL") ?? "https://api.debug-assist.app").TrimEnd('/');
+        private static string _projectName = Environment.GetEnvironmentVariable("DEBUG_ASSIST_PROJECT") ?? "unknown";
+        private static bool   _enabled     = Environment.GetEnvironmentVariable("DEBUG_ASSIST_ENABLED") != "0";
         private static bool   _initialized = false;
         private static readonly object _lock = new object();
 
-        // Static HttpClient — reuse across calls (avoid socket exhaustion)
         private static readonly HttpClient _http = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(10)
@@ -67,7 +66,6 @@ namespace DevInsightSDK
             TaskScheduler.UnobservedTaskException += (_, args) =>
             {
                 args.SetObserved();
-                // Unwrap AggregateException to get the real inner exception
                 var inner = args.Exception.InnerException ?? (Exception)args.Exception;
                 SendSync(
                     inner.Message,
@@ -99,12 +97,11 @@ namespace DevInsightSDK
                 };
                 request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {_apiKey}");
 
-                // Synchronous send — process is about to terminate, async would be cancelled
                 _http.Send(request);
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine($"[DevInsight] Falha ao enviar diagnóstico: {e.Message}");
+                Console.Error.WriteLine($"[DebugAssist] Falha ao enviar diagnóstico: {e.Message}");
             }
         }
     }

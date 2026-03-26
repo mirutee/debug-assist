@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>DebugAssistSDK</RootNamespace>
+    <AssemblyName>DebugAssist</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <PackageId>DebugAssist</PackageId>
+    <Title>DebugAssist SDK</Title>
+    <Description>Auto-capture runtime errors and send diagnostics to DebugAssist API</Description>
+    <PackageProjectUrl>https://github.com/debug-assist/sdk-csharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/debug-assist/sdk-csharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>debug;monitoring;error-tracking;diagnostics</PackageTags>
+    <Authors>DebugAssist</Authors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>
