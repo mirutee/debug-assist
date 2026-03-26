@@ -29,6 +29,7 @@ namespace DebugAssistSDK
         private static bool   _initialized = false;
         private static readonly object _lock = new object();
 
+        // Static HttpClient — reuse across calls (avoid socket exhaustion)
         private static readonly HttpClient _http = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(10)
