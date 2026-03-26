@@ -89,18 +89,18 @@
 
       <div class="install-label">Vanilla JS — via CDN (sem build)</div>
       <pre><code><span class="comment">&lt;!-- Adicione no &lt;head&gt; do seu HTML --&gt;</span>
-&lt;script src=<span class="string">"https://devinsight-api.onrender.com/sdk/browser.js"</span>
+&lt;script src=<span class="string">"https://debug-assist.onrender.com/sdk/browser.js"</span>
         data-api-key=<span class="string">"SUA_API_KEY"</span>
         data-project=<span class="string">"meu-app"</span>&gt;&lt;/script&gt;</code></pre>
 
       <div class="install-label">npm (React, Vue, Svelte, etc.)</div>
-      <pre><code>npm install devinsight-browser</code></pre>
+      <pre><code>npm install debug-assist-browser</code></pre>
       <pre><code><span class="comment">// Inicialização manual (ES module)</span>
-<span class="keyword">import</span> DevInsight <span class="keyword">from</span> <span class="string">'devinsight-browser'</span>;
-DevInsight.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
+<span class="keyword">import</span> DebugAssist <span class="keyword">from</span> <span class="string">'debug-assist-browser'</span>;
+DebugAssist.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
 
       <div class="install-label">React — ErrorBoundary</div>
-      <pre><code><span class="keyword">import</span> { ErrorBoundary } <span class="keyword">from</span> <span class="string">'devinsight-browser/react'</span>;
+      <pre><code><span class="keyword">import</span> { ErrorBoundary } <span class="keyword">from</span> <span class="string">'debug-assist-browser/react'</span>;
 
 <span class="comment">// Envolva seu componente raiz:</span>
 &lt;ErrorBoundary apiKey=<span class="string">"SUA_API_KEY"</span> projectName=<span class="string">"meu-app"</span>
@@ -109,22 +109,22 @@ DevInsight.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName
 &lt;/ErrorBoundary&gt;</code></pre>
 
       <div class="install-label">Vue 3 — plugin</div>
-      <pre><code><span class="keyword">import</span> DevInsightPlugin <span class="keyword">from</span> <span class="string">'devinsight-browser/vue'</span>;
+      <pre><code><span class="keyword">import</span> DebugAssistPlugin <span class="keyword">from</span> <span class="string">'debug-assist-browser/vue'</span>;
 
-app.use(DevInsightPlugin, { apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
+app.use(DebugAssistPlugin, { apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
 
       <div class="install-label">Svelte</div>
-      <pre><code><span class="keyword">import</span> { initDevInsight } <span class="keyword">from</span> <span class="string">'devinsight-browser/svelte'</span>;
+      <pre><code><span class="keyword">import</span> { initDebugAssist } <span class="keyword">from</span> <span class="string">'debug-assist-browser/svelte'</span>;
 
 <span class="comment">// Em main.js ou componente raiz:</span>
-initDevInsight({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
+initDebugAssist({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-app'</span> });</code></pre>
 
       <div class="env-box">
         <h4>Configuração</h4>
         <div class="env-row"><span class="env-key">data-api-key / apiKey</span><span class="env-val">Sua API Key (obrigatória)</span></div>
         <div class="env-row"><span class="env-key">data-project / projectName</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">data-base-url / baseUrl</span><span class="env-val">URL base da API (default: https://devinsight-api.onrender.com)</span></div>
-        <div class="env-row"><span class="env-key">&lt;meta name="devinsight-enabled" content="0"&gt;</span><span class="env-val">Desliga o SDK em qualquer ambiente</span></div>
+        <div class="env-row"><span class="env-key">data-base-url / baseUrl</span><span class="env-val">URL base da API (default: https://debug-assist.onrender.com)</span></div>
+        <div class="env-row"><span class="env-key">&lt;meta name="debug-assist-enabled" content="0"&gt;</span><span class="env-val">Desliga o SDK em qualquer ambiente</span></div>
       </div>
     </div>
 
@@ -139,15 +139,15 @@ initDevInsight({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName:
       </div>
       <p class="sdk-desc">Captura <code>uncaughtException</code> e <code>unhandledRejection</code> automaticamente.</p>
       <div class="install-label">Instalação</div>
-      <pre><code>npm install devinsight-sdk</code></pre>
+      <pre><code>npm install debug-assist</code></pre>
       <div class="install-label">Uso</div>
-      <pre><code><span class="keyword">const</span> DevInsight = <span class="keyword">require</span>(<span class="string">'devinsight-sdk'</span>);
+      <pre><code><span class="keyword">const</span> DebugAssist = <span class="keyword">require</span>(<span class="string">'debug-assist'</span>);
 
 <span class="comment">// Uma linha — captura todos os crashes automaticamente</span>
-DevInsight.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-projeto'</span> });</code></pre>
+DebugAssist.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName: <span class="string">'meu-projeto'</span> });</code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK (útil em CI/testes)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK (útil em CI/testes)</span></div>
       </div>
     </div>
 
@@ -160,21 +160,21 @@ DevInsight.init({ apiKey: <span class="string">'SUA_API_KEY'</span>, projectName
       </div>
       <p class="sdk-desc">Registra <code>sys.excepthook</code> para capturar qualquer exceção não tratada. Python 3.8+, sem dependências.</p>
       <div class="install-label">Instalação</div>
-      <pre><code>pip install devinsight</code></pre>
+      <pre><code>pip install debug-assist</code></pre>
       <div class="install-label">Uso via variável de ambiente (recomendado)</div>
       <pre><code><span class="comment"># No terminal ou .env:</span>
-export DEVINSIGHT_API_KEY=<span class="string">'SUA_API_KEY'</span>
+export DEBUG_ASSIST_API_KEY=<span class="string">'SUA_API_KEY'</span>
 
 <span class="comment"># No código — só importar já basta:</span>
-<span class="keyword">import</span> devinsight</code></pre>
+<span class="keyword">import</span> debug_assist</code></pre>
       <div class="install-label">Ou explicitamente</div>
-      <pre><code><span class="keyword">from</span> devinsight <span class="keyword">import</span> DevInsight
-DevInsight.init(api_key=<span class="string">'SUA_API_KEY'</span>, project_name=<span class="string">'meu-projeto'</span>)</code></pre>
+      <pre><code><span class="keyword">from</span> debug_assist <span class="keyword">import</span> DebugAssist
+DebugAssist.init(api_key=<span class="string">'SUA_API_KEY'</span>, project_name=<span class="string">'meu-projeto'</span>)</code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
       </div>
     </div>
 
@@ -188,23 +188,23 @@ DevInsight.init(api_key=<span class="string">'SUA_API_KEY'</span>, project_name=
       <p class="sdk-desc">Registra <code>Thread.setDefaultUncaughtExceptionHandler</code>. Java 11+, sem dependências externas.</p>
       <div class="install-label">Maven (pom.xml)</div>
       <pre><code>&lt;dependency&gt;
-  &lt;groupId&gt;com.devinsight&lt;/groupId&gt;
-  &lt;artifactId&gt;devinsight&lt;/artifactId&gt;
+  &lt;groupId&gt;io.github.debug-assist&lt;/groupId&gt;
+  &lt;artifactId&gt;debug-assist&lt;/artifactId&gt;
   &lt;version&gt;1.0.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
       <div class="install-label">Uso</div>
-      <pre><code><span class="keyword">import</span> com.devinsight.DevInsight;
+      <pre><code><span class="keyword">import</span> io.github.debugassist.DebugAssist;
 
-<span class="comment">// Via env var DEVINSIGHT_API_KEY:</span>
-DevInsight.init();
+<span class="comment">// Via env var DEBUG_ASSIST_API_KEY:</span>
+DebugAssist.init();
 
 <span class="comment">// Ou explicitamente:</span>
-DevInsight.init(<span class="string">"SUA_API_KEY"</span>, <span class="string">"meu-projeto"</span>);</code></pre>
+DebugAssist.init(<span class="string">"SUA_API_KEY"</span>, <span class="string">"meu-projeto"</span>);</code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
       </div>
     </div>
 
@@ -217,12 +217,12 @@ DevInsight.init(<span class="string">"SUA_API_KEY"</span>, <span class="string">
       </div>
       <p class="sdk-desc">Captura panics via <code>defer recover()</code> e re-panic após enviar. Go 1.21+, sem dependências externas.</p>
       <div class="install-label">Instalação</div>
-      <pre><code>go get github.com/devinsight/sdk/go</code></pre>
+      <pre><code>go get github.com/debug-assist/sdk-go</code></pre>
       <div class="install-label">Uso</div>
-      <pre><code><span class="keyword">import</span> <span class="string">"github.com/devinsight/sdk/go/devinsight"</span>
+      <pre><code><span class="keyword">import</span> debugassist <span class="string">"github.com/debug-assist/sdk-go"</span>
 
 <span class="keyword">func</span> main() {
-    devinsight.Wrap(run) <span class="comment">// uma linha</span>
+    debugassist.Wrap(run) <span class="comment">// uma linha</span>
 }
 
 <span class="keyword">func</span> run() {
@@ -230,9 +230,9 @@ DevInsight.init(<span class="string">"SUA_API_KEY"</span>, <span class="string">
 }</code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
       </div>
     </div>
 
@@ -246,14 +246,14 @@ DevInsight.init(<span class="string">"SUA_API_KEY"</span>, <span class="string">
       <p class="sdk-desc">Registra <code>set_exception_handler</code> e <code>register_shutdown_function</code> para capturar exceções e erros fatais. PHP 7.4+, sem Composer.</p>
       <div class="install-label">Instalação — copie o arquivo para seu projeto</div>
       <pre><code><span class="comment"># Ou via Composer (em breve):</span>
-composer require devinsight/devinsight-php</code></pre>
+composer require debug-assist/debug-assist</code></pre>
       <div class="install-label">Uso</div>
-      <pre><code><span class="keyword">require_once</span> <span class="string">'devinsight.php'</span>; <span class="comment">// só isso</span></code></pre>
+      <pre><code><span class="keyword">require_once</span> <span class="string">'debug_assist.php'</span>; <span class="comment">// só isso</span></code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente ou constantes PHP</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
       </div>
     </div>
 
@@ -266,14 +266,14 @@ composer require devinsight/devinsight-php</code></pre>
       </div>
       <p class="sdk-desc">Usa <code>at_exit</code> com <code>$!</code> para capturar exceções não tratadas. MRI Ruby 2.7+, sem gems externas.</p>
       <div class="install-label">Instalação</div>
-      <pre><code>gem install devinsight</code></pre>
+      <pre><code>gem install debug-assist</code></pre>
       <div class="install-label">Uso</div>
-      <pre><code><span class="keyword">require</span> <span class="string">'devinsight'</span> <span class="comment"># só isso</span></code></pre>
+      <pre><code><span class="keyword">require</span> <span class="string">'debug-assist'</span> <span class="comment"># só isso</span></code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
       </div>
     </div>
 
@@ -286,20 +286,20 @@ composer require devinsight/devinsight-php</code></pre>
       </div>
       <p class="sdk-desc">Registra <code>AppDomain.UnhandledException</code> e <code>TaskScheduler.UnobservedTaskException</code>. .NET 6+, sem pacotes externos.</p>
       <div class="install-label">Instalação</div>
-      <pre><code>dotnet add package DevInsight</code></pre>
+      <pre><code>dotnet add package DebugAssist</code></pre>
       <div class="install-label">Uso</div>
-      <pre><code><span class="keyword">using</span> DevInsightSDK;
+      <pre><code><span class="keyword">using</span> DebugAssistSDK;
 
 <span class="comment">// Uma linha no topo de Program.cs:</span>
-DevInsight.EnsureInitialized();
+DebugAssist.EnsureInitialized();
 
 <span class="comment">// Ou explicitamente:</span>
-DevInsight.Init(<span class="string">"SUA_API_KEY"</span>, <span class="string">"meu-projeto"</span>);</code></pre>
+DebugAssist.Init(<span class="string">"SUA_API_KEY"</span>, <span class="string">"meu-projeto"</span>);</code></pre>
       <div class="env-box">
         <h4>Variáveis de ambiente</h4>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_API_KEY</span><span class="env-val">Sua API Key</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
-        <div class="env-row"><span class="env-key">DEVINSIGHT_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_API_KEY</span><span class="env-val">Sua API Key</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_PROJECT</span><span class="env-val">Nome do projeto (default: unknown)</span></div>
+        <div class="env-row"><span class="env-key">DEBUG_ASSIST_ENABLED=0</span><span class="env-val">Desliga o SDK</span></div>
       </div>
     </div>
 
@@ -311,7 +311,7 @@ DevInsight.Init(<span class="string">"SUA_API_KEY"</span>, <span class="string">
       <a href="/docs">Docs</a>
       <a href="/docs/sdks.html">SDKs</a>
       <a href="/dashboard/">Dashboard</a>
-      <a href="mailto:contato@devinsight.com">contato@devinsight.com</a>
+      <a href="mailto:hi@debug-assist.app">hi@debug-assist.app</a>
     </p>
   </footer>
 

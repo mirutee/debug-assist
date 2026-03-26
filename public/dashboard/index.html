@@ -16,7 +16,7 @@
       <a class="nav-item active">🏠 Visão Geral</a>
       <a class="nav-item" href="/dashboard/historico.html">📋 Histórico</a>
       <a class="nav-item" href="/dashboard/alertas.html" id="nav-alertas">🔔 Alertas<span class="nav-badge" id="alert-badge"></span></a>
-      <a class="nav-item" href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
+      <a class="nav-item" href="https://debug-assist.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
     </nav>
@@ -69,7 +69,7 @@
     let revealed = false;
 
     async function loadDashboard() {
-      const token = localStorage.getItem('devinsight_token');
+      const token = localStorage.getItem('debug_assist_token');
       if (!token) {
         window.location.replace('/dashboard/login.html');
         return;
@@ -82,7 +82,7 @@
 
         if (res.status === 401) {
           console.error('Token inválido ou expirado — redirecionando para login');
-          localStorage.removeItem('devinsight_token');
+          localStorage.removeItem('debug_assist_token');
           window.location.replace('/dashboard/login.html');
           return;
         }
@@ -200,7 +200,7 @@
 
     document.getElementById('btn-sair').addEventListener('click', (e) => {
       e.preventDefault();
-      localStorage.removeItem('devinsight_token');
+      localStorage.removeItem('debug_assist_token');
       window.location.replace('/dashboard/login.html');
     });
 
@@ -209,14 +209,14 @@
 
     async function checkAlertBadge() {
       try {
-        const token = localStorage.getItem('devinsight_token');
+        const token = localStorage.getItem('debug_assist_token');
         if (!token) return;
         const res = await fetch(`${API}/v1/diagnosticos/historico`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) return;
         const items = await res.json();
-        const lastSeen = localStorage.getItem('devinsight_last_alert_seen') || '1970-01-01T00:00:00Z';
+        const lastSeen = localStorage.getItem('debug_assist_last_alert_seen') || '1970-01-01T00:00:00Z';
         const count = items.filter(i => i.resposta && i.resposta.nivel === 'alto' && i.criado_em > lastSeen).length;
         if (count > 0) {
           const badge = document.getElementById('alert-badge');
@@ -227,7 +227,7 @@
     }
 
     document.getElementById('btn-portal').addEventListener('click', async () => {
-      const token = localStorage.getItem('devinsight_token');
+      const token = localStorage.getItem('debug_assist_token');
       const errorEl = document.getElementById('portal-error');
       errorEl.classList.remove('show');
 

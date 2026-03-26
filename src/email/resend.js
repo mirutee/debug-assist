@@ -8,7 +8,7 @@ function getResend() {
 }
 
 function buildWelcomeHtml(email, apiKey) {
-  const baseUrl = (process.env.APP_BASE_URL || 'https://devinsight-api.onrender.com').replace(/\/$/, '');
+  const baseUrl = (process.env.APP_BASE_URL || 'https://debug-assist.onrender.com').replace(/\/$/, '');
 
   const apiKeyBlock = apiKey
     ? `

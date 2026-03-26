@@ -73,7 +73,7 @@
 
     document.querySelectorAll('.btn-assinar').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const token = localStorage.getItem('devinsight_token');
+        const token = localStorage.getItem('debug_assist_token');
         const plano = btn.dataset.plano;
         const originalText = btn.textContent;
         const errorEl = document.getElementById(`error-${plano}`);

@@ -37,7 +37,7 @@
 
     const _params = new URLSearchParams(window.location.search);
 
-    if (localStorage.getItem('devinsight_token')) {
+    if (localStorage.getItem('debug_assist_token')) {
       const _dest = _params.get('redirect') === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
       window.location.replace(_dest);
     }
@@ -74,7 +74,7 @@
           return;
         }
 
-        localStorage.setItem('devinsight_token', data.token);
+        localStorage.setItem('debug_assist_token', data.token);
         const dest = _params.get('redirect') === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
         window.location.replace(dest);
       } catch (err) {

@@ -16,7 +16,7 @@
       <a class="nav-item" href="/dashboard/">🏠 Visão Geral</a>
       <a class="nav-item" href="/dashboard/historico.html">📋 Histórico</a>
       <a class="nav-item active" href="/dashboard/alertas.html">🔔 Alertas</a>
-      <a class="nav-item" href="https://devinsight-api.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
+      <a class="nav-item" href="https://debug-assist.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
     </nav>
@@ -60,18 +60,18 @@
     let pollInterval = null;
 
     async function init() {
-      const token = localStorage.getItem('devinsight_token');
+      const token = localStorage.getItem('debug_assist_token');
       if (!token) {
         window.location.replace('/dashboard/login.html');
         return;
       }
 
       // Marcar como visto — zera o badge nas outras páginas
-      localStorage.setItem('devinsight_last_alert_seen', new Date().toISOString());
+      localStorage.setItem('debug_assist_last_alert_seen', new Date().toISOString());
 
       document.getElementById('btn-sair').addEventListener('click', (e) => {
         e.preventDefault();
-        localStorage.removeItem('devinsight_token');
+        localStorage.removeItem('debug_assist_token');
         window.location.replace('/dashboard/login.html');
       });
 
@@ -86,7 +86,7 @@
         });
 
         if (res.status === 401) {
-          localStorage.removeItem('devinsight_token');
+          localStorage.removeItem('debug_assist_token');
           window.location.replace('/dashboard/login.html');
           return;
         }
@@ -107,7 +107,7 @@
         }
 
         document.getElementById('user-email').textContent =
-          localStorage.getItem('devinsight_email') || '';
+          localStorage.getItem('debug_assist_email') || '';
 
         if (altos.length === 0) {
           document.getElementById('empty-state').style.display = 'block';
@@ -140,7 +140,7 @@
         refreshStats();
 
         // Atualizar last_seen para não mostrar badge nas outras abas
-        localStorage.setItem('devinsight_last_alert_seen', new Date().toISOString());
+        localStorage.setItem('debug_assist_last_alert_seen', new Date().toISOString());
       } catch (_) {}
     }
 
