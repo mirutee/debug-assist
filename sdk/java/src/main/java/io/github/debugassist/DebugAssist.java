@@ -1,4 +1,4 @@
-package com.devinsight;
+package io.github.debugassist;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -6,17 +6,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-public final class DevInsight {
+public final class DebugAssist {
 
-    private static final String DEFAULT_BASE_URL = "https://devinsight-api.onrender.com";
+    private static final String DEFAULT_BASE_URL = "https://api.debug-assist.app";
     private static boolean initialized = false;
 
-    private DevInsight() {}
+    private DebugAssist() {}
 
-    /** Reads DEVINSIGHT_API_KEY from environment and registers the crash handler. */
+    /** Reads DEBUG_ASSIST_API_KEY from environment and registers the crash handler. */
     public static synchronized void init() {
-        String apiKey = System.getenv("DEVINSIGHT_API_KEY");
-        String project = envOr("DEVINSIGHT_PROJECT", "unknown");
+        String apiKey = System.getenv("DEBUG_ASSIST_API_KEY");
+        String project = envOr("DEBUG_ASSIST_PROJECT", "unknown");
         if (apiKey != null && !apiKey.isBlank()) {
             init(apiKey, project);
         }
@@ -25,14 +25,14 @@ public final class DevInsight {
     /** Registers the crash handler with an explicit API key. */
     public static synchronized void init(String apiKey, String projectName) {
         if (initialized) return;
-        if ("0".equals(System.getenv("DEVINSIGHT_ENABLED"))) return;
+        if ("0".equals(System.getenv("DEBUG_ASSIST_ENABLED"))) return;
         if (apiKey == null || apiKey.isBlank()) return;
 
         initialized = true;
 
         final String key     = apiKey;
         final String project = projectName != null ? projectName : "unknown";
-        final String base    = envOr("DEVINSIGHT_BASE_URL", DEFAULT_BASE_URL).replaceAll("/+$", "");
+        final String base    = envOr("DEBUG_ASSIST_BASE_URL", DEFAULT_BASE_URL).replaceAll("/+$", "");
 
         final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -74,7 +74,7 @@ public final class DevInsight {
 
             httpClient.send(req, HttpResponse.BodyHandlers.discarding());
         } catch (Exception e) {
-            System.err.println("[DevInsight] Falha ao enviar diagnóstico: " + e.getMessage());
+            System.err.println("[DebugAssist] Falha ao enviar diagnóstico: " + e.getMessage());
         }
     }
 
