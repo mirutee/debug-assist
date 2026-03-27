@@ -14,6 +14,15 @@
   --nav-active: rgba(99,102,241,0.12);
 }
 
+[data-theme="light"] {
+  --bg:      #F8FAFC;
+  --surface: #FFFFFF;
+  --border:  #CBD5E1;
+  --text:    #0F172A;
+  --muted:   #64748B;
+  --code-bg: #F1F5F9;
+}
+
 /* public/dashboard/style.css */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -429,3 +438,19 @@ input:focus { border-color: #6366f1; }
 }
 @keyframes blink { 50% { opacity: 0; } }
 .sidebar-logo { display: flex; align-items: center; gap: 2px; padding: 8px 10px; margin-bottom: 12px; }
+
+/* ── Theme toggle (sidebar) ─────────────────── */
+.theme-toggle-sidebar {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 4px 8px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+  text-align: left;
+  transition: background 0.2s;
+}
+.theme-toggle-sidebar:hover { background: var(--surface); }

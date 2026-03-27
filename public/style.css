@@ -14,6 +14,18 @@
   --code-bg:   #0D1117;
 }
 
+[data-theme="light"] {
+  --bg:      #F8FAFC;
+  --surface: #FFFFFF;
+  --border:  #CBD5E1;
+  --text:    #0F172A;
+  --muted:   #64748B;
+  --code-bg: #F1F5F9;
+}
+[data-theme="light"] .navbar {
+  background: rgba(248,250,252,0.92);
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -365,3 +377,23 @@ footer .footer-links a:hover { color: var(--text); }
   footer { padding: 32px 20px; flex-direction: column; gap: 16px; text-align: center; }
   footer .footer-links { justify-content: center; }
 }
+
+/* ── Theme toggle (floating) ────────────────── */
+.theme-toggle-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  transition: background 0.2s, border-color 0.2s;
+}
+.theme-toggle-float:hover { background: var(--border); }
