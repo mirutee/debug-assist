@@ -30,5 +30,6 @@ app.use("/health", require("./routes/health"));
 app.use("/v1/auth", require("./routes/auth"));
 app.use("/v1/diagnosticos", limiter, require("./routes/diagnosticos"));
 app.use("/v1/billing", require("./routes/billing"));
+app.use("/v1/analytics", require("./routes/analytics"));
 
 module.exports = app;
