@@ -234,10 +234,23 @@
           return;
         }
 
-        renderChart(dados);
+        renderChart(fillGaps(dados));
       } catch (_) {
         area.innerHTML = '<div class="chart-error">Não foi possível carregar o gráfico</div>';
       }
+    }
+
+    function fillGaps(dados) {
+      const map = Object.fromEntries(dados.map(d => [d.data, d.total]));
+      const result = [];
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        result.push({ data: key, total: map[key] || 0 });
+      }
+      return result;
     }
 
     function renderChart(dados) {
