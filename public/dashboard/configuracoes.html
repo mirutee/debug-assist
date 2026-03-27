@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configurações — DEBUG_Assist</title>
   <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('da_theme');
+        var sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', saved || sys);
+      } catch(e) {}
+    })();
+  </script>
   <style>
     .config-section {
       background: var(--card-bg, #1a1a1a);
@@ -130,6 +139,7 @@
       <a class="nav-item" href="https://debug-assist.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
+      <button id="theme-toggle" class="theme-toggle-sidebar" onclick="toggleTheme()" title="Mudar tema"></button>
     </nav>
 
     <main class="main">
@@ -401,6 +411,22 @@
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('modal-overlay')) closeModal();
     });
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('da_theme', next); } catch(e) {}
+      updateThemeIcon();
+    }
+    function updateThemeIcon() {
+      var btn = document.getElementById('theme-toggle');
+      if (!btn) return;
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      btn.textContent = isDark ? '☀️' : '🌙';
+      btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
+    }
+    document.addEventListener('DOMContentLoaded', updateThemeIcon);
 
     init();
   </script>

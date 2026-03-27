@@ -54,4 +54,14 @@ describe('Dashboard static files', () => {
     const res = await request(app).get('/dashboard/naoexiste.html');
     expect(res.status).toBe(404);
   });
+
+  it('GET /dashboard/ contém botão theme-toggle', async () => {
+    const res = await request(app).get('/dashboard/');
+    expect(res.text).toContain('id="theme-toggle"');
+  });
+
+  it('GET /dashboard/ contém script de inicialização de tema', async () => {
+    const res = await request(app).get('/dashboard/');
+    expect(res.text).toContain('da_theme');
+  });
 });
