@@ -211,9 +211,8 @@
         userData = await res.json();
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('account-email').textContent = userData.email;
+        loadAnalytics(token);
       } catch (_) {}
-
-      loadAnalytics(token);
     }
 
     async function loadAnalytics(token) {
@@ -323,8 +322,8 @@
       if (!userData) return;
       navigator.clipboard.writeText(userData.api_key).then(() => {
         const fb = document.getElementById('copied-feedback');
-        fb.style.display = 'block';
-        setTimeout(() => { fb.style.display = 'none'; }, 2000);
+        fb.classList.add('show');
+        setTimeout(() => { fb.classList.remove('show'); }, 2000);
       });
     }
 
