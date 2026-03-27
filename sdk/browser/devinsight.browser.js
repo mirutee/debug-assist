@@ -1,22 +1,22 @@
 // sdk/browser/devinsight.browser.js
-// UMD — works as <script> tag (window.DevInsight) and CommonJS (require)
+// UMD — works as <script> tag (window.DebugAssist) and CommonJS (require)
 (function (global, factory) {
   'use strict';
   if (typeof exports !== 'undefined') {
     module.exports = factory();
   } else {
-    global.DevInsight = factory();
+    global.DebugAssist = factory();
   }
 }(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
 
-  var DEFAULT_BASE_URL = 'https://devinsight-api.onrender.com';
+  var DEFAULT_BASE_URL = 'https://debug-assist.onrender.com';
   var _initialized = false;
   var _client = null;
 
   function _isDisabled() {
     if (typeof document === 'undefined') return false;
-    var meta = document.querySelector('meta[name="devinsight-enabled"]');
+    var meta = document.querySelector('meta[name="debug-assist-enabled"]');
     return meta !== null && meta.getAttribute('content') === '0';
   }
 
@@ -53,7 +53,7 @@
     } catch (_) { /* never cascade */ }
   }
 
-  var DevInsight = {
+  var DebugAssist = {
     init: function (opts) {
       if (_initialized) return;
       if (_isDisabled()) return;
@@ -110,7 +110,7 @@
     var _currentScript = document.currentScript;
     if (_currentScript && _currentScript.getAttribute('data-api-key')) {
       var _autoInit = function () {
-        DevInsight.init({
+        DebugAssist.init({
           apiKey: _currentScript.getAttribute('data-api-key'),
           projectName: _currentScript.getAttribute('data-project') || 'unknown',
           baseUrl: _currentScript.getAttribute('data-base-url') || DEFAULT_BASE_URL,
@@ -124,5 +124,5 @@
     }
   }
 
-  return DevInsight;
+  return DebugAssist;
 }));

@@ -1,11 +1,11 @@
 // sdk/browser/react.js
-// React ErrorBoundary component for DevInsight
+// React ErrorBoundary component for Debug Assist
 'use strict';
 
 var React = require('react');
 var core = require('./devinsight.browser.js');
 
-var DEFAULT_BASE_URL = 'https://devinsight-api.onrender.com';
+var DEFAULT_BASE_URL = 'https://debug-assist.onrender.com';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

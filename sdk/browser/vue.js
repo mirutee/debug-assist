@@ -1,10 +1,10 @@
 // sdk/browser/vue.js
-// Vue 3 plugin for DevInsight
+// Vue 3 plugin for Debug Assist
 'use strict';
 
 var core = require('./devinsight.browser.js');
 
-var DevInsightPlugin = {
+var Debug AssistPlugin = {
   install: function (app, opts) {
     var apiKey = (opts && opts.apiKey) || '';
     var projectName = (opts && opts.projectName) || 'unknown';
@@ -24,4 +24,4 @@ var DevInsightPlugin = {
   },
 };
 
-module.exports = DevInsightPlugin;
+module.exports = Debug AssistPlugin;

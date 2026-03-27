@@ -1,15 +1,15 @@
 // sdk/index.js
-const DEFAULT_BASE_URL = 'https://devinsight-api.onrender.com';
+const DEFAULT_BASE_URL = 'https://debug-assist.onrender.com';
 
-class DevInsight {
+class DebugAssist {
   constructor({ apiKey, baseUrl } = {}) {
-    if (!apiKey) throw new Error('DevInsight: apiKey é obrigatória');
+    if (!apiKey) throw new Error('DebugAssist: apiKey é obrigatória');
     this.apiKey = apiKey;
     this.baseUrl = baseUrl || DEFAULT_BASE_URL;
   }
 
   async report({ tipo, mensagem, contexto, dados } = {}) {
-    if (!tipo) throw new Error("DevInsight: campo 'tipo' é obrigatório");
+    if (!tipo) throw new Error("DebugAssist: campo 'tipo' é obrigatório");
 
     const response = await fetch(`${this.baseUrl}/v1/diagnosticos`, {
       method: 'POST',
@@ -22,17 +22,17 @@ class DevInsight {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(`DevInsight API error ${response.status}: ${err.erro || 'desconhecido'}`);
+      throw new Error(`DebugAssist API error ${response.status}: ${err.erro || 'desconhecido'}`);
     }
 
     return response.json();
   }
 
   static init({ apiKey, projectName = 'unknown', baseUrl } = {}) {
-    if (DevInsight._initialized) return;
+    if (DebugAssist._initialized) return;
 
-    const client = new DevInsight({ apiKey, baseUrl });
-    DevInsight._initialized = true;
+    const client = new DebugAssist({ apiKey, baseUrl });
+    DebugAssist._initialized = true;
 
     async function sendSilently(err) {
       try {
@@ -57,6 +57,6 @@ class DevInsight {
   }
 }
 
-DevInsight._initialized = false;
+DebugAssist._initialized = false;
 
-module.exports = DevInsight;
+module.exports = DebugAssist;

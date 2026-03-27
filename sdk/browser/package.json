@@ -1,7 +1,7 @@
 {
-  "name": "devinsight-browser",
+  "name": "debug-assist-browser",
   "version": "1.0.0",
-  "description": "DevInsight browser SDK — auto-captures frontend errors",
+  "description": "Debug Assist browser SDK — auto-captures frontend errors",
   "main": "devinsight.browser.js",
   "module": "devinsight.browser.esm.js",
   "exports": {

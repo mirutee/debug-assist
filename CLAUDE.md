@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**DevInsight API** — A diagnostic API service that analyzes requests/logs and returns human-readable explanations of errors, correction suggestions, and performance insights. Think "X-ray for APIs."
+**Debug Assist** — A diagnostic API service that analyzes requests/logs and returns human-readable explanations of errors, correction suggestions, and performance insights. Think "X-ray for APIs."
 
 The full product specification lives in `Prompt.txt` (Portuguese). No code has been written yet — this is greenfield.
 

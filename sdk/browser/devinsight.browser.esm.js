@@ -1,12 +1,12 @@
 // sdk/browser/devinsight.browser.esm.js
 // ESM — for bundlers (Vite, Rollup, webpack 5) that respect the "module" field
-const DEFAULT_BASE_URL = 'https://devinsight-api.onrender.com';
+const DEFAULT_BASE_URL = 'https://debug-assist.onrender.com';
 let _initialized = false;
 let _client = null;
 
 function _isDisabled() {
   if (typeof document === 'undefined') return false;
-  const meta = document.querySelector('meta[name="devinsight-enabled"]');
+  const meta = document.querySelector('meta[name="debug-assist-enabled"]');
   return meta !== null && meta.getAttribute('content') === '0';
 }
 

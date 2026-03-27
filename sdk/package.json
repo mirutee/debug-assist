@@ -1,11 +1,11 @@
 {
-  "name": "devinsight-sdk",
+  "name": "debug-assist-sdk",
   "version": "1.0.0",
-  "description": "SDK oficial da DevInsight API — diagnósticos inteligentes para aplicações",
+  "description": "SDK oficial da Debug Assist — diagnósticos inteligentes para aplicações",
   "main": "index.js",
-  "files": ["index.js"],
-  "keywords": ["diagnostics", "debug", "api", "devinsight", "monitoring"],
-  "author": "DevInsight",
+  "files": ["index.js", "browser", "README.md"],
+  "keywords": ["diagnostics", "debug", "api", "debug-assist", "monitoring"],
+  "author": "Debug Assist",
   "license": "MIT",
   "repository": {
     "type": "git",
