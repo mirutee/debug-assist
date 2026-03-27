@@ -1,5 +1,6 @@
 // src/db/supabase.js
 const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
   console.warn("[DevInsight] AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados — diagnósticos não serão persistidos.");
@@ -119,7 +120,7 @@ async function getUsuarioByStripeCustomerId(stripeCustomerId) {
 async function regenerateApiKey(usuarioId) {
   const { data, error } = await supabase
     .from("usuarios")
-    .update({ api_key: require("crypto").randomUUID() })
+    .update({ api_key: crypto.randomUUID() })
     .eq("id", usuarioId)
     .select("api_key")
     .single();
