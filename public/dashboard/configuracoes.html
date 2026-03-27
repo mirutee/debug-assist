@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações — DEBUG_Assist</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .config-section {
+      background: var(--card-bg, #1a1a1a);
+      border: 1px solid var(--border, #2a2a2a);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .config-section-label {
+      font-size: 10px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+    .email-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .email-label {
+      font-size: 13px;
+      color: #888;
+      min-width: 40px;
+    }
+    .email-value {
+      font-size: 13px;
+      color: #ccc;
+      background: #111;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #333;
+    }
+    .btn-regenerate {
+      margin-top: 12px;
+      background: transparent;
+      border: 1px solid #6366f1;
+      color: #6366f1;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-regenerate:hover { background: #1e1e2e; }
+    .regen-error { color: #f87171; font-size: 12px; margin-top: 8px; display: none; }
+    .regen-success { color: #4ade80; font-size: 12px; margin-top: 8px; display: none; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 380px;
+      width: 90%;
+    }
+    .modal-title { font-size: 15px; font-weight: 600; color: #eee; margin-bottom: 10px; }
+    .modal-body { font-size: 13px; color: #999; margin-bottom: 20px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-cancel {
+      background: #222;
+      border: 1px solid #444;
+      color: #ccc;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-confirm {
+      background: #6366f1;
+      border: none;
+      color: #fff;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Analytics chart */
+    .chart-container { width: 100%; overflow-x: auto; }
+    .chart-svg { display: block; width: 100%; }
+    .chart-empty { font-size: 13px; color: #555; text-align: center; padding: 32px 0; }
+    .chart-error { font-size: 13px; color: #f87171; margin-top: 8px; }
+    .chart-hint { font-size: 11px; color: #555; margin-top: 8px; }
+
+    /* Tooltip */
+    #chart-tooltip {
+      position: fixed;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #eee;
+      pointer-events: none;
+      display: none;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DEBUG_Assist</span>
+      </div>
+      <a class="nav-item" href="/dashboard/">🏠 Visão Geral</a>
+      <a class="nav-item" href="/dashboard/historico.html">📋 Histórico</a>
+      <a class="nav-item" href="/dashboard/alertas.html">🔔 Alertas</a>
+      <a class="nav-item active">⚙️ Configurações</a>
+      <a class="nav-item" href="https://debug-assist.onrender.com/docs" target="_blank" rel="noopener">📖 Docs</a>
+      <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
+      <div class="sidebar-footer" id="user-email">Carregando...</div>
+    </nav>
+
+    <main class="main">
+      <div class="page-title">Configurações</div>
+
+      <!-- Conta -->
+      <div class="config-section">
+        <div class="config-section-label">Conta</div>
+        <div class="email-row">
+          <span class="email-label">Email</span>
+          <span class="email-value" id="account-email">Carregando...</span>
+        </div>
+      </div>
+
+      <!-- API Key -->
+      <div class="config-section">
+        <div class="config-section-label">API Key</div>
+        <div class="apikey-row">
+          <div class="apikey-field" id="apikey-field">••••••••-••••-••••-••••-••••••••••••</div>
+          <button class="btn-sm" id="btn-reveal" onclick="toggleReveal()">👁 Revelar</button>
+          <button class="btn-sm" onclick="copyKey()">📋 Copiar</button>
+        </div>
+        <div class="copied-feedback" id="copied-feedback">✓ Copiado para a área de transferência!</div>
+        <button class="btn-regenerate" onclick="openModal()">🔄 Gerar nova key</button>
+        <div class="regen-error" id="regen-error"></div>
+        <div class="regen-success" id="regen-success">✓ Nova key gerada com sucesso!</div>
+      </div>
+
+      <!-- Analytics -->
+      <div class="config-section">
+        <div class="config-section-label">Uso dos últimos 30 dias</div>
+        <div class="chart-container">
+          <div id="chart-area"></div>
+        </div>
+        <div class="chart-hint">Passe o mouse sobre as barras para ver o total do dia</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de confirmação -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">Gerar nova API Key?</div>
+      <div class="modal-body">Sua key atual vai parar de funcionar imediatamente. Esta ação não pode ser desfeita.</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-confirm" id="btn-confirm" onclick="confirmRegenerate()">Sim, gerar nova</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chart-tooltip"></div>
+
+  <script>
+    const API = '';
+    let userData = null;
+    let revealed = false;
+
+    async function init() {
+      const token = localStorage.getItem('debug_assist_token');
+      if (!token) {
+        window.location.replace('/dashboard/login.html');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/v1/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('debug_assist_token');
+          window.location.replace('/dashboard/login.html');
+          return;
+        }
+
+        if (!res.ok) return;
+
+        userData = await res.json();
+        document.getElementById('user-email').textContent = userData.email;
+        document.getElementById('account-email').textContent = userData.email;
+      } catch (_) {}
+
+      loadAnalytics(token);
+    }
+
+    async function loadAnalytics(token) {
+      const area = document.getElementById('chart-area');
+      try {
+        const res = await fetch(`${API}/v1/analytics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          area.innerHTML = '<div class="chart-error">Não foi possível carregar o gráfico</div>';
+          return;
+        }
+
+        const { dados } = await res.json();
+
+        if (!dados || dados.length === 0) {
+          area.innerHTML = '<div class="chart-empty">Nenhuma chamada nos últimos 30 dias</div>';
+          return;
+        }
+
+        renderChart(dados);
+      } catch (_) {
+        area.innerHTML = '<div class="chart-error">Não foi possível carregar o gráfico</div>';
+      }
+    }
+
+    function renderChart(dados) {
+      const W = 600, H = 160, PADDING_LEFT = 28, PADDING_BOTTOM = 20, PADDING_TOP = 10;
+      const chartW = W - PADDING_LEFT;
+      const chartH = H - PADDING_BOTTOM - PADDING_TOP;
+
+      const maxTotal = Math.max(...dados.map(d => d.total), 1);
+      const barCount = dados.length;
+      const barWidth = Math.max(4, Math.floor((chartW / barCount) * 0.7));
+      const gap = Math.floor(chartW / barCount);
+
+      // Y grid lines at 25%, 50%, 75%, 100%
+      const gridValues = [
+        Math.ceil(maxTotal * 0.25),
+        Math.ceil(maxTotal * 0.5),
+        Math.ceil(maxTotal * 0.75),
+        maxTotal,
+      ].filter((v, i, a) => a.indexOf(v) === i);
+
+      let svg = `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="min-width:300px;">`;
+
+      // Grid lines
+      for (const val of gridValues) {
+        const y = PADDING_TOP + chartH - Math.round((val / maxTotal) * chartH);
+        svg += `<line x1="${PADDING_LEFT}" y1="${y}" x2="${W}" y2="${y}" stroke="#222" stroke-width="1" stroke-dasharray="3,3"/>`;
+        svg += `<text x="${PADDING_LEFT - 4}" y="${y + 3}" font-size="8" fill="#555" text-anchor="end">${val}</text>`;
+      }
+
+      // Axis
+      svg += `<line x1="${PADDING_LEFT}" y1="${PADDING_TOP + chartH}" x2="${W}" y2="${PADDING_TOP + chartH}" stroke="#333" stroke-width="1"/>`;
+
+      // Bars
+      dados.forEach((d, i) => {
+        const barH = Math.max(2, Math.round((d.total / maxTotal) * chartH));
+        const x = PADDING_LEFT + i * gap + Math.floor((gap - barWidth) / 2);
+        const y = PADDING_TOP + chartH - barH;
+        svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" fill="#6366f1" opacity="0.8" rx="2"
+          data-date="${d.data}" data-total="${d.total}"
+          onmouseenter="showTooltip(event, '${formatDate(d.data)}', ${d.total})"
+          onmouseleave="hideTooltip()"
+          style="cursor:default"/>`;
+
+        // X label every 5 bars
+        if (i % 5 === 0) {
+          svg += `<text x="${x + barWidth / 2}" y="${H - 4}" font-size="8" fill="#555" text-anchor="middle">${formatDate(d.data, true)}</text>`;
+        }
+      });
+
+      svg += `</svg>`;
+      document.getElementById('chart-area').innerHTML = svg;
+    }
+
+    function formatDate(iso, short = false) {
+      const [, m, d] = iso.split('-');
+      const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+      return short ? `${parseInt(d)}/${months[parseInt(m)-1]}` : `${parseInt(d)} ${months[parseInt(m)-1]}`;
+    }
+
+    function showTooltip(event, date, total) {
+      const tip = document.getElementById('chart-tooltip');
+      tip.textContent = `${date} — ${total} chamada${total !== 1 ? 's' : ''}`;
+      tip.style.display = 'block';
+      tip.style.left = (event.clientX + 12) + 'px';
+      tip.style.top = (event.clientY - 28) + 'px';
+    }
+
+    function hideTooltip() {
+      document.getElementById('chart-tooltip').style.display = 'none';
+    }
+
+    // API Key
+    function toggleReveal() {
+      if (!userData) return;
+      revealed = !revealed;
+      document.getElementById('apikey-field').textContent =
+        revealed ? userData.api_key : '••••••••-••••-••••-••••-••••••••••••';
+      document.getElementById('btn-reveal').textContent = revealed ? '🙈 Ocultar' : '👁 Revelar';
+    }
+
+    function copyKey() {
+      if (!userData) return;
+      navigator.clipboard.writeText(userData.api_key).then(() => {
+        const fb = document.getElementById('copied-feedback');
+        fb.style.display = 'block';
+        setTimeout(() => { fb.style.display = 'none'; }, 2000);
+      });
+    }
+
+    // Modal
+    function openModal() {
+      document.getElementById('modal-overlay').classList.add('active');
+      document.getElementById('regen-error').style.display = 'none';
+      document.getElementById('regen-success').style.display = 'none';
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('active');
+    }
+
+    async function confirmRegenerate() {
+      const token = localStorage.getItem('debug_assist_token');
+      const btn = document.getElementById('btn-confirm');
+      btn.disabled = true;
+      btn.textContent = 'Gerando...';
+
+      try {
+        const res = await fetch(`${API}/v1/auth/regenerate-key`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        closeModal();
+
+        if (!res.ok) {
+          const err = document.getElementById('regen-error');
+          err.textContent = 'Erro ao gerar nova key. Tente novamente.';
+          err.style.display = 'block';
+          return;
+        }
+
+        const { api_key } = await res.json();
+        userData.api_key = api_key;
+        revealed = true;
+        document.getElementById('apikey-field').textContent = api_key;
+        document.getElementById('btn-reveal').textContent = '🙈 Ocultar';
+        document.getElementById('regen-success').style.display = 'block';
+        setTimeout(() => { document.getElementById('regen-success').style.display = 'none'; }, 4000);
+      } catch (_) {
+        closeModal();
+        const err = document.getElementById('regen-error');
+        err.textContent = 'Erro de conexão. Tente novamente.';
+        err.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sim, gerar nova';
+      }
+    }
+
+    // Sair
+    document.getElementById('btn-sair').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('debug_assist_token');
+      window.location.replace('/dashboard/login.html');
+    });
+
+    // Fechar modal clicando fora
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('modal-overlay')) closeModal();
+    });
+
+    init();
+  </script>
+</body>
+</html>
