@@ -116,6 +116,41 @@ async function getUsuarioByStripeCustomerId(stripeCustomerId) {
   return data;
 }
 
+async function regenerateApiKey(usuarioId) {
+  const { data, error } = await supabase
+    .from("usuarios")
+    .update({ api_key: require("crypto").randomUUID() })
+    .eq("id", usuarioId)
+    .select("api_key")
+    .single();
+
+  if (error || !data) throw new Error(error?.message || "Erro ao regenerar API key");
+  return data.api_key;
+}
+
+async function getAnalyticsByUsuario(usuarioId) {
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
+
+  const { data, error } = await supabase
+    .from("diagnosticos")
+    .select("criado_em")
+    .eq("usuario_id", usuarioId)
+    .gte("criado_em", since.toISOString());
+
+  if (error) throw new Error(error.message);
+
+  const counts = {};
+  for (const row of data || []) {
+    const date = row.criado_em.slice(0, 10);
+    counts[date] = (counts[date] || 0) + 1;
+  }
+
+  return Object.entries(counts)
+    .map(([data, total]) => ({ data, total }))
+    .sort((a, b) => a.data.localeCompare(b.data));
+}
+
 module.exports = {
   saveDiagnostico,
   getDiagnosticosByUsuario,
@@ -128,4 +163,6 @@ module.exports = {
   getUsuarioById,
   updatePlanoBilling,
   getUsuarioByStripeCustomerId,
+  regenerateApiKey,
+  getAnalyticsByUsuario,
 };

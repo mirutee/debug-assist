@@ -236,3 +236,95 @@ describe("saveDiagnostico com usuario_id", () => {
     );
   });
 });
+
+const { regenerateApiKey, getAnalyticsByUsuario } = require("../../src/db/supabase");
+
+describe("regenerateApiKey", () => {
+  it("retorna a nova api_key após update bem-sucedido", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { api_key: "nova-key-uuid" },
+              error: null,
+            }),
+          }),
+        }),
+      }),
+    });
+
+    const result = await regenerateApiKey("user-uuid");
+    expect(result).toBe("nova-key-uuid");
+  });
+
+  it("lança erro se update falhar", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: "update failed" },
+            }),
+          }),
+        }),
+      }),
+    });
+
+    await expect(regenerateApiKey("user-uuid")).rejects.toThrow("update failed");
+  });
+});
+
+describe("getAnalyticsByUsuario", () => {
+  it("retorna dados agrupados por data", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          gte: jest.fn().mockResolvedValue({
+            data: [
+              { criado_em: "2026-03-01T10:00:00Z" },
+              { criado_em: "2026-03-01T12:00:00Z" },
+              { criado_em: "2026-03-02T09:00:00Z" },
+            ],
+            error: null,
+          }),
+        }),
+      }),
+    });
+
+    const result = await getAnalyticsByUsuario("user-uuid");
+    expect(result).toEqual([
+      { data: "2026-03-01", total: 2 },
+      { data: "2026-03-02", total: 1 },
+    ]);
+  });
+
+  it("retorna array vazio se não houver diagnósticos", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          gte: jest.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      }),
+    });
+
+    const result = await getAnalyticsByUsuario("user-uuid");
+    expect(result).toEqual([]);
+  });
+
+  it("lança erro se query falhar", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          gte: jest.fn().mockResolvedValue({
+            data: null,
+            error: { message: "query failed" },
+          }),
+        }),
+      }),
+    });
+
+    await expect(getAnalyticsByUsuario("user-uuid")).rejects.toThrow("query failed");
+  });
+});
