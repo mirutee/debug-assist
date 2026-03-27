@@ -38,9 +38,9 @@ describe('Signup page', () => {
     expect(res.headers['content-type']).toMatch(/html/);
   });
 
-  it('GET /dashboard/signup.html contém DevInsight', async () => {
+  it('GET /dashboard/signup.html contém DEBUG_Assist', async () => {
     const res = await request(app).get('/dashboard/signup.html');
-    expect(res.text).toMatch(/DevInsight/i);
+    expect(res.text).toMatch(/DEBUG_Assist/i);
   });
 
   it('GET /dashboard/signup.html contém link para login', async () => {
