@@ -66,4 +66,14 @@ describe('Landing page', () => {
       .send({ tipo: 'request_error', categoria: 'frontend' });
     expect(res.status).not.toBe(404);
   });
+
+  it('GET / contém botão theme-toggle', async () => {
+    const res = await request(app).get('/');
+    expect(res.text).toContain('id="theme-toggle"');
+  });
+
+  it('GET / contém script de inicialização de tema', async () => {
+    const res = await request(app).get('/');
+    expect(res.text).toContain('da_theme');
+  });
 });
