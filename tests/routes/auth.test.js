@@ -12,6 +12,7 @@ jest.mock("../../src/db/supabase", () => ({
   signUpUser: jest.fn(),
   signInUser: jest.fn(),
   getUserFromToken: jest.fn(),
+  regenerateApiKey: jest.fn(),
 }));
 
 const {
@@ -19,6 +20,7 @@ const {
   signInUser,
   getUserFromToken,
   getUsuarioByAuthId,
+  regenerateApiKey,
 } = require("../../src/db/supabase");
 
 jest.mock('../../src/email/resend', () => ({
@@ -218,5 +220,46 @@ describe("GET /v1/auth/me", () => {
 
     expect(res.status).toBe(404);
     expect(res.body.erro).toMatch(/confirme/i);
+  });
+});
+
+describe("POST /v1/auth/regenerate-key", () => {
+  it("retorna 401 sem token", async () => {
+    const res = await request(app).post("/v1/auth/regenerate-key");
+    expect(res.status).toBe(401);
+  });
+
+  it("retorna 401 com token inválido", async () => {
+    getUserFromToken.mockResolvedValue({ data: { user: null }, error: { message: "invalid" } });
+
+    const res = await request(app)
+      .post("/v1/auth/regenerate-key")
+      .set("Authorization", "Bearer token-invalido");
+
+    expect(res.status).toBe(401);
+  });
+
+  it("retorna 404 se usuário não existe na tabela usuarios", async () => {
+    getUserFromToken.mockResolvedValue({ data: { user: { id: "auth-uuid" } }, error: null });
+    getUsuarioByAuthId.mockResolvedValue(null);
+
+    const res = await request(app)
+      .post("/v1/auth/regenerate-key")
+      .set("Authorization", "Bearer token-valido");
+
+    expect(res.status).toBe(404);
+  });
+
+  it("retorna 200 com nova api_key", async () => {
+    getUserFromToken.mockResolvedValue({ data: { user: { id: "auth-uuid" } }, error: null });
+    getUsuarioByAuthId.mockResolvedValue({ id: "user-uuid", email: "user@exemplo.com" });
+    regenerateApiKey.mockResolvedValue("nova-key-gerada");
+
+    const res = await request(app)
+      .post("/v1/auth/regenerate-key")
+      .set("Authorization", "Bearer token-valido");
+
+    expect(res.status).toBe(200);
+    expect(res.body.api_key).toBe("nova-key-gerada");
   });
 });

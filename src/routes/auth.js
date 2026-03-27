@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const { validarDominio, signupLimiter } = require("../middleware/antiAbuse");
-const { signUpUser, signInUser, getUserFromToken, getUsuarioByAuthId } = require("../db/supabase");
+const { signUpUser, signInUser, getUserFromToken, getUsuarioByAuthId, regenerateApiKey } = require("../db/supabase");
 const { sendWelcomeEmail } = require('../email/resend');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,6 +105,27 @@ router.get("/me", async (req, res) => {
       limite_mensal: usuario.planos.limite_mensal,
       api_key: usuario.api_key,
     });
+  } catch (err) {
+    return res.status(500).json({ erro: "Erro interno. Tente novamente." });
+  }
+});
+
+// POST /v1/auth/regenerate-key
+router.post("/regenerate-key", async (req, res) => {
+  const header = req.headers["authorization"];
+  if (!header) return res.status(401).json({ erro: "Token obrigatório" });
+
+  const token = header.replace("Bearer ", "").trim();
+
+  try {
+    const { data: { user }, error } = await getUserFromToken(token);
+    if (error || !user) return res.status(401).json({ erro: "Token inválido" });
+
+    const usuario = await getUsuarioByAuthId(user.id);
+    if (!usuario) return res.status(404).json({ erro: "Usuário não encontrado" });
+
+    const apiKey = await regenerateApiKey(usuario.id);
+    return res.json({ api_key: apiKey });
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno. Tente novamente." });
   }
