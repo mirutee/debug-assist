@@ -1,4 +1,4 @@
-name: Tests
+name: Tests & Deploy
 
 on:
   push:
@@ -20,3 +20,13 @@ jobs:
       - run: npm ci
 
       - run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - name: Deploy no Render
+        run: curl -s --fail "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
