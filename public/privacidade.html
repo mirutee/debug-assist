@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidade — DEBUG_Assist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('da_theme');
+        var sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', saved || sys);
+      } catch(e) {}
+    })();
+  </script>
+  <style>
+    .legal-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 80px 24px 100px;
+    }
+    .legal-wrap h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .legal-meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .legal-wrap h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      color: var(--text);
+    }
+    .legal-wrap p, .legal-wrap li {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--muted);
+    }
+    .legal-wrap ul {
+      padding-left: 20px;
+      margin: 12px 0;
+    }
+    .legal-wrap li { margin-bottom: 6px; }
+    .legal-wrap a { color: var(--accent); text-decoration: none; }
+    .legal-wrap a:hover { text-decoration: underline; }
+    .legal-highlight {
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      background: rgba(99,102,241,0.06);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 24px 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 600;
+    }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      vertical-align: top;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png" alt="DEBUG_Assist" class="nav-logo-img">
+  </a>
+  <div class="nav-links">
+    <a href="/docs">Docs</a>
+    <a href="/docs/sdks.html">SDK</a>
+    <a href="/#pricing">Preços</a>
+    <a href="/dashboard/login.html">Entrar</a>
+    <a href="/dashboard/signup.html" class="btn-nav">Começar grátis</a>
+  </div>
+</nav>
+
+<div class="legal-wrap">
+  <h1>Política de Privacidade</h1>
+  <p class="legal-meta">Última atualização: 27 de março de 2026 · Em conformidade com a LGPD (Lei nº 13.709/2018)</p>
+
+  <div class="legal-highlight">
+    Esta política descreve como coletamos, usamos e protegemos seus dados. O DEBUG_Assist respeita sua privacidade e não vende dados a terceiros.
+  </div>
+
+  <h2>1. Quem somos</h2>
+  <p>O DEBUG_Assist é operado por pessoa física, desenvolvedor independente, com atendimento pelo e-mail <a href="mailto:contato@debugassist.com">contato@debugassist.com</a>. Para fins da LGPD, atuamos como <strong>controlador</strong> dos dados pessoais coletados no cadastro e como <strong>operador</strong> dos dados técnicos enviados à API (que permanecem sob controle do usuário).</p>
+
+  <h2>2. Dados que coletamos</h2>
+
+  <table class="data-table">
+    <tr>
+      <th>Dado</th>
+      <th>Finalidade</th>
+      <th>Base legal (LGPD)</th>
+    </tr>
+    <tr>
+      <td>E-mail e senha</td>
+      <td>Autenticação e comunicação</td>
+      <td>Execução de contrato (Art. 7º, V)</td>
+    </tr>
+    <tr>
+      <td>API Key</td>
+      <td>Identificação nas requisições</td>
+      <td>Execução de contrato (Art. 7º, V)</td>
+    </tr>
+    <tr>
+      <td>Plano contratado e histórico de pagamentos</td>
+      <td>Gestão de assinatura e cobrança</td>
+      <td>Execução de contrato (Art. 7º, V)</td>
+    </tr>
+    <tr>
+      <td>Payloads enviados à API (tipo, mensagem, contexto)</td>
+      <td>Geração do diagnóstico e histórico</td>
+      <td>Legítimo interesse / Execução de contrato (Art. 7º, V e IX)</td>
+    </tr>
+    <tr>
+      <td>Logs de uso (data, contagem de diagnósticos)</td>
+      <td>Controle de cotas e analytics</td>
+      <td>Legítimo interesse (Art. 7º, IX)</td>
+    </tr>
+    <tr>
+      <td>Endereço IP e User-Agent</td>
+      <td>Segurança e prevenção de abuso</td>
+      <td>Legítimo interesse (Art. 7º, IX)</td>
+    </tr>
+  </table>
+
+  <h2>3. Dados que NÃO coletamos</h2>
+  <ul>
+    <li>Dados pessoais de usuários finais das suas aplicações (a menos que você os inclua no payload — o que não recomendamos);</li>
+    <li>Cookies de rastreamento ou pixels de publicidade;</li>
+    <li>Localização geográfica precisa.</li>
+  </ul>
+
+  <h2>4. Como usamos seus dados</h2>
+  <ul>
+    <li><strong>Prestação do serviço:</strong> processar diagnósticos e exibir o histórico no dashboard;</li>
+    <li><strong>Comunicação transacional:</strong> confirmação de cadastro, alertas de cota, notas de atualização;</li>
+    <li><strong>Cobrança:</strong> processamento de pagamentos via Stripe (os dados de cartão nunca passam pelos nossos servidores);</li>
+    <li><strong>Segurança:</strong> detecção de abuso e proteção da infraestrutura;</li>
+    <li><strong>Melhoria do produto:</strong> análise agregada e anônima de padrões de uso.</li>
+  </ul>
+  <p>Não usamos seus dados para publicidade nem os vendemos a terceiros.</p>
+
+  <h2>5. Compartilhamento de dados</h2>
+  <p>Compartilhamos dados apenas com os seguintes suboperadores, estritamente necessários ao funcionamento do serviço:</p>
+  <ul>
+    <li><strong>Supabase</strong> — banco de dados e autenticação (servidores nos EUA, cobertos por cláusulas contratuais padrão);</li>
+    <li><strong>Stripe</strong> — processamento de pagamentos (PCI-DSS nível 1);</li>
+    <li><strong>Render</strong> — hospedagem da API (servidores nos EUA);</li>
+    <li><strong>Resend</strong> — envio de e-mails transacionais.</li>
+  </ul>
+
+  <h2>6. Retenção de dados</h2>
+  <ul>
+    <li>Dados de conta: mantidos enquanto a conta estiver ativa + 90 dias após o encerramento;</li>
+    <li>Histórico de diagnósticos: últimos 90 dias disponíveis no dashboard;</li>
+    <li>Dados de pagamento: conforme exigência fiscal brasileira (5 anos).</li>
+  </ul>
+
+  <h2>7. Seus direitos (LGPD)</h2>
+  <p>Como titular de dados, você tem direito a:</p>
+  <ul>
+    <li><strong>Acesso</strong> — saber quais dados temos sobre você;</li>
+    <li><strong>Correção</strong> — corrigir dados incorretos ou desatualizados;</li>
+    <li><strong>Exclusão</strong> — solicitar a remoção dos seus dados pessoais;</li>
+    <li><strong>Portabilidade</strong> — receber seus dados em formato estruturado;</li>
+    <li><strong>Revogação do consentimento</strong> — onde aplicável;</li>
+    <li><strong>Oposição</strong> — ao tratamento baseado em legítimo interesse.</li>
+  </ul>
+  <p>Para exercer qualquer direito, envie e-mail para <a href="mailto:contato@debugassist.com">contato@debugassist.com</a>. Respondemos em até 15 dias úteis.</p>
+
+  <h2>8. Segurança</h2>
+  <p>Adotamos as seguintes medidas técnicas de segurança:</p>
+  <ul>
+    <li>Comunicações cifradas via TLS/HTTPS;</li>
+    <li>Senhas armazenadas com hash seguro (Supabase Auth);</li>
+    <li>API Keys com rotação disponível a qualquer momento pelo dashboard;</li>
+    <li>Acesso ao banco de dados restrito por variáveis de ambiente, sem exposição pública.</li>
+  </ul>
+
+  <h2>9. Cookies</h2>
+  <p>Usamos apenas um item de armazenamento local (<code>localStorage</code>) para salvar sua preferência de tema (claro/escuro). Não usamos cookies de rastreamento, analytics externos ou publicidade comportamental.</p>
+
+  <h2>10. Transferência internacional de dados</h2>
+  <p>Alguns suboperadores (Supabase, Render, Stripe) processam dados em servidores nos Estados Unidos. Essas transferências são realizadas com garantias contratuais adequadas, em conformidade com o Art. 33 da LGPD.</p>
+
+  <h2>11. Alterações nesta Política</h2>
+  <p>Podemos atualizar esta Política periodicamente. Notificaremos por e-mail com pelo menos 15 dias de antecedência em caso de mudanças relevantes. A data de "última atualização" no topo sempre indicará a versão vigente.</p>
+
+  <h2>12. Contato e Encarregado (DPO)</h2>
+  <p>Dúvidas, solicitações ou reclamações sobre privacidade:</p>
+  <ul>
+    <li>E-mail: <a href="mailto:contato@debugassist.com">contato@debugassist.com</a></li>
+    <li>Você também pode registrar reclamação junto à ANPD (Autoridade Nacional de Proteção de Dados): <a href="https://www.gov.br/anpd" target="_blank" rel="noopener">gov.br/anpd</a></li>
+  </ul>
+</div>
+
+<footer>
+  <img src="/images/logo.png" alt="DEBUG_Assist" style="height:40px;width:auto;display:block;">
+  <span>© 2026 · Diagnóstico de APIs para devs</span>
+  <div class="footer-links">
+    <a href="/docs">Docs</a>
+    <a href="/docs/sdks.html">SDK</a>
+    <a href="/termos.html">Termos</a>
+    <a href="/privacidade.html">Privacidade</a>
+    <a href="mailto:contato@debugassist.com">Suporte</a>
+  </div>
+</footer>
+
+<script>
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('da_theme', next); } catch(e) {}
+  }
+</script>
+</body>
+</html>

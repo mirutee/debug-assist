@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termos de Uso — DEBUG_Assist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('da_theme');
+        var sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', saved || sys);
+      } catch(e) {}
+    })();
+  </script>
+  <style>
+    .legal-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 80px 24px 100px;
+    }
+    .legal-wrap h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .legal-meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .legal-wrap h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      color: var(--text);
+    }
+    .legal-wrap p, .legal-wrap li {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--muted);
+    }
+    .legal-wrap ul {
+      padding-left: 20px;
+      margin: 12px 0;
+    }
+    .legal-wrap li { margin-bottom: 6px; }
+    .legal-wrap a { color: var(--accent); text-decoration: none; }
+    .legal-wrap a:hover { text-decoration: underline; }
+    .legal-highlight {
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      background: rgba(99,102,241,0.06);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 24px 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png" alt="DEBUG_Assist" class="nav-logo-img">
+  </a>
+  <div class="nav-links">
+    <a href="/docs">Docs</a>
+    <a href="/docs/sdks.html">SDK</a>
+    <a href="/#pricing">Preços</a>
+    <a href="/dashboard/login.html">Entrar</a>
+    <a href="/dashboard/signup.html" class="btn-nav">Começar grátis</a>
+  </div>
+</nav>
+
+<div class="legal-wrap">
+  <h1>Termos de Uso</h1>
+  <p class="legal-meta">Última atualização: 27 de março de 2026</p>
+
+  <div class="legal-highlight">
+    Ao criar uma conta ou usar o DEBUG_Assist, você concorda com estes Termos. Leia com atenção antes de prosseguir.
+  </div>
+
+  <h2>1. O Serviço</h2>
+  <p>O DEBUG_Assist é uma plataforma de diagnóstico de erros para desenvolvedores, operada por pessoa física (CPF). O serviço analisa requisições, logs e queries enviados via API e retorna diagnósticos com causa, severidade e sugestões de correção.</p>
+
+  <h2>2. Elegibilidade</h2>
+  <p>O serviço é destinado exclusivamente a desenvolvedores, equipes de tecnologia e empresas. Ao se cadastrar, você declara:</p>
+  <ul>
+    <li>Ter pelo menos 18 anos de idade;</li>
+    <li>Ter capacidade legal para celebrar contratos;</li>
+    <li>Usar o serviço para fins profissionais ou de desenvolvimento de software.</li>
+  </ul>
+
+  <h2>3. Cadastro e Conta</h2>
+  <p>Você é responsável por manter a confidencialidade de suas credenciais (e-mail, senha e API Key). Notifique-nos imediatamente em caso de uso não autorizado da sua conta pelo e-mail <a href="mailto:contato@debugassist.com">contato@debugassist.com</a>. Não nos responsabilizamos por perdas decorrentes do uso indevido de suas credenciais por terceiros.</p>
+
+  <h2>4. Planos e Pagamento</h2>
+  <p>O DEBUG_Assist oferece os seguintes planos:</p>
+  <ul>
+    <li><strong>Free:</strong> 100 diagnósticos por mês, sem custo;</li>
+    <li><strong>Pro (R$ 99/mês):</strong> 1.000 diagnósticos por mês;</li>
+    <li><strong>Scale (R$ 349/mês):</strong> 10.000 diagnósticos por mês;</li>
+    <li><strong>Enterprise:</strong> volume customizado, sob consulta.</li>
+  </ul>
+  <p>Os pagamentos são processados pela Stripe. Assinaturas são cobradas mensalmente na data de contratação. Não há reembolso proporcional por cancelamento antecipado dentro do mês vigente. O cancelamento encerra o acesso ao plano pago ao final do período já pago.</p>
+
+  <h2>5. Uso Aceitável</h2>
+  <p>Você concorda em não usar o DEBUG_Assist para:</p>
+  <ul>
+    <li>Enviar dados pessoais de usuários finais sem anonimização prévia;</li>
+    <li>Realizar engenharia reversa, scraping ou tentativas de acesso não autorizado à infraestrutura;</li>
+    <li>Compartilhar ou revender sua API Key;</li>
+    <li>Usar o serviço para fins ilegais ou que violem direitos de terceiros;</li>
+    <li>Sobrecarregar intencionalmente os servidores além dos limites do seu plano.</li>
+  </ul>
+
+  <h2>6. Dados Enviados à API</h2>
+  <p>Você é responsável pelo conteúdo enviado à API. Recomendamos fortemente:</p>
+  <ul>
+    <li>Não incluir senhas, tokens, chaves privadas ou dados pessoais de usuários nos payloads;</li>
+    <li>Anonimizar identificadores antes do envio;</li>
+    <li>Tratar os dados de diagnóstico como logs de sistema, não como armazenamento de dados sensíveis.</li>
+  </ul>
+  <p>Os dados enviados são utilizados exclusivamente para geração do diagnóstico e armazenamento no histórico da sua conta. Não vendemos nem compartilhamos seus dados com terceiros.</p>
+
+  <h2>7. Disponibilidade e SLA</h2>
+  <p>Buscamos manter o serviço disponível 24/7, mas não garantimos 100% de uptime. O serviço pode ser interrompido temporariamente para manutenção, atualizações ou por motivos fora do nosso controle (falhas de infraestrutura, provedores terceiros). Não oferecemos SLA formal nos planos Free e Pro.</p>
+
+  <h2>8. Limitação de Responsabilidade</h2>
+  <p>O DEBUG_Assist fornece diagnósticos como sugestões técnicas, não como garantia absoluta de correção. Não nos responsabilizamos por decisões tomadas com base nos diagnósticos gerados, perdas de dados, danos indiretos ou interrupções de negócio.</p>
+
+  <h2>9. Propriedade Intelectual</h2>
+  <p>Todo o código, design, marcas e conteúdo do DEBUG_Assist são de propriedade do operador do serviço. O uso do serviço não transfere nenhum direito de propriedade intelectual ao usuário. Você mantém a propriedade dos dados que envia à API.</p>
+
+  <h2>10. Rescisão</h2>
+  <p>Podemos suspender ou encerrar sua conta sem aviso prévio caso você viole estes Termos. Você pode encerrar sua conta a qualquer momento pelo painel em <a href="/dashboard/configuracoes.html">Configurações</a> ou por e-mail.</p>
+
+  <h2>11. Alterações nos Termos</h2>
+  <p>Podemos atualizar estes Termos periodicamente. Em caso de mudanças relevantes, notificaremos por e-mail com pelo menos 15 dias de antecedência. O uso continuado do serviço após esse prazo implica aceitação dos novos Termos.</p>
+
+  <h2>12. Lei Aplicável</h2>
+  <p>Estes Termos são regidos pelas leis brasileiras. Fica eleito o foro da comarca de domicílio do operador para resolução de eventuais litígios.</p>
+
+  <h2>13. Contato</h2>
+  <p>Dúvidas sobre estes Termos? Entre em contato: <a href="mailto:contato@debugassist.com">contato@debugassist.com</a></p>
+</div>
+
+<footer>
+  <img src="/images/logo.png" alt="DEBUG_Assist" style="height:40px;width:auto;display:block;">
+  <span>© 2026 · Diagnóstico de APIs para devs</span>
+  <div class="footer-links">
+    <a href="/docs">Docs</a>
+    <a href="/docs/sdks.html">SDK</a>
+    <a href="/termos.html">Termos</a>
+    <a href="/privacidade.html">Privacidade</a>
+    <a href="mailto:contato@debugassist.com">Suporte</a>
+  </div>
+</footer>
+
+<script>
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('da_theme', next); } catch(e) {}
+  }
+</script>
+</body>
+</html>
