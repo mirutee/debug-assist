@@ -1,0 +1,29 @@
+name: Publish SDK C# → NuGet
+
+on:
+  push:
+    tags:
+      - 'sdk-cs-v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+
+      - name: Build
+        run: dotnet build --configuration Release
+        working-directory: sdk/csharp
+
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build --output nupkgs
+        working-directory: sdk/csharp
+
+      - name: Push to NuGet
+        run: dotnet nuget push sdk/csharp/nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
