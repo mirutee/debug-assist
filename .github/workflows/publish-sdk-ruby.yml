@@ -1,0 +1,27 @@
+name: Publish SDK Ruby → RubyGems
+
+on:
+  push:
+    tags:
+      - 'sdk-rb-v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Build gem
+        run: gem build debug-assist.gemspec
+        working-directory: sdk/ruby
+
+      - name: Push gem
+        run: gem push sdk/ruby/*.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
