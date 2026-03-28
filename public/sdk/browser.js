@@ -10,7 +10,7 @@
 }(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
 
-  var DEFAULT_BASE_URL = 'https://debug-assist.onrender.com';
+  var DEFAULT_BASE_URL = 'https://debugassist.com.br';
   var _initialized = false;
   var _client = null;
 
