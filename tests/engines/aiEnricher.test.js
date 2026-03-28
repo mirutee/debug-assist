@@ -100,4 +100,13 @@ describe('aiEnricher', () => {
     expect(r.analise_aprofundada).toBeNull();
     expect(r.ia_timeout).toBe(false);
   });
+
+  it('provider desconhecido: retorna ia_aviso sem chamar IA', async () => {
+    global.fetch = jest.fn();
+    const headers = { 'x-ai-key': 'sk-test', 'x-ai-provider': 'gemini' };
+    const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(r.ia_aviso).toBeDefined();
+    expect(r.analise_aprofundada).toBeNull();
+  });
 });

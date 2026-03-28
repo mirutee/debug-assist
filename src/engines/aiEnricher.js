@@ -2,14 +2,17 @@
 const { decrypt } = require('../utils/encrypt');
 
 const TIMEOUT_MS = 5000;
+const SUPPORTED_PROVIDERS = ['openai', 'anthropic', 'groq'];
 
 function resolveAiConfig(usuario, headers) {
   const headerKey = headers['x-ai-key'];
   const headerProvider = headers['x-ai-provider'];
   if (headerKey && headerProvider) {
+    if (!SUPPORTED_PROVIDERS.includes(headerProvider)) return null;
     return { key: headerKey, provider: headerProvider };
   }
   if (usuario.ai_key_encrypted && usuario.ai_provider) {
+    if (!SUPPORTED_PROVIDERS.includes(usuario.ai_provider)) return null;
     try {
       return { key: decrypt(usuario.ai_key_encrypted), provider: usuario.ai_provider };
     } catch {
