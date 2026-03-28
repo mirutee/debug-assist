@@ -30,9 +30,9 @@ describe('DevInsight browser SDK — init()', () => {
     expect(window.onerror).toBeInstanceOf(Function);
   });
 
-  it('does not register hooks when meta devinsight-enabled="0"', () => {
+  it('does not register hooks when meta debug-assist-enabled="0"', () => {
     const meta = document.createElement('meta');
-    meta.name = 'devinsight-enabled';
+    meta.name = 'debug-assist-enabled';
     meta.content = '0';
     document.head.appendChild(meta);
     const DI = loadSdk();
@@ -67,7 +67,7 @@ describe('DevInsight browser SDK — payload', () => {
     window.onerror('bad value', 'file.js', 1, 1, err);
     await Promise.resolve();
     expect(fetch).toHaveBeenCalledWith(
-      'https://devinsight-api.onrender.com/v1/diagnosticos',
+      'https://debug-assist.onrender.com/v1/diagnosticos',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({ Authorization: 'Bearer my-key' }),
@@ -138,7 +138,7 @@ describe('DevInsight browser SDK — report()', () => {
     DI.report(new Error('override'), {
       apiKey: 'override-key',
       projectName: 'override-proj',
-      baseUrl: 'https://devinsight-api.onrender.com',
+      baseUrl: 'https://debug-assist.onrender.com',
     });
     await Promise.resolve();
     expect(fetch).toHaveBeenCalled();

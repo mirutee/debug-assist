@@ -17,20 +17,20 @@ function loadSvelte() {
 }
 
 describe('Svelte DevInsight wrapper', () => {
-  it('exports initDevInsight function', () => {
-    const { initDevInsight } = loadSvelte();
-    expect(typeof initDevInsight).toBe('function');
+  it('exports initDebugAssist function', () => {
+    const { initDebugAssist } = loadSvelte();
+    expect(typeof initDebugAssist).toBe('function');
   });
 
   it('registers window.onerror when called with apiKey', () => {
-    const { initDevInsight } = loadSvelte();
-    initDevInsight({ apiKey: 'svelte-key', projectName: 'svelte-proj' });
+    const { initDebugAssist } = loadSvelte();
+    initDebugAssist({ apiKey: 'svelte-key', projectName: 'svelte-proj' });
     expect(window.onerror).toBeInstanceOf(Function);
   });
 
-  it('captures errors via window.onerror after initDevInsight()', async () => {
-    const { initDevInsight } = loadSvelte();
-    initDevInsight({ apiKey: 'svelte-key', projectName: 'svelte-proj' });
+  it('captures errors via window.onerror after initDebugAssist()', async () => {
+    const { initDebugAssist } = loadSvelte();
+    initDebugAssist({ apiKey: 'svelte-key', projectName: 'svelte-proj' });
     window.onerror('crash', 'file.js', 1, 1, new Error('svelte crash'));
     await Promise.resolve();
     expect(fetch).toHaveBeenCalled();

@@ -7,12 +7,12 @@ describe('DevInsight SDK', () => {
   });
 
   it('lança erro síncrono quando apiKey ausente', () => {
-    expect(() => new DevInsight({})).toThrow('DevInsight: apiKey é obrigatória');
+    expect(() => new DevInsight({})).toThrow('DebugAssist: apiKey é obrigatória');
   });
 
   it('lança erro síncrono quando tipo ausente em report()', async () => {
     const client = new DevInsight({ apiKey: 'test-key' });
-    await expect(client.report({})).rejects.toThrow("DevInsight: campo 'tipo' é obrigatório");
+    await expect(client.report({})).rejects.toThrow("DebugAssist: campo 'tipo' é obrigatório");
   });
 
   it('chama fetch com URL, método, header e body corretos', async () => {
@@ -24,7 +24,7 @@ describe('DevInsight SDK', () => {
     await client.report({ tipo: 'backend', mensagem: 'erro' });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://devinsight-api.onrender.com/v1/diagnosticos',
+      'https://debug-assist.onrender.com/v1/diagnosticos',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
@@ -63,7 +63,7 @@ describe('DevInsight SDK', () => {
     });
     const client = new DevInsight({ apiKey: 'key-invalida' });
     await expect(client.report({ tipo: 'backend', mensagem: 'teste' }))
-      .rejects.toThrow('DevInsight API error 401: API Key inválida');
+      .rejects.toThrow('DebugAssist API error 401: API Key inválida');
   });
 
   it('usa baseUrl customizada fornecida no construtor', async () => {

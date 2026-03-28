@@ -2,17 +2,22 @@
 const { createClient } = require("@supabase/supabase-js");
 const crypto = require("crypto");
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
-  console.warn("[DevInsight] AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados — diagnósticos não serão persistidos.");
+let _supabase = null;
+function db() {
+  if (!_supabase) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+      console.warn("[DebugAssist] AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados — diagnósticos não serão persistidos.");
+      return null;
+    }
+    _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+  }
+  return _supabase;
 }
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_KEY || ""
-);
-
 async function saveDiagnostico({ tipo, mensagem, contexto, resposta, usuario_id }) {
-  const { error } = await supabase
+  const client = db();
+  if (!client) return;
+  const { error } = await client
     .from("diagnosticos")
     .insert({ tipo, mensagem, contexto, resposta, usuario_id: usuario_id || null });
 
@@ -22,7 +27,9 @@ async function saveDiagnostico({ tipo, mensagem, contexto, resposta, usuario_id 
 }
 
 async function getDiagnosticosByUsuario(usuarioId, { after } = {}) {
-  let query = supabase
+  const client = db();
+  if (!client) return [];
+  let query = client
     .from("diagnosticos")
     .select("id, tipo, criado_em, resposta, mensagem, contexto")
     .eq("usuario_id", usuarioId)
@@ -37,7 +44,9 @@ async function getDiagnosticosByUsuario(usuarioId, { after } = {}) {
 }
 
 async function getUsuarioByApiKey(apiKey) {
-  const { data, error } = await supabase
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
     .from("usuarios")
     .select("*, planos(limite_mensal)")
     .eq("api_key", apiKey)
@@ -49,7 +58,9 @@ async function getUsuarioByApiKey(apiKey) {
 }
 
 async function incrementarUso(usuarioId) {
-  const { error } = await supabase.rpc("increment_uso_mensal", {
+  const client = db();
+  if (!client) return;
+  const { error } = await client.rpc("increment_uso_mensal", {
     p_usuario_id: usuarioId,
   });
   if (error) {
@@ -58,7 +69,9 @@ async function incrementarUso(usuarioId) {
 }
 
 async function getUsuarioByAuthId(authId) {
-  const { data, error } = await supabase
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
     .from("usuarios")
     .select("*, planos(limite_mensal)")
     .eq("auth_id", authId)
@@ -69,19 +82,21 @@ async function getUsuarioByAuthId(authId) {
 }
 
 async function signUpUser(email, senha) {
-  return supabase.auth.signUp({ email, password: senha });
+  return db().auth.signUp({ email, password: senha });
 }
 
 async function signInUser(email, senha) {
-  return supabase.auth.signInWithPassword({ email, password: senha });
+  return db().auth.signInWithPassword({ email, password: senha });
 }
 
 async function getUserFromToken(token) {
-  return supabase.auth.getUser(token);
+  return db().auth.getUser(token);
 }
 
 async function getUsuarioById(usuarioId) {
-  const { data, error } = await supabase
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
     .from("usuarios")
     .select("id, email, plano_id, stripe_customer_id")
     .eq("id", usuarioId)
@@ -98,7 +113,9 @@ async function updatePlanoBilling(usuarioId, { plano_id, stripe_customer_id }) {
 
   if (Object.keys(updates).length === 0) return;
 
-  const { error } = await supabase
+  const client = db();
+  if (!client) return;
+  const { error } = await client
     .from("usuarios")
     .update(updates)
     .eq("id", usuarioId);
@@ -107,7 +124,9 @@ async function updatePlanoBilling(usuarioId, { plano_id, stripe_customer_id }) {
 }
 
 async function getUsuarioByStripeCustomerId(stripeCustomerId) {
-  const { data, error } = await supabase
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
     .from("usuarios")
     .select("id, plano_id")
     .eq("stripe_customer_id", stripeCustomerId)
@@ -118,7 +137,9 @@ async function getUsuarioByStripeCustomerId(stripeCustomerId) {
 }
 
 async function regenerateApiKey(usuarioId) {
-  const { data, error } = await supabase
+  const client = db();
+  if (!client) throw new Error("Banco de dados não configurado");
+  const { data, error } = await client
     .from("usuarios")
     .update({ api_key: crypto.randomUUID() })
     .eq("id", usuarioId)
@@ -130,10 +151,12 @@ async function regenerateApiKey(usuarioId) {
 }
 
 async function getAnalyticsByUsuario(usuarioId) {
+  const client = db();
+  if (!client) return [];
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("diagnosticos")
     .select("criado_em")
     .eq("usuario_id", usuarioId)

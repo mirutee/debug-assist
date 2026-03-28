@@ -4,7 +4,7 @@
 
 var core = require('./devinsight.browser.js');
 
-var Debug AssistPlugin = {
+var DebugAssistPlugin = {
   install: function (app, opts) {
     var apiKey = (opts && opts.apiKey) || '';
     var projectName = (opts && opts.projectName) || 'unknown';
@@ -24,4 +24,4 @@ var Debug AssistPlugin = {
   },
 };
 
-module.exports = Debug AssistPlugin;
+module.exports = DebugAssistPlugin;

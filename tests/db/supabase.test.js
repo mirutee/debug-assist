@@ -1,4 +1,7 @@
 // tests/db/supabase.test.js
+process.env.SUPABASE_URL = 'https://test.supabase.co';
+process.env.SUPABASE_KEY = 'test-key';
+
 jest.mock("@supabase/supabase-js", () => ({
   createClient: jest.fn(() => mockSupabaseClient),
 }));

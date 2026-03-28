@@ -5,8 +5,8 @@
 
 var core = require('./devinsight.browser.js');
 
-function initDebug Assist(opts) {
+function initDebugAssist(opts) {
   core.init(opts);
 }
 
-module.exports = { initDebug Assist: initDebug Assist };
+module.exports = { initDebugAssist: initDebugAssist };
