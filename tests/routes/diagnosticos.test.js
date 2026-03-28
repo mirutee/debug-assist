@@ -4,8 +4,10 @@ jest.mock("../../src/db/supabase", () => ({
   getUsuarioByApiKey: jest.fn().mockResolvedValue({
     id: "user-test-uuid",
     plano_id: "free",
-    uso_mensal: 10,
-    planos: { limite_mensal: 100 },
+    uso_mensal: 5,
+    planos: { limite_mensal: 10 },
+    ai_key_encrypted: null,
+    ai_provider: null,
   }),
   incrementarUso: jest.fn().mockResolvedValue(undefined),
   getUsuarioByAuthId: jest.fn(),
@@ -66,13 +68,26 @@ describe("POST /v1/diagnosticos", () => {
     expect(res.status).toBe(401);
   });
 
+  it("free: retorna apenas 1 sugestão com upgrade_hint", async () => {
+    const res = await request(app)
+      .post("/v1/diagnosticos")
+      .set(HEADERS)
+      .send({ tipo: "hydration_error", mensagem: "Hydration failed" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.sugestoes).toHaveLength(1);
+    expect(res.body.upgrade_hint).toBeDefined();
+  });
+
   it("retorna 429 quando cota esgotada", async () => {
     const { getUsuarioByApiKey } = require("../../src/db/supabase");
     getUsuarioByApiKey.mockResolvedValueOnce({
       id: "user-test-uuid",
       plano_id: "free",
-      uso_mensal: 100,
-      planos: { limite_mensal: 100 },
+      uso_mensal: 10,
+      planos: { limite_mensal: 10 },
+      ai_key_encrypted: null,
+      ai_provider: null,
     });
 
     const res = await request(app)
