@@ -95,3 +95,111 @@
   28. Email de boas-vindas ao cadastrar (Resend ou SendGrid)
   29. Página de Termos de Uso e Política de Privacidade
   30. Página de status pública (status.devinsight.com.br)
+  
+  21:03
+  
+   Com base no que foi construído até agora, o produto está assim:
+
+  Concluído:
+  - API em produção no Render (https://devinsight-api.onrender.com)
+  - Auth completo (signup, login, API key, planos)
+  - Endpoint /v1/diagnosticos com rate limiting por plano
+  - SDK npm publicado (devinsight-sdk)
+  - Dashboard web (/dashboard) com login, uso mensal, plano, API key
+
+  Próximos passos naturais (em ordem de impacto):
+
+  1. Landing page — sem uma página de apresentação, ninguém descobre o produto. Uma página simples em / com CTA, pricing
+   e link para docs.
+  2. Engine de diagnóstico real — hoje o endpoint retorna um diagnóstico genérico. A proposta central do produto é
+  análise inteligente de erros (frontend/backend/sql). Implementar as engines com lógica real de detecção.
+  3. Cadastro no dashboard — hoje só dá pra criar conta via API (POST /v1/auth/signup). Adicionar /dashboard/signup.html
+   torna o produto acessível sem precisar de Postman.
+  4. Histórico de diagnósticos — requer adicionar usuario_id na tabela diagnosticos. Já está planejado como próxima
+  versão do dashboard.
+  5. Monitoramento — alertas, webhook, ou polling para notificar o usuário quando um diagnóstico alto for detectado.
+
+  Qual quer atacar?
+  
+  25/03
+  
+   Produto
+  1. Domínio próprio (debug-assist.app) — comprar e configurar no Render
+  2. Atualizar todas as URLs do código (devinsight-api.onrender.com → novo domínio)
+  3. Verificar domínio no Resend para enviar email para qualquer usuário
+  4. Termos de Uso e Política de Privacidade
+  5. Página de status pública (status.debug-assist.app)
+  6. Remover email-preview.html da produção após validar
+
+  Engine de diagnóstico
+  7. Engine frontend — detectar erros de hidratação, layout, performance
+  8. Engine backend — detectar exceções silenciosas, violações de contrato de API
+  9. Engine SQL — detectar N+1, índices ausentes, queries lentas
+
+  Dashboard
+  10. Gráfico de uso ao longo do tempo
+  11. Filtros no histórico (categoria, nível, data)
+  12. Endpoint para regenerar API Key
+  13. Página de configurações de conta
+
+  Infraestrutura
+  14. CI/CD com GitHub Actions (rodar testes antes do deploy)
+  15. Error tracking com Sentry
+  16. Uptime monitoring (UptimeRobot)
+  17. Logging estruturado com Pino ou Winston
+  18. Helmet.js para headers HTTP de segurança
+  19. CORS restrito a origens autorizadas
+  20. Reset automático do contador de uso mensal (cron job)
+
+  SDKs
+  21. Publicar SDK Python no PyPI
+  22. Publicar SDK Ruby no RubyGems
+  23. Publicar SDK PHP no Packagist
+  24. Publicar SDK Java no Maven Central
+  25. Publicar SDK Go no pkg.go.dev
+  26. Publicar SDK C# no NuGet
+
+  Negócio
+  27. Integração OpenAI para diagnósticos mais inteligentes
+  28. Webhooks para clientes (notificar quando diagnóstico crítico)
+  29. Exportar histórico (CSV/JSON)
+  30. Divulgação — Product Hunt, r/webdev, LinkedIn
+  
+  -- api conectar claude ao render: rnd_iidp4gDqR2y2LewFYOufySsFvMmi
+
+
+
+  27/03
+
+  Concluído nesta sessão:
+  ✓ SDK JS renomeado para debug-assist-sdk e publicado no npm
+  ✓ SDK Python publicado no PyPI (debug-assist-sdk)
+  ✓ SDK Ruby publicado no RubyGems (debug_assist)
+  ✓ SDK C# publicado no NuGet (DebugAssist.SDK)
+  ✓ SDK Go publicado (github.com/mirutee/devinsight-api/sdk/go)
+  ✓ SDK PHP publicado no Packagist (debug-assist/debug-assist) via repo separado
+  ✓ CI/CD com GitHub Actions — testes + deploy automático no Render (item 14)
+  ✓ 61 testes abrangentes das engines (frontend, backend, SQL)
+  ✓ Termos de Uso (/termos.html) e Política de Privacidade LGPD (/privacidade.html) (item 4)
+  ✓ Links de Termos/Privacidade adicionados no footer da landing page e docs
+  ✓ Renomeado DevInsight → Debug Assist em todo o código
+
+  Ainda falta (prioridade):
+  1. Domínio próprio (debug-assist.app) — comprar e configurar no Render
+  2. Verificar domínio no Resend para enviar email para qualquer usuário
+  3. Página de status pública (status.debug-assist.app)
+  4. Remover email-preview.html da produção
+  5. Gráfico de uso ao longo do tempo no dashboard
+  6. Filtros no histórico (categoria, nível, data)
+  7. Endpoint para regenerar API Key
+  8. Error tracking com Sentry
+  9. Uptime monitoring (UptimeRobot)
+  10. Logging estruturado com Pino ou Winston
+  11. Reset automático do contador de uso mensal (cron job)
+  12. Integração OpenAI para diagnósticos mais inteligentes
+  13. Webhooks para clientes (notificar quando diagnóstico crítico)
+  14. Exportar histórico (CSV/JSON)
+  15. Divulgação — Product Hunt, r/webdev, LinkedIn
+  16. SDK Java no Maven Central (complexo, deixar por último)
+
+  Na próxima sessão é só dizer "lista de pendências" que eu resgato tudo.
