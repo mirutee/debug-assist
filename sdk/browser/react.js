@@ -3,7 +3,7 @@
 'use strict';
 
 var React = require('react');
-var core = require('./devinsight.browser.js');
+var core = require('./debugassist.browser.js');
 
 var DEFAULT_BASE_URL = 'https://debug-assist.onrender.com';
 

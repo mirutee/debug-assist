@@ -1,4 +1,4 @@
-// sdk/browser/devinsight.browser.js
+// sdk/browser/debugassist.browser.js
 // UMD — works as <script> tag (window.DebugAssist) and CommonJS (require)
 (function (global, factory) {
   'use strict';

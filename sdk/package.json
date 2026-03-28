@@ -9,9 +9,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mirutee/devinsight-api.git"
+    "url": "git+https://github.com/mirutee/debug-assist.git"
   },
-  "homepage": "https://github.com/mirutee/devinsight-api",
+  "homepage": "https://github.com/mirutee/debug-assist",
   "engines": {
     "node": ">=18.0.0"
   }

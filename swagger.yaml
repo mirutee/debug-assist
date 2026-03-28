@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: DevInsight API
+  title: DEBUG_Assist API
   description: |
     API de diagnóstico inteligente para frontend, backend e SQL.
 
@@ -8,7 +8,7 @@ info:
 
     ## Como começar
 
-    1. Crie uma conta em [devinsight-api.onrender.com/dashboard/signup.html](https://devinsight-api.onrender.com/dashboard/signup.html)
+    1. Crie uma conta em [debugassist.com.br/dashboard/signup.html](https://debugassist.com.br/dashboard/signup.html)
     2. Faça login e copie sua **API Key** no dashboard
     3. Use a API Key no header `Authorization: Bearer SUA_API_KEY`
     4. Envie erros via `POST /v1/diagnosticos`
@@ -18,17 +18,17 @@ info:
     Para captura automática de erros em runtime, instale o SDK:
 
     ```bash
-    npm install devinsight-sdk
+    npm install debug-assist-sdk
     ```
 
     ```js
-    const DevInsight = require('devinsight-sdk');
+    const DebugAssist = require('debug-assist-sdk');
 
     // Captura automaticamente uncaughtException e unhandledRejection
-    DevInsight.init({ apiKey: 'SUA_API_KEY', projectName: 'meu-projeto' });
+    DebugAssist.init({ apiKey: 'SUA_API_KEY', projectName: 'meu-projeto' });
 
     // Ou envie manualmente
-    const client = new DevInsight({ apiKey: 'SUA_API_KEY' });
+    const client = new DebugAssist({ apiKey: 'SUA_API_KEY' });
     await client.report({ tipo: 'silent_backend_error', mensagem: err.message });
     ```
 
@@ -37,17 +37,17 @@ info:
     Sem dependências externas — funciona com qualquer app Python 3.8+:
 
     ```bash
-    pip install devinsight
+    pip install debug-assist-sdk
     ```
 
     ```python
-    from devinsight import DevInsight
+    from debug_assist import DebugAssist
 
     # Captura automaticamente qualquer exceção não tratada que derrube o app
-    DevInsight.init(api_key='SUA_API_KEY', project_name='meu-projeto')
+    DebugAssist.init(api_key='SUA_API_KEY', project_name='meu-projeto')
 
     # Ou envie manualmente
-    client = DevInsight(api_key='SUA_API_KEY')
+    client = DebugAssist(api_key='SUA_API_KEY')
     client.report(tipo='silent_backend_error', mensagem=str(e))
     ```
 
@@ -57,15 +57,15 @@ info:
 
     ```xml
     <dependency>
-      <groupId>com.devinsight</groupId>
-      <artifactId>devinsight</artifactId>
+      <groupId>com.debugassist</groupId>
+      <artifactId>debug-assist</artifactId>
       <version>1.0.0</version>
     </dependency>
     ```
 
     ```java
-    import com.devinsight.DevInsight;
-    DevInsight.init(); // lê DEVINSIGHT_API_KEY do ambiente
+    import com.debugassist.DebugAssist;
+    DebugAssist.init(); // lê DEBUG_ASSIST_API_KEY do ambiente
     ```
 
     ## SDK (Go)
@@ -73,13 +73,13 @@ info:
     Go 1.21+, sem dependências externas:
 
     ```bash
-    go get github.com/devinsight/sdk/go
+    go get github.com/mirutee/debug-assist/sdk/go
     ```
 
     ```go
-    import "github.com/devinsight/sdk/go/devinsight"
+    import debugassist "github.com/mirutee/debug-assist/sdk/go"
 
-    func main() { devinsight.Wrap(run) }
+    func main() { debugassist.Wrap(run) }
     func run()   { /* seu código */ }
     ```
 
@@ -87,8 +87,8 @@ info:
 
     PHP 7.4+, sem Composer:
 
-    ```php
-    require_once 'devinsight.php'; // só isso
+    ```bash
+    composer require debug-assist/debug-assist
     ```
 
     ## SDK (Ruby)
@@ -96,11 +96,11 @@ info:
     MRI Ruby 2.7+, sem gems externas:
 
     ```bash
-    gem install devinsight
+    gem install debug_assist
     ```
 
     ```ruby
-    require 'devinsight' # só isso
+    require 'debug_assist' # só isso
     ```
 
     ## SDK (C#)
@@ -108,12 +108,12 @@ info:
     .NET 6+, sem pacotes externos:
 
     ```bash
-    dotnet add package DevInsight
+    dotnet add package DebugAssist.SDK
     ```
 
     ```csharp
-    using DevInsightSDK;
-    DevInsight.EnsureInitialized(); // topo do Program.cs
+    using DebugAssistSDK;
+    DebugAssist.EnsureInitialized(); // topo do Program.cs
     ```
 
     ## SDK (Browser / Frontend)
@@ -123,7 +123,7 @@ info:
     **Via CDN (zero build):**
 
     ```html
-    <script src="https://devinsight-api.onrender.com/sdk/browser.js"
+    <script src="https://debugassist.com.br/sdk/browser.js"
             data-api-key="SUA_API_KEY"
             data-project="meu-app"></script>
     ```
@@ -131,18 +131,18 @@ info:
     **Via npm:**
 
     ```bash
-    npm install devinsight-browser
+    npm install debug-assist-browser
     ```
 
     ```js
-    import DevInsight from 'devinsight-browser';
-    DevInsight.init({ apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
+    import DebugAssist from 'debug-assist-browser';
+    DebugAssist.init({ apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
     ```
 
     **React — ErrorBoundary:**
 
     ```jsx
-    import { ErrorBoundary } from 'devinsight-browser/react';
+    import { ErrorBoundary } from 'debug-assist-browser/react';
     <ErrorBoundary apiKey="SUA_API_KEY" projectName="meu-app">
       <App />
     </ErrorBoundary>
@@ -151,15 +151,15 @@ info:
     **Vue 3:**
 
     ```js
-    import DevInsightPlugin from 'devinsight-browser/vue';
-    app.use(DevInsightPlugin, { apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
+    import DebugAssistPlugin from 'debug-assist-browser/vue';
+    app.use(DebugAssistPlugin, { apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
     ```
 
     **Svelte:**
 
     ```js
-    import { initDevInsight } from 'devinsight-browser/svelte';
-    initDevInsight({ apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
+    import { initDebugAssist } from 'debug-assist-browser/svelte';
+    initDebugAssist({ apiKey: 'SUA_API_KEY', projectName: 'meu-app' });
     ```
 
     ## Limites por plano
@@ -172,10 +172,10 @@ info:
 
   version: 1.0.0
   contact:
-    email: contato@devinsight.com
+    email: contato@debugassist.com.br
 
 servers:
-  - url: https://devinsight-api.onrender.com
+  - url: https://debugassist.com.br
     description: Produção
   - url: http://localhost:3000
     description: Local

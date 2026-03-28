@@ -2,7 +2,7 @@
 // Vue 3 plugin for Debug Assist
 'use strict';
 
-var core = require('./devinsight.browser.js');
+var core = require('./debugassist.browser.js');
 
 var DebugAssistPlugin = {
   install: function (app, opts) {

@@ -2,20 +2,20 @@
   "name": "debug-assist-browser",
   "version": "1.0.0",
   "description": "Debug Assist browser SDK — auto-captures frontend errors",
-  "main": "devinsight.browser.js",
-  "module": "devinsight.browser.esm.js",
+  "main": "debugassist.browser.js",
+  "module": "debugassist.browser.esm.js",
   "exports": {
     ".": {
-      "import": "./devinsight.browser.esm.js",
-      "require": "./devinsight.browser.js"
+      "import": "./debugassist.browser.esm.js",
+      "require": "./debugassist.browser.js"
     },
     "./react": "./react.js",
     "./vue": "./vue.js",
     "./svelte": "./svelte.js"
   },
   "files": [
-    "devinsight.browser.js",
-    "devinsight.browser.esm.js",
+    "debugassist.browser.js",
+    "debugassist.browser.esm.js",
     "react.js",
     "vue.js",
     "svelte.js"
@@ -23,6 +23,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mirutee/devinsight-api.git"
+    "url": "git+https://github.com/mirutee/debug-assist.git"
   }
 }
