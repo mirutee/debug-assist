@@ -45,7 +45,7 @@ curl -X POST https://debugassist.com.br/v1/diagnosticos \
 | JavaScript / Node.js | [debug-assist-sdk](https://www.npmjs.com/package/debug-assist-sdk) | `npm install debug-assist-sdk` |
 | Python | [debug-assist-sdk](https://pypi.org/project/debug-assist-sdk/) | `pip install debug-assist-sdk` |
 | Ruby | [debug_assist](https://rubygems.org/gems/debug_assist) | `gem install debug_assist` |
-| Go | [sdk/go](https://pkg.go.dev/github.com/mirutee/devinsight-api/sdk/go) | `go get github.com/mirutee/devinsight-api/sdk/go` |
+| Go | [sdk/go](https://pkg.go.dev/github.com/mirutee/debug-assist/sdk/go) | `go get github.com/mirutee/debug-assist/sdk/go` |
 | C# / .NET | [DebugAssist.SDK](https://www.nuget.org/packages/DebugAssist.SDK) | `dotnet add package DebugAssist.SDK` |
 | PHP | [debug-assist/debug-assist](https://packagist.org/packages/debug-assist/debug-assist) | `composer require debug-assist/debug-assist` |
 
@@ -92,8 +92,8 @@ tests/          # Testes automatizados
 ## Desenvolvimento local
 
 ```bash
-git clone https://github.com/mirutee/devinsight-api.git
-cd devinsight-api
+git clone https://github.com/mirutee/debug-assist.git
+cd debug-assist
 npm install
 cp .env.example .env
 # Preencha as variáveis no .env

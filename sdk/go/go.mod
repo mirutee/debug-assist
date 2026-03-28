@@ -1,3 +1,3 @@
-module github.com/mirutee/devinsight-api/sdk/go
+module github.com/mirutee/debug-assist/sdk/go
 
 go 1.21
