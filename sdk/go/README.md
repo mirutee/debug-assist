@@ -5,13 +5,13 @@ Auto-capture panics and send diagnostics to [DebugAssist](https://debug-assist.a
 ## Install
 
 ```bash
-go get github.com/debug-assist/sdk-go
+go get github.com/mirutee/devinsight-api/sdk/go
 ```
 
 ## Usage
 
 ```go
-import debugassist "github.com/debug-assist/sdk-go"
+import debugassist "github.com/mirutee/devinsight-api/sdk/go"
 
 func main() {
     debugassist.Wrap(run)
