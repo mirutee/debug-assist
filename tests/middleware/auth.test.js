@@ -81,6 +81,8 @@ describe("auth middleware", () => {
       plano_id: "free",
       uso_mensal: 50,
       limite_mensal: 100,
+      ai_key_encrypted: null,
+      ai_provider: null,
     });
   });
 
@@ -100,6 +102,8 @@ describe("auth middleware", () => {
       plano_id: "enterprise",
       uso_mensal: 99999,
       limite_mensal: -1,
+      ai_key_encrypted: null,
+      ai_provider: null,
     });
   });
 

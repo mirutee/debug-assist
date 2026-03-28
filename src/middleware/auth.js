@@ -37,6 +37,8 @@ async function auth(req, res, next) {
       plano_id: usuario.plano_id,
       uso_mensal: usuario.uso_mensal,
       limite_mensal: limiteMensal,
+      ai_key_encrypted: usuario.ai_key_encrypted || null,
+      ai_provider: usuario.ai_provider || null,
     };
 
     next();
