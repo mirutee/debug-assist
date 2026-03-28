@@ -175,6 +175,28 @@ async function getAnalyticsByUsuario(usuarioId) {
     .sort((a, b) => a.data.localeCompare(b.data));
 }
 
+async function getAiConfig(usuarioId) {
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
+    .from('usuarios')
+    .select('ai_key_encrypted, ai_provider')
+    .eq('id', usuarioId)
+    .single();
+  if (error || !data) return null;
+  return data;
+}
+
+async function saveAiConfig(usuarioId, { ai_key_encrypted, ai_provider }) {
+  const client = db();
+  if (!client) return;
+  const { error } = await client
+    .from('usuarios')
+    .update({ ai_key_encrypted, ai_provider })
+    .eq('id', usuarioId);
+  if (error) throw new Error(error.message);
+}
+
 module.exports = {
   saveDiagnostico,
   getDiagnosticosByUsuario,
@@ -189,4 +211,6 @@ module.exports = {
   getUsuarioByStripeCustomerId,
   regenerateApiKey,
   getAnalyticsByUsuario,
+  getAiConfig,
+  saveAiConfig,
 };
