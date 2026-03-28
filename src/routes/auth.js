@@ -2,8 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const { validarDominio, signupLimiter } = require("../middleware/antiAbuse");
-const { signUpUser, signInUser, getUserFromToken, getUsuarioByAuthId, regenerateApiKey } = require("../db/supabase");
+const { signUpUser, signInUser, getUserFromToken, getUsuarioByAuthId, regenerateApiKey, getAiConfig, saveAiConfig } = require("../db/supabase");
 const { sendWelcomeEmail } = require('../email/resend');
+const authJwt = require('../middleware/authJwt');
+const { encrypt } = require('../utils/encrypt');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -128,6 +130,50 @@ router.post("/regenerate-key", async (req, res) => {
     return res.json({ api_key: apiKey });
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno. Tente novamente." });
+  }
+});
+
+// GET /v1/auth/ai-config — retorna provider configurado (nunca retorna a key)
+router.get('/ai-config', authJwt, async (req, res) => {
+  try {
+    const config = await getAiConfig(req.usuario.id);
+    return res.json({
+      ai_provider: config?.ai_provider || null,
+      ai_key_configured: !!(config?.ai_key_encrypted),
+    });
+  } catch {
+    return res.status(500).json({ erro: 'Erro ao buscar configuração de IA' });
+  }
+});
+
+// PUT /v1/auth/ai-config — salva ou remove a key de IA
+router.put('/ai-config', authJwt, async (req, res) => {
+  if (req.usuario.plano_id !== 'scale') {
+    return res.status(403).json({ erro: 'Configuração de IA disponível apenas no plano Scale.' });
+  }
+
+  const { ai_key, ai_provider } = req.body;
+
+  // remover key
+  if (ai_key === null || ai_key === '') {
+    await saveAiConfig(req.usuario.id, { ai_key_encrypted: null, ai_provider: null });
+    return res.json({ ok: true, ai_key_configured: false });
+  }
+
+  const PROVIDERS = ['openai', 'anthropic', 'groq'];
+  if (!ai_key || typeof ai_key !== 'string' || ai_key.trim().length < 10) {
+    return res.status(400).json({ erro: 'ai_key inválida' });
+  }
+  if (!PROVIDERS.includes(ai_provider)) {
+    return res.status(400).json({ erro: `ai_provider deve ser um de: ${PROVIDERS.join(', ')}` });
+  }
+
+  try {
+    const encrypted = encrypt(ai_key.trim());
+    await saveAiConfig(req.usuario.id, { ai_key_encrypted: encrypted, ai_provider });
+    return res.json({ ok: true, ai_key_configured: true, ai_provider });
+  } catch {
+    return res.status(500).json({ erro: 'Erro ao salvar configuração de IA' });
   }
 });
 
