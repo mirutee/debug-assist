@@ -1,4 +1,8 @@
 // tests/routes/diagnosticos.test.js
+jest.mock('../../src/engines/aiEnricher', () =>
+  jest.fn().mockImplementation(async (resultado) => resultado)
+);
+
 jest.mock("../../src/db/supabase", () => ({
   saveDiagnostico: jest.fn().mockResolvedValue(undefined),
   getUsuarioByApiKey: jest.fn().mockResolvedValue({
@@ -77,6 +81,41 @@ describe("POST /v1/diagnosticos", () => {
     expect(res.status).toBe(200);
     expect(res.body.sugestoes).toHaveLength(1);
     expect(res.body.upgrade_hint).toBeDefined();
+  });
+
+  it("scale: chama aiEnricher e retorna resultado enriquecido", async () => {
+    const { getUsuarioByApiKey } = require("../../src/db/supabase");
+    const aiEnricher = require("../../src/engines/aiEnricher");
+
+    getUsuarioByApiKey.mockResolvedValueOnce({
+      id: "user-scale-uuid",
+      plano_id: "scale",
+      uso_mensal: 5,
+      planos: { limite_mensal: 10000 },
+      ai_key_encrypted: null,
+      ai_provider: null,
+    });
+
+    aiEnricher.mockResolvedValueOnce({
+      problema: "Erro de hidratação",
+      causa: "Date.now() no render",
+      nivel: "alto",
+      categoria: "frontend",
+      confianca: 0.97,
+      sugestoes: ["Sugestão 1", "Sugestão 2"],
+      analise_aprofundada: "Análise profunda gerada",
+      ia_provider: "openai",
+      ia_timeout: false,
+    });
+
+    const res = await request(app)
+      .post("/v1/diagnosticos")
+      .set(HEADERS)
+      .send({ tipo: "hydration_error", mensagem: "Hydration failed" });
+
+    expect(res.status).toBe(200);
+    expect(aiEnricher).toHaveBeenCalledTimes(1);
+    expect(res.body.analise_aprofundada).toBe("Análise profunda gerada");
   });
 
   it("retorna 429 quando cota esgotada", async () => {

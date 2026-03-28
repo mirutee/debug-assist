@@ -6,6 +6,7 @@ const authJwt = require("../middleware/authJwt");
 const validate = require("../middleware/validate");
 const diagnosticar = require("../engines/index");
 const planFilter = require("../engines/planFilter");
+const aiEnricher = require("../engines/aiEnricher");
 const { saveDiagnostico, incrementarUso, getDiagnosticosByUsuario } = require("../db/supabase");
 
 router.post("/", auth, validate, async (req, res) => {
@@ -13,23 +14,26 @@ router.post("/", auth, validate, async (req, res) => {
     const resultado = diagnosticar(req.body);
     const filtrado = planFilter(resultado, req.usuario.plano_id);
 
-    // Persiste de forma assíncrona — não bloqueia a resposta
+    let final = filtrado;
+    if (req.usuario.plano_id === 'scale') {
+      final = await aiEnricher(filtrado, req.body, req.usuario, req.headers);
+    }
+
     saveDiagnostico({
       tipo: req.body.tipo,
       mensagem: req.body.mensagem,
       contexto: req.body.contexto,
-      resposta: filtrado,
+      resposta: final,
       usuario_id: req.usuario.id,
     }).catch(() => {});
 
-    // Incrementa cota após resposta bem-sucedida
     res.on("finish", () => {
       if (res.statusCode === 200) {
         incrementarUso(req.usuario.id).catch(() => {});
       }
     });
 
-    return res.json(filtrado);
+    return res.json(final);
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno ao processar diagnóstico" });
   }
