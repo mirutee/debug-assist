@@ -34,6 +34,7 @@
 
     <main class="main">
       <div class="page-title">Histórico de Diagnósticos</div>
+      <div id="uso-banner" class="uso-banner" style="display:none"></div>
       <div class="page-subtitle" id="page-subtitle">Erros capturados automaticamente pelo SDK e via API</div>
 
       <div class="error-msg" id="fetch-error" style="margin-bottom:16px;"></div>
@@ -65,6 +66,7 @@
         window.location.replace('/dashboard/login.html');
       });
 
+      initBanner(token);
       await loadHistory(token);
       pollInterval = setInterval(() => poll(token), 5000);
     }
@@ -251,6 +253,31 @@
           badge.classList.add('visible');
         }
       } catch (_) {}
+    }
+
+    async function initBanner(token) {
+      try {
+        const res = await fetch(`${API}/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        mostrarUsoBanner(data);
+      } catch (_) {}
+    }
+
+    function mostrarUsoBanner(data) {
+      const banner = document.getElementById('uso-banner');
+      if (!banner || data.limite_mensal <= 0) return;
+      const pct = data.uso_mensal / data.limite_mensal;
+      if (pct < 0.8) return;
+      banner.textContent = `${data.uso_mensal} de ${data.limite_mensal} diagnósticos usados este mês. `;
+      if (pct >= 1) {
+        banner.className = 'uso-banner danger';
+        banner.innerHTML += '<a href="/dashboard/pricing.html">Faça upgrade agora →</a>';
+      } else {
+        banner.className = 'uso-banner warning';
+        banner.innerHTML += '<a href="/dashboard/pricing.html">Fazer upgrade →</a>';
+      }
+      banner.style.display = 'block';
     }
   </script>
 
