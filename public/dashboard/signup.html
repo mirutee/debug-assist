@@ -108,10 +108,13 @@
       btn.style.opacity = '0.6';
       try {
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+        const callbackUrl = window.location.origin + '/dashboard/auth-callback.html'
+          + (redirectParam ? '?redirect=' + encodeURIComponent(redirectParam) : '');
         await _supabase.auth.signInWithOAuth({
           provider: 'github',
           options: {
-            redirectTo: window.location.origin + '/dashboard/auth-callback.html',
+            redirectTo: callbackUrl,
           },
         });
       } catch (err) {

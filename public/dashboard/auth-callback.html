@@ -58,7 +58,9 @@
         // Brief pause so the DB trigger has time to create the usuarios record
         await new Promise(r => setTimeout(r, 800));
 
-        window.location.replace('/dashboard/');
+        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+        const dest = redirectParam === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
+        window.location.replace(dest);
       } catch (err) {
         showError('Erro inesperado. Tente novamente.');
       }
