@@ -237,9 +237,16 @@
       }
 
       try {
-        const res = await fetch(`${API}/v1/auth/me`, {
+        let res = await fetch(`${API}/v1/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        if (res.status >= 500) {
+          await new Promise(r => setTimeout(r, 3000));
+          res = await fetch(`${API}/v1/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
 
         if (res.status === 401) {
           localStorage.removeItem('debug_assist_token');

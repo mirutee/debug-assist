@@ -79,6 +79,12 @@
     let userData = null;
     let revealed = false;
 
+    async function fetchMe(token) {
+      return fetch(`${API}/v1/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }
+
     async function loadDashboard() {
       const token = localStorage.getItem('debug_assist_token');
       if (!token) {
@@ -86,36 +92,49 @@
         return;
       }
 
+      let res;
       try {
-        const res = await fetch(`${API}/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.status === 401) {
-          console.error('Token inválido ou expirado — redirecionando para login');
-          localStorage.removeItem('debug_assist_token');
-          window.location.replace('/dashboard/login.html');
-          return;
-        }
-
-        if (res.status === 404) {
-          document.getElementById('user-subtitle').textContent =
-            'Conta não configurada. Entre em contato com o suporte.';
-          return;
-        }
-
-        if (!res.ok) {
-          document.getElementById('user-subtitle').textContent =
-            'Erro de conexão. Recarregue a página.';
-          return;
-        }
-
-        userData = await res.json();
-        render(userData);
+        res = await fetchMe(token);
       } catch (err) {
         document.getElementById('user-subtitle').textContent =
           'Erro de conexão. Verifique sua internet.';
+        return;
       }
+
+      // Retry once on 5xx (e.g. server cold start on Render free tier)
+      if (res.status >= 500) {
+        document.getElementById('user-subtitle').textContent = 'Reconectando...';
+        await new Promise(r => setTimeout(r, 3000));
+        try {
+          res = await fetchMe(token);
+        } catch (err) {
+          document.getElementById('user-subtitle').textContent =
+            'Erro de conexão. Verifique sua internet.';
+          return;
+        }
+      }
+
+      if (res.status === 401) {
+        console.error('Token inválido ou expirado — redirecionando para login');
+        localStorage.removeItem('debug_assist_token');
+        window.location.replace('/dashboard/login.html');
+        return;
+      }
+
+      if (res.status === 404) {
+        document.getElementById('user-subtitle').textContent =
+          'Conta não configurada. Entre em contato com o suporte.';
+        return;
+      }
+
+      if (!res.ok) {
+        document.getElementById('user-subtitle').textContent =
+          'Erro de conexão. Recarregue a página.';
+        return;
+      }
+
+      userData = await res.json();
+      render(userData);
     }
 
     function render(data) {
