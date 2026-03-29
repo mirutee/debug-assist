@@ -219,6 +219,57 @@ input:focus { border-color: #6366f1; }
 .copied-feedback { color: #4ade80; font-size: 11px; margin-top: 6px; display: none; }
 .copied-feedback.show { display: block; }
 
+/* Feedback modal */
+.feedback-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.feedback-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  margin: 16px;
+}
+.feedback-modal-box h3 {
+  margin: 0 0 6px;
+  color: var(--text);
+  font-size: 16px;
+}
+.feedback-modal-box p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.feedback-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.feedback-textarea::placeholder { color: var(--muted); }
+.feedback-cancel-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .success-msg {
   color: #4ade80;
   font-size: 13px;

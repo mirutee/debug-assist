@@ -261,17 +261,14 @@
     &#9993; Feedback
   </button>
 
-  <div id="feedback-modal"
-    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:28px;width:100%;max-width:420px;margin:16px">
-      <h3 style="margin:0 0 6px;color:#f1f1f1;font-size:16px">Enviar Feedback</h3>
-      <p style="margin:0 0 16px;font-size:13px;color:#888">Sua mensagem será enviada para nossa equipe.</p>
-      <textarea id="feedback-texto" rows="5" placeholder="Escreva sua mensagem..."
-        style="width:100%;background:#111;border:1px solid #333;color:#ccc;border-radius:8px;padding:10px 12px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+  <div id="feedback-modal" class="feedback-modal-overlay">
+    <div class="feedback-modal-box">
+      <h3>Enviar Feedback</h3>
+      <p>Sua mensagem será enviada para nossa equipe.</p>
+      <textarea id="feedback-texto" rows="5" placeholder="Escreva sua mensagem..." class="feedback-textarea"></textarea>
       <div id="feedback-msg" style="font-size:12px;color:#888;margin-top:6px;min-height:16px"></div>
       <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-        <button onclick="document.getElementById('feedback-modal').style.display='none'"
-          style="background:none;border:1px solid #333;color:#888;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer">
+        <button onclick="document.getElementById('feedback-modal').style.display='none'" class="feedback-cancel-btn">
           Cancelar
         </button>
         <button onclick="enviarFeedback()"
