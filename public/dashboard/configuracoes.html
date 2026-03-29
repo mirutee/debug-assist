@@ -176,6 +176,37 @@
         </div>
         <div class="chart-hint">Passe o mouse sobre as barras para ver o total do dia</div>
       </div>
+
+      <!-- Seção IA — só visível para Scale -->
+      <div class="config-section" id="section-ia" style="display:none">
+        <div class="config-section-label">Inteligência Artificial</div>
+        <p style="font-size:13px;color:#888;margin:0 0 14px">
+          Configure sua própria API key de IA para ativar a análise aprofundada nos diagnósticos do plano Scale.
+          A key é armazenada de forma criptografada.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:480px">
+          <select id="ai-provider" style="background:#111;border:1px solid #333;color:#ccc;padding:8px 12px;border-radius:6px;font-size:13px">
+            <option value="">Selecione o provider</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="groq">Groq</option>
+          </select>
+          <div style="display:flex;gap:8px">
+            <input id="ai-key-input" type="password" placeholder="Cole sua API key aqui"
+              style="flex:1;background:#111;border:1px solid #333;color:#ccc;padding:8px 12px;border-radius:6px;font-size:13px" />
+            <button onclick="salvarAiKey()"
+              style="background:#6366f1;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600">
+              Salvar
+            </button>
+          </div>
+          <div id="ai-key-status" style="font-size:12px;color:#888"></div>
+          <button onclick="removerAiKey()"
+            id="btn-remover-ai"
+            style="display:none;background:none;border:1px solid #444;color:#888;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;width:fit-content">
+            Remover key configurada
+          </button>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -221,6 +252,11 @@
         userData = await res.json();
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('account-email').textContent = userData.email;
+        const plano = userData.plano;
+        if (plano === 'scale') {
+          document.getElementById('section-ia').style.display = 'block';
+          carregarAiConfig();
+        }
         loadAnalytics(token);
       } catch (_) {}
     }
@@ -427,6 +463,80 @@
       btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
     }
     document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+    async function carregarAiConfig() {
+      const token = localStorage.getItem('debug_assist_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/v1/auth/ai-config', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const status = document.getElementById('ai-key-status');
+        const btnRemover = document.getElementById('btn-remover-ai');
+        if (data.ai_key_configured) {
+          status.textContent = 'Key configurada (' + data.ai_provider + ')';
+          status.style.color = '#4ade80';
+          btnRemover.style.display = 'block';
+          document.getElementById('ai-provider').value = data.ai_provider;
+        } else {
+          status.textContent = 'Nenhuma key configurada';
+          btnRemover.style.display = 'none';
+        }
+      } catch {}
+    }
+
+    async function salvarAiKey() {
+      const token = localStorage.getItem('debug_assist_token');
+      const key = document.getElementById('ai-key-input').value.trim();
+      const provider = document.getElementById('ai-provider').value;
+      const status = document.getElementById('ai-key-status');
+      if (!key || !provider) {
+        status.textContent = 'Selecione o provider e cole a key.';
+        status.style.color = '#f87171';
+        return;
+      }
+      try {
+        const res = await fetch('/v1/auth/ai-config', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ai_key: key, ai_provider: provider })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          status.textContent = 'Key salva (' + data.ai_provider + ')';
+          status.style.color = '#4ade80';
+          document.getElementById('ai-key-input').value = '';
+          document.getElementById('btn-remover-ai').style.display = 'block';
+        } else {
+          status.textContent = data.erro || 'Erro ao salvar.';
+          status.style.color = '#f87171';
+        }
+      } catch {
+        status.textContent = 'Erro de conexão.';
+        status.style.color = '#f87171';
+      }
+    }
+
+    async function removerAiKey() {
+      const token = localStorage.getItem('debug_assist_token');
+      const status = document.getElementById('ai-key-status');
+      try {
+        await fetch('/v1/auth/ai-config', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ai_key: null, ai_provider: null })
+        });
+        status.textContent = 'Key removida.';
+        status.style.color = '#888';
+        document.getElementById('btn-remover-ai').style.display = 'none';
+        document.getElementById('ai-provider').value = '';
+      } catch {
+        status.textContent = 'Erro ao remover.';
+        status.style.color = '#f87171';
+      }
+    }
 
     init();
   </script>
