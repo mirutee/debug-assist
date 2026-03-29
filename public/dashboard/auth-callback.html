@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrando... — DEBUG_Assist</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">DEBUG_Assist</span>
+      </div>
+      <p id="status" style="text-align:center;color:var(--muted, #555);font-size:14px;margin-top:16px;">
+        Concluindo login com GitHub...
+      </p>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const SUPABASE_URL = 'https://wlfjbylsuyjcoyqfhksq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsZmpieWxzdXlqY295cWZoa3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODAxODcsImV4cCI6MjA4ODg1NjE4N30.gUvsYM3Z66ptaL-I8_EPTokUSqeWfDmjaAY8LEsVqJw';
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function showError(msg) {
+      document.getElementById('status').style.display = 'none';
+      const el = document.getElementById('error-msg');
+      el.innerHTML = msg + ' <a href="/dashboard/login.html" style="color:#6366f1">Voltar ao login</a>';
+      el.classList.add('show');
+    }
+
+    async function handleCallback() {
+      // Check for error params in hash or query string
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      const query = new URLSearchParams(window.location.search);
+      const errorDesc = hash.get('error_description') || query.get('error_description');
+
+      if (errorDesc) {
+        showError('Login cancelado ou recusado.');
+        return;
+      }
+
+      try {
+        const { data, error } = await client.auth.getSession();
+
+        if (error || !data.session) {
+          showError('Não foi possível concluir o login. Tente novamente.');
+          return;
+        }
+
+        localStorage.setItem('debug_assist_token', data.session.access_token);
+
+        // Brief pause so the DB trigger has time to create the usuarios record
+        await new Promise(r => setTimeout(r, 800));
+
+        window.location.replace('/dashboard/');
+      } catch (err) {
+        showError('Erro inesperado. Tente novamente.');
+      }
+    }
+
+    handleCallback();
+  </script>
+</body>
+</html>
