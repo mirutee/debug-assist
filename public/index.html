@@ -175,6 +175,21 @@
   </div>
 </section>
 
+<!-- Seção Feedback -->
+<section style="padding:80px 24px;text-align:center;border-top:1px solid #1a1a1a">
+  <div style="max-width:480px;margin:0 auto">
+    <h2 style="font-size:24px;font-weight:700;margin:0 0 8px">Tem alguma sugestão?</h2>
+    <p style="color:#888;font-size:15px;margin:0 0 24px">Sua mensagem será enviada diretamente para nossa equipe.</p>
+    <textarea id="site-feedback-texto" rows="4" placeholder="Escreva sua mensagem..."
+      style="width:100%;background:#111;border:1px solid #2a2a2a;color:#ccc;border-radius:10px;padding:12px 16px;font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+    <div id="site-feedback-msg" style="font-size:13px;color:#888;margin:8px 0;min-height:18px"></div>
+    <button onclick="enviarFeedbackSite()"
+      style="background:#6366f1;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px">
+      Enviar
+    </button>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <img src="/images/logo.png" alt="DEBUG_Assist" style="height:40px;width:auto;display:block;">
@@ -204,6 +219,27 @@
     btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
   }
   document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+  async function enviarFeedbackSite() {
+    const texto = document.getElementById('site-feedback-texto').value.trim();
+    const msg = document.getElementById('site-feedback-msg');
+    if (!texto) { msg.textContent = 'Escreva uma mensagem antes de enviar.'; msg.style.color = '#f87171'; return; }
+    try {
+      const res = await fetch('/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: texto })
+      });
+      if (res.ok) {
+        msg.textContent = 'Obrigado pelo feedback! Nossa equipe irá analisar.';
+        msg.style.color = '#4ade80';
+        document.getElementById('site-feedback-texto').value = '';
+      } else {
+        msg.textContent = 'Erro ao enviar. Tente novamente.';
+        msg.style.color = '#f87171';
+      }
+    } catch { msg.textContent = 'Erro de conexão.'; msg.style.color = '#f87171'; }
+  }
 </script>
 <button id="theme-toggle" class="theme-toggle-float" onclick="toggleTheme()" title="Mudar tema"></button>
 
