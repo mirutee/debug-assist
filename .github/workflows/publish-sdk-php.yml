@@ -1,0 +1,17 @@
+name: Publish SDK PHP → Packagist
+
+on:
+  push:
+    tags:
+      - 'sdk-php-v*'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Packagist of new release
+        run: |
+          curl -s --fail -X POST \
+            -H "Content-Type: application/json" \
+            "https://packagist.org/api/update-package?username=mirutee&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
+            -d '{"repository":{"url":"https://github.com/mirutee/debug-assist"}}'

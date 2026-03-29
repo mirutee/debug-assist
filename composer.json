@@ -7,7 +7,7 @@
         "php": ">=7.4"
     },
     "autoload": {
-        "files": ["debug_assist.php"]
+        "files": ["sdk/php/debug_assist.php"]
     },
     "homepage": "https://github.com/mirutee/debug-assist",
     "authors": [
