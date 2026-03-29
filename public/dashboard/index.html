@@ -30,6 +30,10 @@
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
       <button id="theme-toggle" class="theme-toggle-sidebar" onclick="toggleTheme()" title="Mudar tema"></button>
+      <div class="api-status" id="api-status">
+        <span class="api-status-dot"></span>
+        <span id="api-status-label">API</span>
+      </div>
     </nav>
 
     <main class="main">
@@ -252,6 +256,25 @@
 
     loadDashboard();
     checkAlertBadge();
+    checkApiStatus();
+
+    async function checkApiStatus() {
+      const el = document.getElementById('api-status');
+      const label = document.getElementById('api-status-label');
+      try {
+        const res = await fetch(`${API}/v1/health`);
+        if (res.ok) {
+          el.className = 'api-status online';
+          label.textContent = 'Online';
+        } else {
+          el.className = 'api-status offline';
+          label.textContent = 'Offline';
+        }
+      } catch (_) {
+        el.className = 'api-status offline';
+        label.textContent = 'Offline';
+      }
+    }
 
     async function checkAlertBadge() {
       try {

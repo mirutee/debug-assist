@@ -144,6 +144,24 @@ input:focus { border-color: #6366f1; }
   white-space: nowrap;
 }
 
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.api-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #444;
+  flex-shrink: 0;
+}
+.api-status.online .api-status-dot  { background: #4ade80; }
+.api-status.offline .api-status-dot { background: #f87171; }
+
 .main { margin-left: 200px; padding: 32px; flex: 1; max-width: 720px; }
 .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .page-subtitle { color: #555; font-size: 13px; margin-bottom: 24px; }
