@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.planos (
 );
 
 INSERT INTO public.planos (id, nome, limite_mensal, preco_brl) VALUES
-  ('free',       'Free',       100,    0),
+  ('free',       'Free',       10,     0),
   ('pro',        'Pro',        1000,   29.00),
   ('scale',      'Scale',      10000,  99.00),
   ('enterprise', 'Enterprise', -1,     NULL)
