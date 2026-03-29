@@ -166,7 +166,7 @@ info:
 
     | Plano  | Diagnósticos/mês | Preço     |
     |--------|-----------------|-----------|
-    | Free   | 100             | Grátis    |
+    | Free   | 10              | Grátis    |
     | Pro    | 1.000           | R$99/mês  |
     | Scale  | 10.000          | R$349/mês |
 
@@ -187,6 +187,8 @@ tags:
     description: Envio e histórico de diagnósticos
   - name: Billing
     description: Checkout, planos e portal de assinatura (Stripe)
+  - name: Feedback
+    description: Envio de feedback e sugestões para a equipe
   - name: Health
     description: Status da API
 
@@ -336,7 +338,7 @@ paths:
                   limite_mensal:
                     type: integer
                     description: -1 significa ilimitado
-                    example: 100
+                    example: 10
                   api_key:
                     type: string
                     description: Use esta chave no header Authorization das chamadas a POST /v1/diagnosticos
@@ -462,6 +464,177 @@ paths:
                   $ref: "#/components/schemas/DiagnosticoHistorico"
         "401":
           description: Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+
+  /v1/auth/ai-config:
+    get:
+      tags: [Auth]
+      summary: Consultar configuração de IA (Scale)
+      description: |
+        Retorna o provider de IA configurado pelo usuário Scale. Nunca retorna a chave em si.
+
+        **Requer:** plano Scale. **Autenticação:** JWT.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Configuração atual
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ai_provider:
+                    type: string
+                    nullable: true
+                    enum: [openai, anthropic, groq, null]
+                    example: openai
+                  ai_key_configured:
+                    type: boolean
+                    description: true se há uma chave de IA salva
+                    example: true
+        "401":
+          description: Token ausente ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+    put:
+      tags: [Auth]
+      summary: Salvar ou remover chave de IA (Scale)
+      description: |
+        Salva ou remove a chave de IA do usuário Scale (BYOK — Bring Your Own Key).
+
+        - Para **salvar**: passe `ai_key` (mín. 10 chars) e `ai_provider` (`openai`, `anthropic` ou `groq`).
+        - Para **remover**: passe `ai_key: null` ou `ai_key: ""`.
+
+        A chave é armazenada encriptada (AES-256-GCM) e nunca é retornada em nenhuma resposta.
+
+        **Requer:** plano Scale. **Autenticação:** JWT.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ai_key:
+                  type: string
+                  nullable: true
+                  description: Chave de API do provedor de IA. Passe null ou "" para remover.
+                  example: "sk-proj-abc123..."
+                ai_provider:
+                  type: string
+                  enum: [openai, anthropic, groq]
+                  description: Provedor de IA correspondente à chave
+                  example: openai
+            examples:
+              salvar:
+                summary: Salvar chave OpenAI
+                value:
+                  ai_key: "sk-proj-abc123..."
+                  ai_provider: openai
+              remover:
+                summary: Remover chave
+                value:
+                  ai_key: null
+      responses:
+        "200":
+          description: Configuração atualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  ai_key_configured:
+                    type: boolean
+                    example: true
+                  ai_provider:
+                    type: string
+                    nullable: true
+                    example: openai
+        "400":
+          description: ai_key ou ai_provider inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+        "401":
+          description: Token ausente ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+        "403":
+          description: Recurso disponível apenas no plano Scale
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "Configuração de IA disponível apenas no plano Scale."
+
+  /v1/feedback:
+    post:
+      tags: [Feedback]
+      summary: Enviar feedback
+      description: |
+        Envia uma mensagem de feedback ou sugestão para a equipe do DEBUG_Assist.
+
+        Autenticação é opcional — usuários logados têm seu email identificado automaticamente.
+      security:
+        - {}
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mensagem]
+              properties:
+                mensagem:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  description: Texto do feedback (máx. 2000 caracteres)
+                  example: "Seria ótimo ter suporte a diagnósticos de GraphQL!"
+      responses:
+        "200":
+          description: Feedback enviado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        "400":
+          description: Mensagem ausente ou inválida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              examples:
+                mensagemAusente:
+                  summary: Mensagem não informada
+                  value:
+                    erro: "mensagem é obrigatória"
+                mensagemLonga:
+                  summary: Mensagem muito longa
+                  value:
+                    erro: "mensagem excede 2000 caracteres"
+        "429":
+          description: Muitas requisições
           content:
             application/json:
               schema:
@@ -611,6 +784,37 @@ components:
           minimum: 0
           maximum: 1
           example: 0.95
+        upgrade_hint:
+          type: string
+          description: |
+            **(Plano Free)** Presente quando existem sugestões adicionais disponíveis nos planos pagos.
+            Ausente em Pro, Scale e Enterprise.
+          example: "Existem mais 2 sugestão(ões) disponível(is) no plano Pro."
+        analise_aprofundada:
+          type: string
+          description: |
+            **(Plano Scale)** Análise aprofundada gerada por IA (BYOK).
+            Presente apenas quando a chave de IA está configurada e o enriquecimento foi bem-sucedido.
+          example: "A causa provável é uma condição de corrida na inicialização do módulo. Considere usar lazy initialization ou um singleton thread-safe."
+        ia_provider:
+          type: string
+          description: |
+            **(Plano Scale)** Provedor de IA utilizado no enriquecimento.
+            Presente junto com `analise_aprofundada`.
+          enum: [openai, anthropic, groq]
+          example: openai
+        ia_timeout:
+          type: boolean
+          description: |
+            **(Plano Scale)** `true` quando a chamada de IA excedeu o timeout de 5s.
+            O diagnóstico base ainda é retornado normalmente.
+          example: true
+        ia_aviso:
+          type: string
+          description: |
+            **(Plano Scale)** Presente quando nenhuma chave de IA está configurada.
+            O diagnóstico base é retornado sem enriquecimento.
+          example: "Nenhuma chave de IA configurada. Configure em /v1/auth/ai-config para habilitar análise aprofundada."
 
     DiagnosticoHistorico:
       type: object
