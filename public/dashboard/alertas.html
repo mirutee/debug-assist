@@ -295,5 +295,56 @@
 
     init();
   </script>
+
+  <!-- Feedback flutuante -->
+  <button id="feedback-btn"
+    onclick="document.getElementById('feedback-modal').style.display='flex'"
+    style="position:fixed;bottom:24px;right:24px;background:#6366f1;color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,0.4);z-index:999;display:flex;align-items:center;gap:6px">
+    &#9993; Feedback
+  </button>
+
+  <div id="feedback-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:28px;width:100%;max-width:420px;margin:16px">
+      <h3 style="margin:0 0 6px;color:#f1f1f1;font-size:16px">Enviar Feedback</h3>
+      <p style="margin:0 0 16px;font-size:13px;color:#888">Sua mensagem será enviada para nossa equipe.</p>
+      <textarea id="feedback-texto" rows="5" placeholder="Escreva sua mensagem..."
+        style="width:100%;background:#111;border:1px solid #333;color:#ccc;border-radius:8px;padding:10px 12px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+      <div id="feedback-msg" style="font-size:12px;color:#888;margin-top:6px;min-height:16px"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+        <button onclick="document.getElementById('feedback-modal').style.display='none'"
+          style="background:none;border:1px solid #333;color:#888;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer">
+          Cancelar
+        </button>
+        <button onclick="enviarFeedback()"
+          style="background:#6366f1;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">
+          Enviar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  async function enviarFeedback() {
+    const texto = document.getElementById('feedback-texto').value.trim();
+    const msg = document.getElementById('feedback-msg');
+    if (!texto) { msg.textContent = 'Escreva uma mensagem antes de enviar.'; msg.style.color = '#f87171'; return; }
+    const token = localStorage.getItem('debug_assist_token') || localStorage.getItem('da_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    try {
+      const res = await fetch('/v1/feedback', { method: 'POST', headers, body: JSON.stringify({ mensagem: texto }) });
+      if (res.ok) {
+        msg.textContent = 'Obrigado pelo feedback!';
+        msg.style.color = '#4ade80';
+        document.getElementById('feedback-texto').value = '';
+        setTimeout(() => { document.getElementById('feedback-modal').style.display = 'none'; msg.textContent = ''; }, 2000);
+      } else {
+        msg.textContent = 'Erro ao enviar. Tente novamente.';
+        msg.style.color = '#f87171';
+      }
+    } catch { msg.textContent = 'Erro de conexão.'; msg.style.color = '#f87171'; }
+  }
+  </script>
 </body>
 </html>
