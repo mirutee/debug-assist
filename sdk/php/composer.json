@@ -1,5 +1,5 @@
 {
-    "name": "debug-assist/debug-assist",
+    "name": "mirutee/debug-assist",
     "description": "Auto-capture runtime errors and send diagnostics to DebugAssist API",
     "type": "library",
     "license": "MIT",
