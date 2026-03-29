@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 function loadSdk() {
-  return require('../../sdk/browser/devinsight.browser.js');
+  return require('../../sdk/browser/debugassist.browser.js');
 }
 
 describe('DevInsight browser SDK — init()', () => {

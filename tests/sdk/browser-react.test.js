@@ -37,7 +37,7 @@ describe('ErrorBoundary', () => {
 
   it('componentDidCatch sends diagnostic using global client', async () => {
     // Init the core SDK first to set the global client
-    const DI = require('../../sdk/browser/devinsight.browser.js');
+    const DI = require('../../sdk/browser/debugassist.browser.js');
     DI.init({ apiKey: 'global-key', projectName: 'global-proj' });
 
     const ErrorBoundary = loadBoundary();
@@ -71,7 +71,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('prop apiKey takes precedence over global client', async () => {
-    const DI = require('../../sdk/browser/devinsight.browser.js');
+    const DI = require('../../sdk/browser/debugassist.browser.js');
     DI.init({ apiKey: 'global-key', projectName: 'global' });
 
     const ErrorBoundary = loadBoundary();
