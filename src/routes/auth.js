@@ -156,8 +156,12 @@ router.put('/ai-config', authJwt, async (req, res) => {
 
   // remover key
   if (ai_key === null || ai_key === '') {
-    await saveAiConfig(req.usuario.id, { ai_key_encrypted: null, ai_provider: null });
-    return res.json({ ok: true, ai_key_configured: false });
+    try {
+      await saveAiConfig(req.usuario.id, { ai_key_encrypted: null, ai_provider: null });
+      return res.json({ ok: true, ai_key_configured: false });
+    } catch {
+      return res.status(500).json({ erro: 'Erro ao remover configuração de IA' });
+    }
   }
 
   const PROVIDERS = ['openai', 'anthropic', 'groq'];

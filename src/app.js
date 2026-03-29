@@ -31,6 +31,6 @@ app.use("/v1/auth", require("./routes/auth"));
 app.use("/v1/diagnosticos", limiter, require("./routes/diagnosticos"));
 app.use("/v1/billing", require("./routes/billing"));
 app.use("/v1/analytics", require("./routes/analytics"));
-app.use("/v1/feedback", require("./routes/feedback"));
+app.use("/v1/feedback", limiter, require("./routes/feedback"));
 
 module.exports = app;
