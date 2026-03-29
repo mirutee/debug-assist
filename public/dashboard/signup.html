@@ -106,13 +106,21 @@
       const btn = document.getElementById('btn-github');
       btn.disabled = true;
       btn.style.opacity = '0.6';
-      const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      await _supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: window.location.origin + '/dashboard/auth-callback.html',
-        },
-      });
+      try {
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        await _supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: {
+            redirectTo: window.location.origin + '/dashboard/auth-callback.html',
+          },
+        });
+      } catch (err) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        const errorEl = document.getElementById('error-msg');
+        errorEl.textContent = 'Erro ao conectar com GitHub. Tente novamente.';
+        errorEl.classList.add('show');
+      }
     }
   </script>
 </body>
