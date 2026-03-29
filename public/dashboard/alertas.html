@@ -227,7 +227,7 @@
           <div class="detail-row">
             <strong>Sugestões:</strong>
             <ul class="detail-sugestoes">
-              ${sugestoes.map(s => `<li>${escHtml(s)}</li>`).join('')}
+              ${sugestoes.map(s => `<li style="display:flex;align-items:flex-start;gap:8px;justify-content:space-between"><span>${escHtml(s)}</span><button onclick="copiarTexto(this, ${JSON.stringify(s)})" title="Copiar sugestão" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#555;font-size:14px;padding:2px 4px;border-radius:4px;transition:color 0.2s">&#10697;</button></li>`).join('')}
             </ul>
           </div>` : ''}
           ${confianca != null ? `
@@ -267,6 +267,14 @@
       const el = document.getElementById('fetch-error');
       el.textContent = msg;
       el.classList.add('show');
+    }
+
+    function copiarTexto(btn, texto) {
+      navigator.clipboard.writeText(texto).then(() => {
+        btn.innerHTML = '✓';
+        btn.style.color = '#6366f1';
+        setTimeout(() => { btn.innerHTML = '&#10697;'; btn.style.color = '#555'; }, 2000);
+      });
     }
 
     function toggleTheme() {
