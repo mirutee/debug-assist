@@ -23,6 +23,14 @@ const limiter = rateLimit({
   message: { erro: "Muitas requisições. Tente novamente em 1 minuto." },
 });
 
+const feedbackLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 5,                    // 5 envios por hora por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: "Muitos feedbacks enviados. Tente novamente em 1 hora." },
+});
+
 const swaggerDocument = YAML.load(path.join(__dirname, "../swagger.yaml"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -31,6 +39,6 @@ app.use("/v1/auth", require("./routes/auth"));
 app.use("/v1/diagnosticos", limiter, require("./routes/diagnosticos"));
 app.use("/v1/billing", require("./routes/billing"));
 app.use("/v1/analytics", require("./routes/analytics"));
-app.use("/v1/feedback", limiter, require("./routes/feedback"));
+app.use("/v1/feedback", feedbackLimiter, require("./routes/feedback"));
 
 module.exports = app;
