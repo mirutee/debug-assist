@@ -154,6 +154,22 @@
         </div>
       </div>
 
+      <!-- Plano -->
+      <div class="config-section" id="section-plano">
+        <div class="config-section-label">Plano</div>
+        <div class="email-row">
+          <span class="email-label">Plano atual</span>
+          <span class="email-value" id="plano-nome">Carregando...</span>
+        </div>
+        <div id="plano-actions" style="margin-top:14px;display:none">
+          <button id="btn-portal" onclick="abrirPortal()"
+            style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500">
+            Gerenciar assinatura →
+          </button>
+          <div id="portal-error" style="font-size:12px;color:#f87171;margin-top:8px;display:none"></div>
+        </div>
+      </div>
+
       <!-- API Key -->
       <div class="config-section">
         <div class="config-section-label">API Key</div>
@@ -260,6 +276,11 @@
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('account-email').textContent = userData.email;
         const plano = userData.plano;
+        const planoLabels = { free: 'Free', pro: 'Pro', scale: 'Scale' };
+        document.getElementById('plano-nome').textContent = planoLabels[plano] || plano;
+        if (plano !== 'free') {
+          document.getElementById('plano-actions').style.display = 'block';
+        }
         if (plano === 'scale') {
           document.getElementById('section-ia').style.display = 'block';
           carregarAiConfig();
@@ -546,6 +567,34 @@
     }
 
     init();
+    async function abrirPortal() {
+      const btn = document.getElementById('btn-portal');
+      const errEl = document.getElementById('portal-error');
+      btn.textContent = 'Abrindo...';
+      btn.disabled = true;
+      errEl.style.display = 'none';
+      try {
+        const token = localStorage.getItem('debug_assist_token');
+        const res = await fetch(`${API}/v1/billing/portal`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          window.location.href = data.url;
+        } else {
+          errEl.textContent = data.erro || 'Erro ao abrir portal. Tente novamente.';
+          errEl.style.display = 'block';
+          btn.textContent = 'Gerenciar assinatura →';
+          btn.disabled = false;
+        }
+      } catch (_) {
+        errEl.textContent = 'Erro de conexão. Tente novamente.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Gerenciar assinatura →';
+        btn.disabled = false;
+      }
+    }
   </script>
 
   <!-- Feedback flutuante -->
