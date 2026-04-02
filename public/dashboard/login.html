@@ -107,24 +107,30 @@
 
     async function loginComGithub() {
       const btn = document.getElementById('btn-github');
+      const errorEl = document.getElementById('error-msg');
       btn.disabled = true;
       btn.style.opacity = '0.6';
+      errorEl.classList.remove('show');
       try {
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const redirectParam = new URLSearchParams(window.location.search).get('redirect');
         const callbackUrl = window.location.origin + '/dashboard/auth-callback.html'
           + (redirectParam ? '?redirect=' + encodeURIComponent(redirectParam) : '');
-        await _supabase.auth.signInWithOAuth({
+        const { data, error } = await _supabase.auth.signInWithOAuth({
           provider: 'github',
-          options: {
-            redirectTo: callbackUrl,
-          },
+          options: { redirectTo: callbackUrl },
         });
+        if (error) {
+          throw error;
+        }
+        // signInWithOAuth redireciona o browser — se chegar aqui sem redirecionar, algo errou
+        if (!data?.url) {
+          throw new Error('Provider GitHub não configurado no Supabase.');
+        }
       } catch (err) {
         btn.disabled = false;
         btn.style.opacity = '1';
-        const errorEl = document.getElementById('error-msg');
-        errorEl.textContent = 'Erro ao conectar com GitHub. Tente novamente.';
+        errorEl.textContent = 'Erro: ' + (err.message || 'Falha ao conectar com GitHub.');
         errorEl.classList.add('show');
       }
     }
