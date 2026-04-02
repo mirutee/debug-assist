@@ -75,6 +75,218 @@
         </div>
         <div class="copied-feedback" id="copied-feedback">✓ Copiado para a área de transferência!</div>
       </div>
+
+      <!-- Tutorial de Integração -->
+      <div class="card">
+        <div class="card-label" style="margin-bottom: 16px;">🚀 Como Integrar</div>
+        <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Escolha sua linguagem e veja como integrar a Debug Assist na sua aplicação:</p>
+
+        <div class="sdk-tabs">
+          <button class="sdk-tab active" onclick="selectSdk('nodejs')">Node.js</button>
+          <button class="sdk-tab" onclick="selectSdk('python')">Python</button>
+          <button class="sdk-tab" onclick="selectSdk('java')">Java</button>
+          <button class="sdk-tab" onclick="selectSdk('csharp')">C#</button>
+          <button class="sdk-tab" onclick="selectSdk('go')">Go</button>
+          <button class="sdk-tab" onclick="selectSdk('php')">PHP</button>
+          <button class="sdk-tab" onclick="selectSdk('ruby')">Ruby</button>
+          <button class="sdk-tab" onclick="selectSdk('browser')">Browser</button>
+        </div>
+
+        <!-- Node.js -->
+        <div id="sdk-nodejs" class="sdk-content active">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar</div>
+            <div class="code-block">
+              <code>npm install debug-assist-sdk</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar</div>
+            <div class="code-block">
+              <code id="code-nodejs">const DebugAssist = require('debug-assist-sdk');
+
+DebugAssist.init({
+  apiKey: 'SUA_API_KEY',
+  projectName: 'meu-projeto'
+});</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Python -->
+        <div id="sdk-python" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar</div>
+            <div class="code-block">
+              <code>pip install debug-assist</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar</div>
+            <div class="code-block">
+              <code id="code-python">import os
+os.environ['DEBUG_ASSIST_API_KEY'] = 'SUA_API_KEY'
+import debug_assist</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Java -->
+        <div id="sdk-java" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar (Maven)</div>
+            <div class="code-block">
+              <code>&lt;dependency&gt;
+  &lt;groupId&gt;io.github.debug-assist&lt;/groupId&gt;
+  &lt;artifactId&gt;debug-assist&lt;/artifactId&gt;
+  &lt;version&gt;1.0.0&lt;/version&gt;
+&lt;/dependency&gt;</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar</div>
+            <div class="code-block">
+              <code id="code-java">import io.github.debugassist.DebugAssist;
+
+public class Main {
+  public static void main(String[] args) {
+    DebugAssist.init();
+    // seu código aqui
+  }
+}</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- C# -->
+        <div id="sdk-csharp" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar</div>
+            <div class="code-block">
+              <code>dotnet add package DebugAssist</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar (Program.cs)</div>
+            <div class="code-block">
+              <code id="code-csharp">using DebugAssistSDK;
+
+DebugAssist.EnsureInitialized();
+// ou
+DebugAssist.Init("SUA_API_KEY", "meu-projeto");</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Go -->
+        <div id="sdk-go" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar</div>
+            <div class="code-block">
+              <code>go get github.com/mirutee/debug-assist/sdk/go</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar</div>
+            <div class="code-block">
+              <code id="code-go">import debugassist "github.com/mirutee/debug-assist/sdk/go"
+
+func main() {
+  debugassist.Wrap(run)
+}
+
+func run() {
+  // seu código aqui
+}</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHP -->
+        <div id="sdk-php" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar</div>
+            <div class="code-block">
+              <code>composer require debug-assist/debug-assist</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar</div>
+            <div class="code-block">
+              <code id="code-php">require_once 'vendor/autoload.php';
+// pronto! exceções são capturadas automaticamente</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ruby -->
+        <div id="sdk-ruby" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Instalar</div>
+            <div class="code-block">
+              <code>gem install debug-assist</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Integrar</div>
+            <div class="code-block">
+              <code id="code-ruby">require 'debug_assist'
+# pronto! exceções são capturadas automaticamente</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Browser -->
+        <div id="sdk-browser" class="sdk-content">
+          <div class="tutorial-step">
+            <div class="step-title">1. Via CDN (mais simples)</div>
+            <div class="code-block">
+              <code id="code-browser-cdn">&lt;script src="https://debug-assist.onrender.com/sdk/browser.js"
+        data-api-key="SUA_API_KEY"
+        data-project="meu-app"&gt;&lt;/script&gt;</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <div class="step-title">2. Ou via npm</div>
+            <div class="code-block">
+              <code>npm install debug-assist-browser</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+            <div class="code-block">
+              <code id="code-browser-npm">import DebugAssist from 'debug-assist-browser';
+DebugAssist.init({
+  apiKey: 'SUA_API_KEY',
+  projectName: 'meu-app'
+});</code>
+              <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+          <p style="color: var(--muted); font-size: 13px;">💡 <strong>Dica:</strong> Defina variáveis de ambiente para não expor a API key no código:</p>
+          <div class="code-block" style="margin-top: 10px;">
+            <code>export DEBUG_ASSIST_API_KEY='SUA_API_KEY'</code>
+            <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+          </div>
+          <p style="color: var(--muted); font-size: 13px; margin-top: 12px;"><a href="https://debugassist.com.br/docs" target="_blank" style="color: #6366f1; text-decoration: none;">Ver documentação completa →</a></p>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -146,6 +358,9 @@
       document.getElementById('user-subtitle').textContent =
         data.email + ' · Plano ' + capitalize(data.plano);
 
+      // Atualizar exemplos de código com a API key real
+      updateCodeExamples(data.api_key);
+
       document.getElementById('uso').textContent = data.uso_mensal;
 
       if (data.limite_mensal === -1) {
@@ -212,6 +427,54 @@
 
     function capitalize(str) {
       return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+
+    function updateCodeExamples(apiKey) {
+      const codes = [
+        'code-nodejs',
+        'code-python',
+        'code-java',
+        'code-csharp',
+        'code-go',
+        'code-php',
+        'code-ruby',
+        'code-browser-npm',
+        'code-browser-cdn'
+      ];
+      codes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = el.textContent.replace(/SUA_API_KEY/g, apiKey);
+        }
+      });
+    }
+
+    function selectSdk(sdk) {
+      // Remover ativo de todas as abas
+      document.querySelectorAll('.sdk-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.sdk-content').forEach(c => c.classList.remove('active'));
+
+      // Adicionar ativo à aba selecionada
+      event.target.classList.add('active');
+      const content = document.getElementById('sdk-' + sdk);
+      if (content) content.classList.add('active');
+    }
+
+    function copyCodeBlock(button) {
+      const codeEl = button.previousElementSibling;
+      const text = codeEl.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copiado!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
+      }).catch(() => {
+        button.textContent = '✗ Erro';
+        setTimeout(() => {
+          button.textContent = '📋 Copiar';
+        }, 2000);
+      });
     }
 
     function toggleReveal() {
