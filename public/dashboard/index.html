@@ -66,6 +66,49 @@
         </div>
       </div>
 
+      <!-- Recursos Integrados -->
+      <div class="card">
+        <div class="card-label" style="margin-bottom: 16px;">📡 Recursos Integrados</div>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">Acompanhe quais categorias sua aplicação está enviando diagnósticos:</p>
+        <div class="recursos-grid" id="recursos-grid">
+          <div class="recurso-card">
+            <div class="recurso-icon">🔧</div>
+            <div class="recurso-info">
+              <div class="recurso-nome">Backend</div>
+              <div class="recurso-sub">Exceções e erros</div>
+            </div>
+            <div class="recurso-status" id="status-backend">
+              <div class="status-dot offline"></div>
+              <span class="status-text">Nenhum</span>
+            </div>
+          </div>
+
+          <div class="recurso-card">
+            <div class="recurso-icon">🌐</div>
+            <div class="recurso-info">
+              <div class="recurso-nome">Frontend</div>
+              <div class="recurso-sub">Erros do navegador</div>
+            </div>
+            <div class="recurso-status" id="status-frontend">
+              <div class="status-dot offline"></div>
+              <span class="status-text">Nenhum</span>
+            </div>
+          </div>
+
+          <div class="recurso-card">
+            <div class="recurso-icon">🗄️</div>
+            <div class="recurso-info">
+              <div class="recurso-nome">SQL</div>
+              <div class="recurso-sub">Queries e índices</div>
+            </div>
+            <div class="recurso-status" id="status-sql">
+              <div class="status-dot offline"></div>
+              <span class="status-text">Nenhum</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-label" style="margin-bottom: 12px;">Sua API Key</div>
         <div class="apikey-row">
@@ -361,6 +404,9 @@ DebugAssist.init({
       // Atualizar exemplos de código com a API key real
       updateCodeExamples(data.api_key);
 
+      // Carregar recursos integrados
+      loadIntegracoes();
+
       document.getElementById('uso').textContent = data.uso_mensal;
 
       if (data.limite_mensal === -1) {
@@ -477,6 +523,75 @@ DebugAssist.init({
       });
     }
 
+    async function loadIntegracoes() {
+      try {
+        const token = localStorage.getItem('debug_assist_token');
+        if (!token) return;
+
+        const res = await fetch(`${API}/v1/diagnosticos/historico`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) return;
+        const items = await res.json();
+
+        // Agrupar por categoria e encontrar a mais recente
+        const categorias = {
+          backend: { count: 0, lastTime: null },
+          frontend: { count: 0, lastTime: null },
+          sql: { count: 0, lastTime: null },
+        };
+
+        items.forEach(item => {
+          const resposta = item.resposta;
+          if (resposta && resposta.categoria) {
+            const cat = resposta.categoria.toLowerCase();
+            if (categorias[cat]) {
+              categorias[cat].count++;
+              if (!categorias[cat].lastTime || new Date(item.criado_em) > new Date(categorias[cat].lastTime)) {
+                categorias[cat].lastTime = item.criado_em;
+              }
+            }
+          }
+        });
+
+        // Atualizar UI para cada categoria
+        Object.keys(categorias).forEach(cat => {
+          const data = categorias[cat];
+          const statusEl = document.getElementById('status-' + cat);
+          if (!statusEl) return;
+
+          const statusDot = statusEl.querySelector('.status-dot');
+          const statusText = statusEl.querySelector('.status-text');
+
+          if (data.count > 0) {
+            statusDot.classList.remove('offline');
+            statusDot.classList.add('online');
+            const lastTime = new Date(data.lastTime);
+            const now = new Date();
+            const diffMs = now - lastTime;
+            const diffMin = Math.floor(diffMs / 60000);
+            const diffHour = Math.floor(diffMs / 3600000);
+            const diffDay = Math.floor(diffMs / 86400000);
+
+            let timeStr = '';
+            if (diffMin < 1) timeStr = 'agora';
+            else if (diffMin < 60) timeStr = `há ${diffMin}m`;
+            else if (diffHour < 24) timeStr = `há ${diffHour}h`;
+            else timeStr = `há ${diffDay}d`;
+
+            statusText.textContent = `${data.count} diagnóstico${data.count > 1 ? 's' : ''} • ${timeStr}`;
+          } else {
+            statusDot.classList.add('offline');
+            statusDot.classList.remove('online');
+            statusText.textContent = 'Nenhum diagnóstico ainda';
+          }
+        });
+      } catch (err) {
+        console.error('Erro ao carregar integrações:', err);
+      }
+    }
+
     function toggleReveal() {
       if (!userData) return;
       revealed = !revealed;
@@ -520,6 +635,9 @@ DebugAssist.init({
     loadDashboard();
     checkAlertBadge();
     checkApiStatus();
+
+    // Atualizar recursos a cada 30 segundos
+    setInterval(loadIntegracoes, 30000);
 
     async function checkApiStatus() {
       const el = document.getElementById('api-status');
