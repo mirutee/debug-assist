@@ -14,10 +14,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Necessário para Swagger UI
-      styleSrc: ["'self'", "'unsafe-inline'"], // Necessário para CSS
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"], // jsdelivr para SDK Supabase
+      styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://*.supabase.co"], // Supabase Auth para OAuth
     },
   },
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
