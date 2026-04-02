@@ -34,48 +34,63 @@
       el.classList.add('show');
     }
 
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+
     async function handleCallback() {
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const query = new URLSearchParams(window.location.search);
       const errorDesc = hash.get('error_description') || query.get('error_description');
+      const errorCode = hash.get('error') || query.get('error');
 
-      if (errorDesc) {
-        showError('Login cancelado ou recusado.');
+      if (errorDesc || errorCode) {
+        showError('Erro do GitHub: ' + (errorDesc || errorCode));
         return;
       }
+
+      const code = query.get('code');
+      setStatus(code ? 'Código recebido, trocando por sessão...' : 'Verificando sessão existente...');
 
       try {
         let session = null;
 
-        // Supabase v2 PKCE flow: OAuth redirect returns ?code= in URL
-        const code = query.get('code');
         if (code) {
+          setStatus('Chamando exchangeCodeForSession...');
           const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
-          if (error || !data.session) {
-            showError('Não foi possível concluir o login. Tente novamente.');
+          if (error) {
+            showError('Erro ao trocar código: ' + error.message);
+            return;
+          }
+          if (!data.session) {
+            showError('Sessão não retornada após troca de código.');
             return;
           }
           session = data.session;
         } else {
-          // Fallback: implicit flow (hash fragment) or already-established session
+          setStatus('Nenhum código na URL — buscando sessão...');
           const { data, error } = await client.auth.getSession();
-          if (error || !data.session) {
-            showError('Não foi possível concluir o login. Tente novamente.');
+          if (error) {
+            showError('Erro ao buscar sessão: ' + error.message);
+            return;
+          }
+          if (!data.session) {
+            showError('Sessão não encontrada. URL: ' + window.location.search.substring(0, 100));
             return;
           }
           session = data.session;
         }
 
+        setStatus('Sessão obtida! Salvando token...');
         localStorage.setItem('debug_assist_token', session.access_token);
 
-        // Brief pause so the DB trigger has time to create the usuarios record
         await new Promise(r => setTimeout(r, 800));
 
         const redirectParam = query.get('redirect');
         const dest = redirectParam === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
         window.location.replace(dest);
       } catch (err) {
-        showError('Erro inesperado. Tente novamente.');
+        showError('Exceção inesperada: ' + err.message);
       }
     }
 
