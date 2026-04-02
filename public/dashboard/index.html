@@ -401,8 +401,8 @@ DebugAssist.init({
       document.getElementById('user-subtitle').textContent =
         data.email + ' · Plano ' + capitalize(data.plano);
 
-      // Atualizar exemplos de código com a API key real
-      updateCodeExamples(data.api_key);
+      // Carregar API key separadamente (segurança: endpoint dedicado)
+      loadApiKey();
 
       // Carregar recursos integrados
       loadIntegracoes();
@@ -521,6 +521,23 @@ DebugAssist.init({
           button.textContent = '📋 Copiar';
         }, 2000);
       });
+    }
+
+    async function loadApiKey() {
+      try {
+        const token = localStorage.getItem('debug_assist_token');
+        if (!token) return;
+
+        const res = await fetch(`${API}/v1/auth/api-key`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+        updateCodeExamples(data.api_key);
+      } catch (err) {
+        console.error('Erro ao carregar API key:', err);
+      }
     }
 
     async function loadIntegracoes() {

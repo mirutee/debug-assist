@@ -105,7 +105,8 @@ router.get("/me", async (req, res) => {
       plano: usuario.plano_id,
       uso_mensal: usuario.uso_mensal,
       limite_mensal: usuario.planos.limite_mensal,
-      api_key: usuario.api_key,
+      // SEGURANÇA: Nunca retornar api_key em endpoint GET
+      // API key só deve ser obtido em signup/regenerate-key com precauções extras
     });
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno. Tente novamente." });
@@ -130,6 +131,21 @@ router.post("/regenerate-key", async (req, res) => {
     return res.json({ api_key: apiKey });
   } catch (err) {
     return res.status(500).json({ erro: "Erro interno. Tente novamente." });
+  }
+});
+
+// GET /v1/auth/api-key — retorna API key (requer autenticação JWT)
+// SEGURANÇA: Endpoint separado, apenas JWT, sem caching
+router.get('/api-key', authJwt, async (req, res) => {
+  try {
+    // Usuário já autenticado via authJwt, retorna apenas sua própria API key
+    const usuario = await require('../db/supabase').getUsuarioById(req.usuario.id);
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+    return res.json({ api_key: usuario.api_key });
+  } catch {
+    return res.status(500).json({ erro: 'Erro ao buscar API key' });
   }
 });
 

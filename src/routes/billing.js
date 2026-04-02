@@ -78,15 +78,18 @@ router.post("/portal", authJwt, async (req, res) => {
 // POST /v1/billing/webhook
 // Body recebido como raw buffer (configurado em app.js com express.raw)
 router.post("/webhook", async (req, res) => {
+  // SEGURANÇA: Validar webhook secret (crítico)
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error("[billing] ERRO CRÍTICO: STRIPE_WEBHOOK_SECRET não configurado");
+    return res.status(500).send();
+  }
+
   const sig = req.headers["stripe-signature"];
 
   let event;
   try {
-    event = getStripe().webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ""
-    );
+    event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
     console.error("[billing] Assinatura webhook inválida:", err.message);
     return res.status(400).send();
@@ -101,6 +104,18 @@ router.post("/webhook", async (req, res) => {
       if (!usuario_id || !plano) {
         console.error("[billing] checkout.session.completed: metadata ausente", session.id);
         return res.status(500).send();
+      }
+
+      // SEGURANÇA: Validar usuario_id é UUID válido (previne SQL injection/IDOR)
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usuario_id)) {
+        console.error("[billing] usuario_id inválido recebido em webhook:", usuario_id);
+        return res.status(400).send();
+      }
+
+      // SEGURANÇA: Validar plano é um dos permitidos
+      if (!PLANOS_VALIDOS.includes(plano)) {
+        console.error("[billing] plano inválido recebido em webhook:", plano);
+        return res.status(400).send();
       }
 
       await updatePlanoBilling(usuario_id, { plano_id: plano, stripe_customer_id });

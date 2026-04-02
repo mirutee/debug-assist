@@ -5,17 +5,20 @@ const TIMEOUT_MS = 5000;
 const SUPPORTED_PROVIDERS = ['openai', 'anthropic', 'groq'];
 
 function resolveAiConfig(usuario, headers) {
+  // SEGURANÇA: NÃO aceitar chaves de IA em headers (X-Forwarded-For, proxies, logs podem expor)
+  // Apenas usar chaves salvas no banco (encriptadas)
   const headerKey = headers['x-ai-key'];
-  const headerProvider = headers['x-ai-provider'];
-  if (headerKey && headerProvider) {
-    if (!SUPPORTED_PROVIDERS.includes(headerProvider)) return null;
-    return { key: headerKey, provider: headerProvider };
+  if (headerKey) {
+    console.warn('[aiEnricher] AVISO: Tentativa de enviar AI key em headers (inseguro)');
+    // Ignorar silenciosamente - não é mais suportado
   }
+
   if (usuario.ai_key_encrypted && usuario.ai_provider) {
     if (!SUPPORTED_PROVIDERS.includes(usuario.ai_provider)) return null;
     try {
       return { key: decrypt(usuario.ai_key_encrypted), provider: usuario.ai_provider };
-    } catch {
+    } catch (err) {
+      console.error('[aiEnricher] Erro ao descriptografar chave de IA:', err.message);
       return null;
     }
   }
