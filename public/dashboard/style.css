@@ -615,7 +615,7 @@ input:focus { border-color: #6366f1; }
 /* ── Recursos Integrados ────────────────── */
 .recursos-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 12px;
 }
 
@@ -692,6 +692,53 @@ input:focus { border-color: #6366f1; }
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Tutorial Checklist ────────────────── */
+.tutorial-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  align-items: flex-start;
+}
+
+.checklist-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.checklist-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.checklist-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.checklist-item p {
+  margin: 0;
 }
 
 /* Responsive */

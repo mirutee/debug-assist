@@ -330,6 +330,82 @@ DebugAssist.init({
           <p style="color: var(--muted); font-size: 13px; margin-top: 12px;"><a href="https://debugassist.com.br/docs" target="_blank" style="color: #6366f1; text-decoration: none;">Ver documentação completa →</a></p>
         </div>
       </div>
+
+      <!-- Tutorial de Uso da API -->
+      <div class="card">
+        <div class="card-label" style="margin-bottom: 16px;">📚 Tutorial: Passo a Passo</div>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Siga este guia para começar a usar a Debug Assist na sua aplicação:</p>
+
+        <div class="tutorial-checklist">
+          <div class="checklist-item">
+            <div class="checklist-number">1</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Copiar sua API Key</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Clique no botão "Copiar" acima para guardar sua API Key. Você precisará dela em breve.</p>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <div class="checklist-number">2</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Escolher sua linguagem</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Na aba "Como Integrar" acima, selecione a linguagem do seu projeto (Node.js, Python, Java, etc.)</p>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <div class="checklist-number">3</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Instalar o SDK</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Copie e execute o comando de instalação da sua linguagem (ex: <code style="background: var(--code-bg); padding: 2px 6px; border-radius: 3px;">npm install debug-assist-sdk</code>)</p>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <div class="checklist-number">4</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Integrar no seu código</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Copie o exemplo de código da aba "Como Integrar" e adicione ao seu projeto. A API Key já virá preenchida!</p>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <div class="checklist-number">5</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Testar a integração</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Rode sua aplicação e force um erro. A Debug Assist vai capturar automaticamente e enviar o diagnóstico.</p>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <div class="checklist-number">6</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Ver os diagnósticos</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Abra a aba "Histórico" para ver todos os diagnósticos capturados, com causa raiz e sugestões de correção.</p>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <div class="checklist-number">7</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Acompanhar em tempo real</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">O card "Recursos Integrados" acima mostra em tempo real quais categorias estão enviando diagnósticos (Backend, Frontend, SQL).</p>
+            </div>
+          </div>
+
+          <div class="checklist-item" style="background: rgba(99, 102, 241, 0.1); border-left: 3px solid #6366f1;">
+            <div class="checklist-number" style="background: #6366f1;">✓</div>
+            <div class="checklist-content">
+              <div class="checklist-title">Pronto! 🎉</div>
+              <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">Sua aplicação está agora monitorada. Qualquer erro, exceção ou problema será diagnosticado automaticamente.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); background: rgba(99, 102, 241, 0.05); padding: 12px 14px; border-radius: 6px;">
+          <p style="color: #6366f1; font-size: 12px; margin: 0;"><strong>💡 Dica Extra:</strong> Você pode fazer diagnósticos manuais também! Veja a documentação para aprender sobre POST /v1/diagnosticos.</p>
+        </div>
+      </div>
     </main>
   </div>
 
