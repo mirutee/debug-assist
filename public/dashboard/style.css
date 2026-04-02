@@ -555,6 +555,62 @@ input:focus { border-color: #6366f1; }
   text-overflow: ellipsis;
 }
 
+/* ── SDKs Grid ──────────────────────────── */
+.sdks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.sdk-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 0.2s;
+}
+
+.sdk-item:hover {
+  border-color: var(--accent);
+}
+
+.sdk-check {
+  font-size: 20px;
+  font-weight: bold;
+  flex-shrink: 0;
+  min-width: 24px;
+}
+
+.sdk-check.online {
+  color: #4ade80;
+  animation: statusPulse 2s infinite;
+}
+
+.sdk-check.offline {
+  color: #ef4444;
+}
+
+.sdk-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sdk-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.sdk-pkg {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+
 /* ── Theme toggle (sidebar) ─────────────────── */
 .theme-toggle-sidebar {
   background: none;

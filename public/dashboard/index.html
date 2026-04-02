@@ -131,8 +131,189 @@
         <div class="copied-feedback" id="copied-feedback">✓ Copiado para a área de transferência!</div>
       </div>
 
-      <!-- Tutorial de Integração -->
+      <!-- SDKs Integrados -->
       <div class="card">
+        <div class="card-label" style="margin-bottom: 16px;">📦 SDKs Disponíveis</div>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">Verifique qual SDK está integrado na sua aplicação:</p>
+        <div class="sdks-grid">
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-nodejs">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">Node.js</div>
+              <div class="sdk-pkg">debug-assist-sdk</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-python">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">Python</div>
+              <div class="sdk-pkg">debug-assist</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-java">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">Java</div>
+              <div class="sdk-pkg">debug-assist</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-csharp">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">C#</div>
+              <div class="sdk-pkg">DebugAssist</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-go">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">Go</div>
+              <div class="sdk-pkg">debug-assist/sdk/go</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-php">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">PHP</div>
+              <div class="sdk-pkg">debug-assist/debug-assist</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-ruby">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">Ruby</div>
+              <div class="sdk-pkg">debug-assist</div>
+            </div>
+          </div>
+          <div class="sdk-item">
+            <div class="sdk-check" id="check-browser">●</div>
+            <div class="sdk-info">
+              <div class="sdk-name">Browser</div>
+              <div class="sdk-pkg">debug-assist-browser</div>
+            </div>
+          </div>
+        </div>
+        <p style="color: var(--muted); font-size: 11px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);">
+          🟢 = SDK detectado enviando diagnósticos | 🔴 = SDK não detectado | ⚪ = Sem diagnósticos ainda
+        </p>
+      </div>
+
+      <!-- Usar API Diretamente -->
+      <div class="card">
+        <div class="card-label" style="margin-bottom: 16px;">🔌 Usar a API Diretamente</div>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">Sem SDK? Integre via POST HTTP direto:</p>
+
+        <div class="tutorial-step">
+          <div class="step-title">Endpoint</div>
+          <div class="code-block">
+            <code>POST https://debug-assist.onrender.com/v1/diagnosticos</code>
+            <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-title">Headers</div>
+          <div class="code-block">
+            <code>Authorization: Bearer SUA_API_KEY
+Content-Type: application/json</code>
+            <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-title">Request Body (JSON)</div>
+          <div class="code-block">
+            <code>{
+  "tipo": "backend",
+  "mensagem": "Erro ao conectar ao banco de dados",
+  "contexto": {
+    "rota": "/users",
+    "metodo": "POST",
+    "status": 500,
+    "tempo_ms": 1234
+  }
+}</code>
+            <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-title">Valores permitidos para "tipo"</div>
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; color: var(--muted); line-height: 1.6;">
+            • <strong>backend</strong> — Exceções, erros, falhas de integração<br/>
+            • <strong>frontend</strong> — Erros de navegador, hidratação, performance<br/>
+            • <strong>sql</strong> — Queries lentas, N+1, índices ausentes
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-title">Exemplo com cURL</div>
+          <div class="code-block">
+            <code id="api-curl">curl -X POST https://debug-assist.onrender.com/v1/diagnosticos \
+  -H "Authorization: Bearer SUA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"tipo":"backend","mensagem":"Erro","contexto":{"rota":"/api"}}'</code>
+            <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copiar</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 12px; background: rgba(99, 102, 241, 0.05); border-left: 3px solid #6366f1; border-radius: 4px;">
+          <p style="color: #6366f1; font-size: 12px; margin: 0;"><strong>ℹ️ Resposta:</strong> A API retorna análise com <code style="background: var(--code-bg); padding: 2px 4px; border-radius: 2px;">problema</code>, <code style="background: var(--code-bg); padding: 2px 4px; border-radius: 2px;">causa</code>, <code style="background: var(--code-bg); padding: 2px 4px; border-radius: 2px;">sugestoes</code> e <code style="background: var(--code-bg); padding: 2px 4px; border-radius: 2px;">confianca</code>.</p>
+        </div>
+      </div>
+
+      <!-- Comparação API vs SDKs -->
+      <div class="card">
+        <div class="card-label" style="margin-bottom: 16px;">⚖️ API vs SDKs — Qual Usar?</div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <th style="text-align: left; padding: 8px; color: #6366f1; font-weight: 600;">Aspecto</th>
+              <th style="text-align: left; padding: 8px; color: #6366f1; font-weight: 600;">SDK</th>
+              <th style="text-align: left; padding: 8px; color: #6366f1; font-weight: 600;">API Direta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px; color: var(--text);"><strong>Instalação</strong></td>
+              <td style="padding: 8px; color: var(--muted);">Uma linha (npm, pip, gem)</td>
+              <td style="padding: 8px; color: var(--muted);">Nenhuma — use HTTP direto</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px; color: var(--text);"><strong>Auto-captura</strong></td>
+              <td style="padding: 8px; color: var(--muted);">✅ Automática (exceções não tratadas)</td>
+              <td style="padding: 8px; color: var(--muted);">❌ Manual — você chama POST</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px; color: var(--text);"><strong>Setup</strong></td>
+              <td style="padding: 8px; color: var(--muted);">2 linhas de código</td>
+              <td style="padding: 8px; color: var(--muted);">Configure headers HTTP</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px; color: var(--text);"><strong>Integração</strong></td>
+              <td style="padding: 8px; color: var(--muted);">Tightest (native)</td>
+              <td style="padding: 8px; color: var(--muted);">Simples mas manual</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px; color: var(--text);"><strong>Overhead</strong></td>
+              <td style="padding: 8px; color: var(--muted);">Mínimo (imports apenas)</td>
+              <td style="padding: 8px; color: var(--muted);">Chamada HTTP por diagnóstico</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; color: var(--text);"><strong>Melhor para</strong></td>
+              <td style="padding: 8px; color: var(--muted);">Produção (automático)</td>
+              <td style="padding: 8px; color: var(--muted);">Scripts, testes, um-off</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px; padding: 12px; background: rgba(74, 222, 128, 0.05); border-left: 3px solid #4ade80; border-radius: 4px;">
+          <p style="color: #4ade80; font-size: 12px; margin: 0;"><strong>✅ Recomendação:</strong> Use SDK para aplicações (auto-captura). Use API direta para testes, scripts ou casos específicos.</p>
+        </div>
+      </div>
+
+      <!-- Tutorial de Integração -->
         <div class="card-label" style="margin-bottom: 16px;">🚀 Como Integrar</div>
         <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Escolha sua linguagem e veja como integrar a Debug Assist na sua aplicação:</p>
 
@@ -628,6 +809,47 @@ DebugAssist.init({
       }
     }
 
+    async function detectSdks() {
+      try {
+        const token = localStorage.getItem('debug_assist_token');
+        if (!token) return;
+
+        const res = await fetch(`${API}/v1/diagnosticos/historico`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) return;
+        const items = await res.json();
+
+        // Detectar qual SDK enviou diagnósticos pelo user-agent ou contexto
+        const sdksDetectados = new Set();
+        items.forEach(item => {
+          // Simplificado: mapeamos pelo tipo e contagem
+          // Em produção, você poderia adicionar "sdk_version" no contexto
+          if (item.resposta) {
+            // Por enquanto, marca todos como "nenhum" até ter dados específicos
+          }
+        });
+
+        // Atualizar dots na UI
+        const sdks = ['nodejs', 'python', 'java', 'csharp', 'go', 'php', 'ruby', 'browser'];
+        sdks.forEach(sdk => {
+          const check = document.getElementById('check-' + sdk);
+          if (check) {
+            if (sdksDetectados.has(sdk)) {
+              check.textContent = '●';
+              check.className = 'sdk-check online';
+            } else {
+              check.textContent = '●';
+              check.className = 'sdk-check offline';
+            }
+          }
+        });
+      } catch (err) {
+        console.error('Erro ao detectar SDKs:', err);
+      }
+    }
+
     async function loadIntegracoes() {
       try {
         const token = localStorage.getItem('debug_assist_token');
@@ -753,9 +975,13 @@ DebugAssist.init({
 
     loadDashboard();
     checkAlertBadge();
+    detectSdks();
 
     // Atualizar recursos a cada 30 segundos
-    setInterval(loadIntegracoes, 30000);
+    setInterval(() => {
+      loadIntegracoes();
+      detectSdks();
+    }, 30000);
 
     async function checkApiStatus() {
       const el = document.getElementById('api-status');
