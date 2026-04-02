@@ -105,34 +105,16 @@
     const SUPABASE_URL = 'https://wlfjbylsuyjcoyqfhksq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsZmpieWxzdXlqY295cWZoa3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODAxODcsImV4cCI6MjA4ODg1NjE4N30.gUvsYM3Z66ptaL-I8_EPTokUSqeWfDmjaAY8LEsVqJw';
 
-    async function loginComGithub() {
-      const btn = document.getElementById('btn-github');
-      const errorEl = document.getElementById('error-msg');
-      btn.disabled = true;
-      btn.style.opacity = '0.6';
-      errorEl.classList.remove('show');
-      try {
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
-        const callbackUrl = window.location.origin + '/dashboard/auth-callback.html'
-          + (redirectParam ? '?redirect=' + encodeURIComponent(redirectParam) : '');
-        const { data, error } = await _supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo: callbackUrl },
-        });
-        if (error) {
-          throw error;
-        }
-        // signInWithOAuth redireciona o browser — se chegar aqui sem redirecionar, algo errou
-        if (!data?.url) {
-          throw new Error('Provider GitHub não configurado no Supabase.');
-        }
-      } catch (err) {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        errorEl.textContent = 'Erro: ' + (err.message || 'Falha ao conectar com GitHub.');
-        errorEl.classList.add('show');
-      }
+    function loginComGithub() {
+      const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+      const callbackUrl = window.location.origin + '/dashboard/auth-callback.html'
+        + (redirectParam ? '?redirect=' + encodeURIComponent(redirectParam) : '');
+
+      // Redireciona direto para endpoint OAuth do Supabase — sem SDK necessário
+      const oauthUrl = SUPABASE_URL + '/auth/v1/authorize?provider=github&redirect_to='
+        + encodeURIComponent(callbackUrl);
+
+      window.location.href = oauthUrl;
     }
   </script>
 </body>

@@ -34,63 +34,43 @@
       el.classList.add('show');
     }
 
-    function setStatus(msg) {
-      document.getElementById('status').textContent = msg;
-    }
-
     async function handleCallback() {
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const query = new URLSearchParams(window.location.search);
+
+      // Verificar erros vindos do Supabase/GitHub
       const errorDesc = hash.get('error_description') || query.get('error_description');
       const errorCode = hash.get('error') || query.get('error');
-
       if (errorDesc || errorCode) {
-        showError('Erro do GitHub: ' + (errorDesc || errorCode));
+        showError('Erro: ' + (errorDesc || errorCode));
         return;
       }
 
-      const code = query.get('code');
-      setStatus(code ? 'Código recebido, trocando por sessão...' : 'Verificando sessão existente...');
-
       try {
-        let session = null;
+        // Supabase coloca access_token no hash (implicit flow via direct URL)
+        // O cliente lê automaticamente ao chamar getSession()
+        const { data, error } = await client.auth.getSession();
 
-        if (code) {
-          setStatus('Chamando exchangeCodeForSession...');
-          const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
-          if (error) {
-            showError('Erro ao trocar código: ' + error.message);
-            return;
-          }
-          if (!data.session) {
-            showError('Sessão não retornada após troca de código.');
-            return;
-          }
-          session = data.session;
-        } else {
-          setStatus('Nenhum código na URL — buscando sessão...');
-          const { data, error } = await client.auth.getSession();
-          if (error) {
-            showError('Erro ao buscar sessão: ' + error.message);
-            return;
-          }
-          if (!data.session) {
-            showError('Sessão não encontrada. URL: ' + window.location.search.substring(0, 100));
-            return;
-          }
-          session = data.session;
+        if (error) {
+          showError('Erro ao obter sessão: ' + error.message);
+          return;
         }
 
-        setStatus('Sessão obtida! Salvando token...');
-        localStorage.setItem('debug_assist_token', session.access_token);
+        if (!data.session) {
+          showError('Sessão não encontrada. Tente novamente.');
+          return;
+        }
 
+        localStorage.setItem('debug_assist_token', data.session.access_token);
+
+        // Pausa para o trigger do banco criar o registro do usuário
         await new Promise(r => setTimeout(r, 800));
 
         const redirectParam = query.get('redirect');
         const dest = redirectParam === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
         window.location.replace(dest);
       } catch (err) {
-        showError('Exceção inesperada: ' + err.message);
+        showError('Erro inesperado: ' + err.message);
       }
     }
 
