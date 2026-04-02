@@ -35,7 +35,6 @@
     }
 
     async function handleCallback() {
-      // Check for error params in hash or query string
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const query = new URLSearchParams(window.location.search);
       const errorDesc = hash.get('error_description') || query.get('error_description');
@@ -46,19 +45,33 @@
       }
 
       try {
-        const { data, error } = await client.auth.getSession();
+        let session = null;
 
-        if (error || !data.session) {
-          showError('Não foi possível concluir o login. Tente novamente.');
-          return;
+        // Supabase v2 PKCE flow: OAuth redirect returns ?code= in URL
+        const code = query.get('code');
+        if (code) {
+          const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
+          if (error || !data.session) {
+            showError('Não foi possível concluir o login. Tente novamente.');
+            return;
+          }
+          session = data.session;
+        } else {
+          // Fallback: implicit flow (hash fragment) or already-established session
+          const { data, error } = await client.auth.getSession();
+          if (error || !data.session) {
+            showError('Não foi possível concluir o login. Tente novamente.');
+            return;
+          }
+          session = data.session;
         }
 
-        localStorage.setItem('debug_assist_token', data.session.access_token);
+        localStorage.setItem('debug_assist_token', session.access_token);
 
         // Brief pause so the DB trigger has time to create the usuarios record
         await new Promise(r => setTimeout(r, 800));
 
-        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+        const redirectParam = query.get('redirect');
         const dest = redirectParam === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
         window.location.replace(dest);
       } catch (err) {
