@@ -20,13 +20,7 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
-    const SUPABASE_URL = 'https://wlfjbylsuyjcoyqfhksq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsZmpieWxzdXlqY295cWZoa3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODAxODcsImV4cCI6MjA4ODg1NjE4N30.gUvsYM3Z66ptaL-I8_EPTokUSqeWfDmjaAY8LEsVqJw';
-
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     function showError(msg) {
       document.getElementById('status').style.display = 'none';
       const el = document.getElementById('error-msg');
@@ -34,11 +28,12 @@
       el.classList.add('show');
     }
 
-    async function handleCallback() {
+    function handleCallback() {
+      // Supabase retorna tokens no hash fragment após OAuth (implicit flow)
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const query = new URLSearchParams(window.location.search);
 
-      // Verificar erros vindos do Supabase/GitHub
+      // Verificar erros
       const errorDesc = hash.get('error_description') || query.get('error_description');
       const errorCode = hash.get('error') || query.get('error');
       if (errorDesc || errorCode) {
@@ -46,32 +41,24 @@
         return;
       }
 
-      try {
-        // Supabase coloca access_token no hash (implicit flow via direct URL)
-        // O cliente lê automaticamente ao chamar getSession()
-        const { data, error } = await client.auth.getSession();
-
-        if (error) {
-          showError('Erro ao obter sessão: ' + error.message);
-          return;
-        }
-
-        if (!data.session) {
-          showError('Sessão não encontrada. Tente novamente.');
-          return;
-        }
-
-        localStorage.setItem('debug_assist_token', data.session.access_token);
-
-        // Pausa para o trigger do banco criar o registro do usuário
-        await new Promise(r => setTimeout(r, 800));
-
+      // Extrair access_token do hash (implicit flow)
+      const accessToken = hash.get('access_token');
+      if (accessToken) {
+        localStorage.setItem('debug_assist_token', accessToken);
         const redirectParam = query.get('redirect');
         const dest = redirectParam === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
-        window.location.replace(dest);
-      } catch (err) {
-        showError('Erro inesperado: ' + err.message);
+        // Pausa para o trigger do banco criar o registro do usuário
+        setTimeout(() => window.location.replace(dest), 800);
+        return;
       }
+
+      // Fallback: verificar se chegou ?code= (PKCE) — não suportado neste fluxo
+      if (query.get('code')) {
+        showError('Fluxo PKCE não suportado. Tente novamente.');
+        return;
+      }
+
+      showError('Nenhum token recebido. Tente fazer login novamente.');
     }
 
     handleCallback();

@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Criar conta — DEBUG_Assist</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
   <div class="login-container">
@@ -100,30 +99,14 @@
     });
 
     const SUPABASE_URL = 'https://wlfjbylsuyjcoyqfhksq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsZmpieWxzdXlqY295cWZoa3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODAxODcsImV4cCI6MjA4ODg1NjE4N30.gUvsYM3Z66ptaL-I8_EPTokUSqeWfDmjaAY8LEsVqJw';
 
-    async function loginComGithub() {
-      const btn = document.getElementById('btn-github');
-      btn.disabled = true;
-      btn.style.opacity = '0.6';
-      try {
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
-        const callbackUrl = window.location.origin + '/dashboard/auth-callback.html'
-          + (redirectParam ? '?redirect=' + encodeURIComponent(redirectParam) : '');
-        await _supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: {
-            redirectTo: callbackUrl,
-          },
-        });
-      } catch (err) {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        const errorEl = document.getElementById('error-msg');
-        errorEl.textContent = 'Erro ao conectar com GitHub. Tente novamente.';
-        errorEl.classList.add('show');
-      }
+    function loginComGithub() {
+      const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+      const callbackUrl = window.location.origin + '/dashboard/auth-callback.html'
+        + (redirectParam ? '?redirect=' + encodeURIComponent(redirectParam) : '');
+      const oauthUrl = SUPABASE_URL + '/auth/v1/authorize?provider=github&redirect_to='
+        + encodeURIComponent(callbackUrl);
+      window.location.href = oauthUrl;
     }
   </script>
 </body>
