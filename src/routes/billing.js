@@ -4,6 +4,7 @@ const router = express.Router();
 const Stripe = require("stripe");
 const authJwt = require("../middleware/authJwt");
 const { updatePlanoBilling, getUsuarioByStripeCustomerId } = require("../db/supabase");
+const { sanitizeLog } = require("../utils/sanitizeLog");
 
 let _stripe;
 function getStripe() {
@@ -51,7 +52,7 @@ router.post("/checkout", authJwt, async (req, res) => {
 
     return res.json({ url: session.url });
   } catch (err) {
-    console.error("[billing] Erro ao criar sessão Stripe:", err.message);
+    console.error("[billing] Erro ao criar sessão Stripe:", sanitizeLog(err.message));
     return res.status(502).json({ erro: "Erro ao processar pagamento. Tente novamente." });
   }
 });
@@ -152,7 +153,7 @@ router.post("/webhook", async (req, res) => {
 
     return res.status(200).send();
   } catch (err) {
-    console.error("[billing] Erro ao processar webhook:", err.message);
+    console.error("[billing] Erro ao processar webhook:", sanitizeLog(err.message));
     return res.status(500).send();
   }
 });

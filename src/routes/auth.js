@@ -25,8 +25,9 @@ router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
     const { data, error } = await signUpUser(email, senha);
 
     if (error) {
+      // SEGURANÇA: Não revelar se email está cadastrado (evita enumeration)
       if (error.message.includes("already registered")) {
-        return res.status(400).json({ erro: "Email já cadastrado" });
+        return res.status(400).json({ erro: "Email ou senha inválidos. Tente novamente." });
       }
       return res.status(500).json({ erro: "Erro interno. Tente novamente." });
     }
@@ -95,9 +96,8 @@ router.get("/me", async (req, res) => {
     const usuario = await getUsuarioByAuthId(user.id);
 
     if (!usuario) {
-      return res.status(404).json({
-        erro: "Usuário não encontrado. Confirme seu email.",
-      });
+      // SEGURANÇA: Não revelar se usuário existe ou precisa confirmar email
+      return res.status(401).json({ erro: "Token inválido" });
     }
 
     return res.json({
