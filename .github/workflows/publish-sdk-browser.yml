@@ -1,0 +1,25 @@
+name: Publish SDK Browser → npm
+
+on:
+  push:
+    tags:
+      - 'sdk-browser-v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Publish debug-assist-browser
+        run: npm publish --access public
+        working-directory: sdk/browser
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
