@@ -1,6 +1,6 @@
 # GitHub OAuth Setup — Debug Assist
 
-## Credenciais GitHub
+## ✅ Credenciais Confirmadas (Atualizadas)
 - **Client ID:** `Ov23lidbdcB57gwXv4Ol`
 - **Client Secret:** `efba31ab634cfa59b5d1d7e71ef893275ec93ef0`
 
