@@ -30,9 +30,21 @@
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
       <button id="theme-toggle" class="theme-toggle-sidebar" onclick="toggleTheme()" title="Mudar tema"></button>
-      <div class="api-status" id="api-status">
-        <span class="api-status-dot"></span>
-        <span id="api-status-label">API</span>
+
+      <!-- Status dos Recursos Integrados -->
+      <div class="recursos-status-sidebar">
+        <div class="recurso-status-item" title="Backend - Exceções e erros">
+          <span class="status-dot" id="status-dot-backend"></span>
+          <span class="status-label">Backend</span>
+        </div>
+        <div class="recurso-status-item" title="Frontend - Erros do navegador">
+          <span class="status-dot" id="status-dot-frontend"></span>
+          <span class="status-label">Frontend</span>
+        </div>
+        <div class="recurso-status-item" title="SQL - Queries e índices">
+          <span class="status-dot" id="status-dot-sql"></span>
+          <span class="status-label">SQL</span>
+        </div>
       </div>
     </nav>
 
@@ -651,33 +663,47 @@ DebugAssist.init({
         // Atualizar UI para cada categoria
         Object.keys(categorias).forEach(cat => {
           const data = categorias[cat];
+
+          // Atualizar card principal
           const statusEl = document.getElementById('status-' + cat);
-          if (!statusEl) return;
+          if (statusEl) {
+            const statusDot = statusEl.querySelector('.status-dot');
+            const statusText = statusEl.querySelector('.status-text');
 
-          const statusDot = statusEl.querySelector('.status-dot');
-          const statusText = statusEl.querySelector('.status-text');
+            if (data.count > 0) {
+              statusDot.classList.remove('offline');
+              statusDot.classList.add('online');
+              const lastTime = new Date(data.lastTime);
+              const now = new Date();
+              const diffMs = now - lastTime;
+              const diffMin = Math.floor(diffMs / 60000);
+              const diffHour = Math.floor(diffMs / 3600000);
+              const diffDay = Math.floor(diffMs / 86400000);
 
-          if (data.count > 0) {
-            statusDot.classList.remove('offline');
-            statusDot.classList.add('online');
-            const lastTime = new Date(data.lastTime);
-            const now = new Date();
-            const diffMs = now - lastTime;
-            const diffMin = Math.floor(diffMs / 60000);
-            const diffHour = Math.floor(diffMs / 3600000);
-            const diffDay = Math.floor(diffMs / 86400000);
+              let timeStr = '';
+              if (diffMin < 1) timeStr = 'agora';
+              else if (diffMin < 60) timeStr = `há ${diffMin}m`;
+              else if (diffHour < 24) timeStr = `há ${diffHour}h`;
+              else timeStr = `há ${diffDay}d`;
 
-            let timeStr = '';
-            if (diffMin < 1) timeStr = 'agora';
-            else if (diffMin < 60) timeStr = `há ${diffMin}m`;
-            else if (diffHour < 24) timeStr = `há ${diffHour}h`;
-            else timeStr = `há ${diffDay}d`;
+              statusText.textContent = `${data.count} diagnóstico${data.count > 1 ? 's' : ''} • ${timeStr}`;
+            } else {
+              statusDot.classList.add('offline');
+              statusDot.classList.remove('online');
+              statusText.textContent = 'Nenhum diagnóstico ainda';
+            }
+          }
 
-            statusText.textContent = `${data.count} diagnóstico${data.count > 1 ? 's' : ''} • ${timeStr}`;
-          } else {
-            statusDot.classList.add('offline');
-            statusDot.classList.remove('online');
-            statusText.textContent = 'Nenhum diagnóstico ainda';
+          // Atualizar dot da sidebar
+          const sidebarDot = document.getElementById('status-dot-' + cat);
+          if (sidebarDot) {
+            if (data.count > 0) {
+              sidebarDot.classList.remove('offline');
+              sidebarDot.classList.add('online');
+            } else {
+              sidebarDot.classList.remove('online');
+              sidebarDot.classList.add('offline');
+            }
           }
         });
       } catch (err) {
@@ -727,7 +753,6 @@ DebugAssist.init({
 
     loadDashboard();
     checkAlertBadge();
-    checkApiStatus();
 
     // Atualizar recursos a cada 30 segundos
     setInterval(loadIntegracoes, 30000);

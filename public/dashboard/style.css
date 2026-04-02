@@ -508,6 +508,53 @@ input:focus { border-color: #6366f1; }
 @keyframes blink { 50% { opacity: 0; } }
 .sidebar-logo { display: flex; align-items: center; gap: 2px; padding: 8px 10px; margin-bottom: 12px; }
 
+/* ── Recursos Status Sidebar ──────────────── */
+.recursos-status-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-top: auto;
+  margin-bottom: 8px;
+}
+
+.recurso-status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.recurso-status-item:hover {
+  background: var(--nav-active);
+  color: var(--text);
+}
+
+.recurso-status-item .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #444;
+}
+
+.recurso-status-item .status-dot.online {
+  background: #4ade80;
+  animation: statusPulse 2s infinite;
+}
+
+.recurso-status-item .status-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Theme toggle (sidebar) ─────────────────── */
 .theme-toggle-sidebar {
   background: none;
