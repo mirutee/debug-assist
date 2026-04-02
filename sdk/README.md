@@ -1,56 +1,23 @@
-# debug-assist-sdk
+# DebugAssist Node.js SDK
 
-SDK oficial da [Debug Assist](https://debug-assist.onrender.com) — captura e envia erros silenciosos da sua aplicação para diagnóstico inteligente.
+Auto-capture runtime errors and send diagnostics to [DebugAssist](https://debug-assist.app).
 
-## Instalação
+## Install
 
-```bash
 npm install debug-assist-sdk
-```
 
-## Uso rápido
+## Usage
 
-```js
 const DebugAssist = require('debug-assist-sdk');
 
-// Captura automática de uncaughtException e unhandledRejection
-DebugAssist.init({ apiKey: 'sua-api-key', projectName: 'meu-projeto' });
+// unhandled exceptions are captured automatically via process.on('uncaughtException' / 'unhandledRejection')
+DebugAssist.init({ apiKey: 'your-api-key', projectName: 'my-project' });
 
-// Envio manual de um erro
-const client = new DebugAssist({ apiKey: 'sua-api-key' });
-await client.report({
-  tipo: 'backend_error',
-  mensagem: 'Falha ao conectar ao banco',
-  contexto: { rota: '/users', metodo: 'POST' },
-});
-```
+## Environment Variables
 
-## API
-
-### `new DebugAssist({ apiKey, baseUrl? })`
-
-Cria uma instância do cliente.
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `apiKey` | string | sim | Sua API key da Debug Assist |
-| `baseUrl` | string | não | URL base da API (padrão: produção) |
-
-### `client.report({ tipo, mensagem?, contexto?, dados? })`
-
-Envia um diagnóstico para a API.
-
-| Parâmetro | Tipo | Obrigatório |
-|-----------|------|-------------|
-| `tipo` | string | sim |
-| `mensagem` | string | não |
-| `contexto` | object | não |
-| `dados` | object | não |
-
-### `DebugAssist.init({ apiKey, projectName?, baseUrl? })`
-
-Ativa captura automática de erros não tratados (`uncaughtException` / `unhandledRejection`).
-
-## Licença
-
-MIT
+| Variable                 | Description                            | Default                          |
+|--------------------------|----------------------------------------|----------------------------------|
+| DEBUG_ASSIST_API_KEY     | Your API key                           | —                                |
+| DEBUG_ASSIST_PROJECT     | Project name shown in diagnostics      | unknown                          |
+| DEBUG_ASSIST_BASE_URL    | API base URL                           | https://debug-assist.onrender.com|
+| DEBUG_ASSIST_ENABLED     | Set to 0 to disable                    | enabled                          |

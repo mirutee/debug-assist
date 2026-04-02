@@ -10,19 +10,21 @@ pip install debug-assist
 
 ## Usage
 
-```python
-# Auto mode — set env var and import
-import os
-os.environ['DEBUG_ASSIST_API_KEY'] = 'your-api-key'
-import debug_assist  # unhandled exceptions are captured automatically
+Set the environment variable and import (unhandled exceptions are captured automatically):
 
-# Explicit mode
+```bash
+export DEBUG_ASSIST_API_KEY='your-api-key'
+```
+
+```python
+import debug_assist  # that's it
+```
+
+Or explicitly:
+
+```python
 from debug_assist import DebugAssist
 DebugAssist.init(api_key='your-api-key', project_name='my-app')
-
-# Manual report
-client = DebugAssist(api_key='your-api-key')
-client.report(tipo='silent_backend_error', mensagem='something went wrong')
 ```
 
 ## Environment Variables
