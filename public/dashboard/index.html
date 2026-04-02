@@ -266,50 +266,74 @@ Content-Type: application/json</code>
       <div class="card">
         <div class="card-label" style="margin-bottom: 16px;">⚖️ API vs SDKs — Qual Usar?</div>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-          <thead>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <th style="text-align: left; padding: 8px; color: #6366f1; font-weight: 600;">Aspecto</th>
-              <th style="text-align: left; padding: 8px; color: #6366f1; font-weight: 600;">SDK</th>
-              <th style="text-align: left; padding: 8px; color: #6366f1; font-weight: 600;">API Direta</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 8px; color: var(--text);"><strong>Instalação</strong></td>
-              <td style="padding: 8px; color: var(--muted);">Uma linha (npm, pip, gem)</td>
-              <td style="padding: 8px; color: var(--muted);">Nenhuma — use HTTP direto</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 8px; color: var(--text);"><strong>Auto-captura</strong></td>
-              <td style="padding: 8px; color: var(--muted);">✅ Automática (exceções não tratadas)</td>
-              <td style="padding: 8px; color: var(--muted);">❌ Manual — você chama POST</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 8px; color: var(--text);"><strong>Setup</strong></td>
-              <td style="padding: 8px; color: var(--muted);">2 linhas de código</td>
-              <td style="padding: 8px; color: var(--muted);">Configure headers HTTP</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 8px; color: var(--text);"><strong>Integração</strong></td>
-              <td style="padding: 8px; color: var(--muted);">Tightest (native)</td>
-              <td style="padding: 8px; color: var(--muted);">Simples mas manual</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 8px; color: var(--text);"><strong>Overhead</strong></td>
-              <td style="padding: 8px; color: var(--muted);">Mínimo (imports apenas)</td>
-              <td style="padding: 8px; color: var(--muted);">Chamada HTTP por diagnóstico</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; color: var(--text);"><strong>Melhor para</strong></td>
-              <td style="padding: 8px; color: var(--muted);">Produção (automático)</td>
-              <td style="padding: 8px; color: var(--muted);">Scripts, testes, um-off</td>
-            </tr>
-          </tbody>
-        </table>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;"><strong>Resumo:</strong> SDKs fazem tudo automaticamente. API você controla manualmente.</p>
 
-        <div style="margin-top: 16px; padding: 12px; background: rgba(74, 222, 128, 0.05); border-left: 3px solid #4ade80; border-radius: 4px;">
-          <p style="color: #4ade80; font-size: 12px; margin: 0;"><strong>✅ Recomendação:</strong> Use SDK para aplicações (auto-captura). Use API direta para testes, scripts ou casos específicos.</p>
+        <!-- Exemplo lado a lado -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <!-- SDK -->
+          <div style="border: 1px solid #4ade80; border-radius: 6px; padding: 12px; background: rgba(74, 222, 128, 0.05);">
+            <div style="color: #4ade80; font-weight: 600; font-size: 12px; margin-bottom: 8px;">✅ SDK (Recomendado)</div>
+            <div class="code-block" style="margin-bottom: 8px;">
+              <code style="font-size: 11px;">// 1. Instalar
+npm install debug-assist-sdk
+
+// 2. Inicializar (2 linhas!)
+const DebugAssist = require('debug-assist-sdk');
+DebugAssist.init({ apiKey: 'sk_...' });
+
+// 3. PRONTO! Erros capturam automaticamente
+throw new Error('Erro'); // ← Automático!</code>
+            </div>
+            <p style="color: var(--muted); font-size: 11px; margin: 0;"><strong>Sem mais código.</strong> SDK captura exceções não tratadas.</p>
+          </div>
+
+          <!-- API -->
+          <div style="border: 1px solid #ef4444; border-radius: 6px; padding: 12px; background: rgba(239, 68, 68, 0.05);">
+            <div style="color: #ef4444; font-weight: 600; font-size: 12px; margin-bottom: 8px;">❌ API (Manual)</div>
+            <div class="code-block" style="margin-bottom: 8px;">
+              <code style="font-size: 11px;">// Você faz tudo manualmente
+try {
+  throw new Error('Erro');
+} catch(e) {
+  // Você mesmo envia:
+  await fetch('/v1/diagnosticos', {
+    headers: { 'Authorization': 'Bearer sk_...' },
+    body: JSON.stringify({
+      tipo: 'backend',
+      mensagem: e.message
+    })
+  });
+}</code>
+            </div>
+            <p style="color: var(--muted); font-size: 11px; margin: 0;"><strong>Repetitivo.</strong> Você escreve try/catch em vários lugares.</p>
+          </div>
+        </div>
+
+        <!-- Quando usar cada uma -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
+            <div style="color: #4ade80; font-weight: 600; font-size: 12px; margin-bottom: 8px;">Quando Usar SDK 🎯</div>
+            <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: var(--muted); line-height: 1.8;">
+              <li>Aplicação em <strong>produção</strong></li>
+              <li>Quer erros <strong>automáticos</strong></li>
+              <li>Linguagem <strong>tem SDK</strong></li>
+              <li>Minimizar código boilerplate</li>
+            </ul>
+          </div>
+
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
+            <div style="color: #ef4444; font-weight: 600; font-size: 12px; margin-bottom: 8px;">Quando Usar API 🔧</div>
+            <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: var(--muted); line-height: 1.8;">
+              <li><strong>Script</strong> único</li>
+              <li><strong>Teste</strong> de integração</li>
+              <li>Linguagem <strong>sem SDK</strong></li>
+              <li>Máximo <strong>controle</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 12px; background: rgba(99, 102, 241, 0.05); border-left: 3px solid #6366f1; border-radius: 4px;">
+          <p style="color: #6366f1; font-size: 12px; margin: 0;"><strong>💡 Resumo:</strong> SDK = automático + fácil (produção). API = manual + controle (scripts).</p>
         </div>
       </div>
 
