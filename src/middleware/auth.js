@@ -1,5 +1,7 @@
 // src/middleware/auth.js
-const { getUsuarioByApiKey } = require("../db/supabase");
+const { getUsuarioByApiKey, checkAndIncrementUso } = require("../db/supabase");
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function auth(req, res, next) {
   const header = req.headers["authorization"];
@@ -14,6 +16,12 @@ async function auth(req, res, next) {
 
   const apiKey = header.slice(7).trim();
 
+  // SEGURANÇA [ALTO]: Validar formato UUID antes de consultar o banco.
+  // Sem isso, strings de tamanho arbitrário chegam à query como parâmetro.
+  if (!UUID_REGEX.test(apiKey)) {
+    return res.status(401).json({ erro: "API Key inválida" });
+  }
+
   try {
     const usuario = await getUsuarioByApiKey(apiKey);
 
@@ -26,7 +34,12 @@ async function auth(req, res, next) {
     }
 
     const limiteMensal = usuario.planos.limite_mensal;
-    if (limiteMensal !== -1 && usuario.uso_mensal >= limiteMensal) {
+
+    // SEGURANÇA [CRÍTICO]: check + increment atômico no banco (elimina TOCTOU).
+    // A verificação e o incremento ocorrem em uma única transação com FOR UPDATE,
+    // impedindo que dois requests paralelos ultrapassem a cota simultaneamente.
+    const permitido = await checkAndIncrementUso(usuario.id, limiteMensal);
+    if (!permitido) {
       return res.status(429).json({
         erro: "Cota mensal esgotada. Faça upgrade do seu plano.",
       });

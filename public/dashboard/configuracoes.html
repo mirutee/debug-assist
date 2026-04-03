@@ -73,20 +73,20 @@
     }
     .modal-overlay.active { display: flex; }
     .modal-box {
-      background: #1a1a1a;
-      border: 1px solid #333;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 28px;
       max-width: 380px;
       width: 90%;
     }
-    .modal-title { font-size: 15px; font-weight: 600; color: #eee; margin-bottom: 10px; }
-    .modal-body { font-size: 13px; color: #999; margin-bottom: 20px; line-height: 1.5; }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+    .modal-body { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
     .btn-cancel {
-      background: #222;
-      border: 1px solid #444;
-      color: #ccc;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
       padding: 7px 16px;
       border-radius: 6px;
       font-size: 13px;

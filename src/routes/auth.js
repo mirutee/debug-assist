@@ -11,7 +11,10 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // POST /v1/auth/signup
 router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
-  const { email, senha } = req.body;
+  // SEGURANÇA [MÉDIO]: normalizar email — trim + lowercase evita duplicatas
+  // como "Test@Gmail.com" vs "test@gmail.com"
+  const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const { senha } = req.body;
 
   if (!EMAIL_REGEX.test(email)) {
     return res.status(400).json({ erro: "Email inválido" });
@@ -19,6 +22,12 @@ router.post("/signup", validarDominio, signupLimiter, async (req, res) => {
 
   if (!senha || senha.length < 6) {
     return res.status(400).json({ erro: "Senha inválida. Mínimo 6 caracteres." });
+  }
+
+  // SEGURANÇA [ALTO]: bcrypt tem limite de 72 bytes — senha acima disso força
+  // computação desnecessária e pode ser usada como vetor de DoS
+  if (senha.length > 72) {
+    return res.status(400).json({ erro: "Senha inválida. Máximo 72 caracteres." });
   }
 
   try {

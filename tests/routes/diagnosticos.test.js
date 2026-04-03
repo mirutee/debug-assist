@@ -13,7 +13,8 @@ jest.mock("../../src/db/supabase", () => ({
     ai_key_encrypted: null,
     ai_provider: null,
   }),
-  incrementarUso: jest.fn().mockResolvedValue(undefined),
+  // check+increment atômico: retorna true por padrão (dentro da cota)
+  checkAndIncrementUso: jest.fn().mockResolvedValue(true),
   getUsuarioByAuthId: jest.fn(),
   getUserFromToken: jest.fn(),
   getDiagnosticosByUsuario: jest.fn(),
@@ -21,11 +22,13 @@ jest.mock("../../src/db/supabase", () => ({
 
 const request = require("supertest");
 const app = require("../../src/app");
-const { saveDiagnostico, getUsuarioByAuthId, getUserFromToken, getDiagnosticosByUsuario } = require("../../src/db/supabase");
+const { saveDiagnostico, getUsuarioByAuthId, getUserFromToken, getDiagnosticosByUsuario, checkAndIncrementUso } = require("../../src/db/supabase");
 
+// UUID válido — auth middleware agora rejeita API keys que não sejam UUID
+const VALID_API_KEY = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
 const HEADERS = {
   "Content-Type": "application/json",
-  Authorization: "Bearer qualquer-api-key-valida",
+  Authorization: `Bearer ${VALID_API_KEY}`,
 };
 
 describe("POST /v1/diagnosticos", () => {
@@ -119,15 +122,9 @@ describe("POST /v1/diagnosticos", () => {
   });
 
   it("retorna 429 quando cota esgotada", async () => {
-    const { getUsuarioByApiKey } = require("../../src/db/supabase");
-    getUsuarioByApiKey.mockResolvedValueOnce({
-      id: "user-test-uuid",
-      plano_id: "free",
-      uso_mensal: 10,
-      planos: { limite_mensal: 10 },
-      ai_key_encrypted: null,
-      ai_provider: null,
-    });
+    // O middleware auth.js agora usa checkAndIncrementUso atomicamente.
+    // Simulamos cota esgotada retornando false.
+    checkAndIncrementUso.mockResolvedValueOnce(false);
 
     const res = await request(app)
       .post("/v1/diagnosticos")
@@ -168,7 +165,7 @@ describe("GET /v1/diagnosticos/historico", () => {
     expect(res.body[0].id).toBe("d1");
   });
 
-  it("passa parâmetro after quando fornecido", async () => {
+  it("passa parâmetro after normalizado para ISO quando fornecido", async () => {
     mockJwtDiagnosticos();
     getDiagnosticosByUsuario.mockResolvedValue([]);
 
@@ -176,10 +173,22 @@ describe("GET /v1/diagnosticos/historico", () => {
       .get("/v1/diagnosticos/historico?after=2026-03-23T10:00:00Z")
       .set("Authorization", "Bearer jwt-valido");
 
+    // after é convertido via new Date().toISOString() — inclui milissegundos
     expect(getDiagnosticosByUsuario).toHaveBeenCalledWith(
       "user-test-uuid",
-      { after: "2026-03-23T10:00:00Z" }
+      { after: "2026-03-23T10:00:00.000Z" }
     );
+  });
+
+  it("retorna 400 para after com formato inválido", async () => {
+    mockJwtDiagnosticos();
+
+    const res = await request(app)
+      .get("/v1/diagnosticos/historico?after=nao-e-uma-data")
+      .set("Authorization", "Bearer jwt-valido");
+
+    expect(res.status).toBe(400);
+    expect(getDiagnosticosByUsuario).not.toHaveBeenCalled();
   });
 
   it("retorna 500 quando getDiagnosticosByUsuario lança erro", async () => {

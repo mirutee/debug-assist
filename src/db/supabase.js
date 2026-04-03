@@ -57,15 +57,21 @@ async function getUsuarioByApiKey(apiKey) {
   return data;
 }
 
-async function incrementarUso(usuarioId) {
+// SEGURANÇA: função atômica — check + increment em uma única transação.
+// Retorna true se o uso foi incrementado (dentro do limite), false se o limite foi atingido.
+// Elimina a race condition TOCTOU do fluxo antigo (check no middleware + increment no res.finish).
+async function checkAndIncrementUso(usuarioId, limite) {
   const client = db();
-  if (!client) return;
-  const { error } = await client.rpc("increment_uso_mensal", {
+  if (!client) return false;
+  const { data, error } = await client.rpc("check_and_increment_uso_mensal", {
     p_usuario_id: usuarioId,
+    p_limite: limite,
   });
   if (error) {
-    console.error("Erro ao incrementar uso:", error.message);
+    console.error("Erro ao verificar/incrementar uso:", error.message);
+    return false;
   }
+  return data === true;
 }
 
 async function getUsuarioByAuthId(authId) {
@@ -115,12 +121,22 @@ async function updatePlanoBilling(usuarioId, { plano_id, stripe_customer_id }) {
 
   const client = db();
   if (!client) return;
-  const { error } = await client
+
+  // SEGURANÇA: .select().single() detecta se a linha realmente existia.
+  // Supabase não retorna erro quando .eq() não encontra nenhuma linha —
+  // sem isso, um usuario_id fantasma seria atualizado silenciosamente.
+  const { data, error } = await client
     .from("usuarios")
     .update(updates)
-    .eq("id", usuarioId);
+    .eq("id", usuarioId)
+    .select("id")
+    .single();
 
   if (error) throw new Error(error.message);
+  if (!data) {
+    console.error("[billing] updatePlanoBilling: nenhum usuário encontrado para id=%s", usuarioId);
+    throw new Error("Usuário não encontrado");
+  }
 }
 
 async function getUsuarioByStripeCustomerId(stripeCustomerId) {
@@ -156,11 +172,13 @@ async function getAnalyticsByUsuario(usuarioId) {
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
+  // SEGURANÇA: .limit() previne retorno ilimitado de dados (DoS de memória)
   const { data, error } = await client
     .from("diagnosticos")
     .select("criado_em")
     .eq("usuario_id", usuarioId)
-    .gte("criado_em", since.toISOString());
+    .gte("criado_em", since.toISOString())
+    .limit(10000);
 
   if (error) throw new Error(error.message);
 
@@ -190,18 +208,22 @@ async function getAiConfig(usuarioId) {
 async function saveAiConfig(usuarioId, { ai_key_encrypted, ai_provider }) {
   const client = db();
   if (!client) return;
-  const { error } = await client
+  // SEGURANÇA: .select().single() detecta se a linha realmente existe (defesa em profundidade).
+  const { data, error } = await client
     .from('usuarios')
     .update({ ai_key_encrypted, ai_provider })
-    .eq('id', usuarioId);
+    .eq('id', usuarioId)
+    .select('id')
+    .single();
   if (error) throw new Error(error.message);
+  if (!data) throw new Error('Usuário não encontrado');
 }
 
 module.exports = {
   saveDiagnostico,
   getDiagnosticosByUsuario,
   getUsuarioByApiKey,
-  incrementarUso,
+  checkAndIncrementUso,
   getUsuarioByAuthId,
   signUpUser,
   signInUser,

@@ -7,24 +7,36 @@ function getResend() {
   return _resend;
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildWelcomeHtml(email, apiKey) {
   const baseUrl = (process.env.APP_BASE_URL || 'https://debug-assist.onrender.com').replace(/\/$/, '');
+  // SEGURANÇA [MÉDIO]: sanitizar dados do usuário antes de interpolar no HTML do email
+  const safeEmail = escapeHtml(email);
+  const safeApiKey = apiKey ? escapeHtml(apiKey) : null;
 
-  const apiKeyBlock = apiKey
+  const apiKeyBlock = safeApiKey
     ? `
       <div style="margin:24px 0">
         <p style="color:#94A3B8;font-size:13px;margin:0 0 8px">Sua API Key:</p>
-        <div style="background:#0D1117;border:1px solid #334155;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#4ADE80;word-break:break-all">${apiKey}</div>
+        <div style="background:#0D1117;border:1px solid #334155;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#4ADE80;word-break:break-all">${safeApiKey}</div>
       </div>`
     : `
       <p style="color:#94A3B8;font-size:14px">Sua API Key estará disponível no dashboard após confirmar seu email.</p>`;
 
-  const curlExample = apiKey
+  const curlExample = safeApiKey
     ? `
       <div style="margin:24px 0">
         <p style="color:#94A3B8;font-size:13px;margin:0 0 8px">Exemplo rápido:</p>
-        <div style="background:#0D1117;border:1px solid #334155;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#F8FAFC;white-space:pre-wrap">curl -X POST ${baseUrl}/v1/diagnosticos \\
-  -H "Authorization: Bearer ${apiKey}" \\
+        <div style="background:#0D1117;border:1px solid #334155;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#F8FAFC;white-space:pre-wrap">curl -X POST ${escapeHtml(baseUrl)}/v1/diagnosticos \\
+  -H "Authorization: Bearer ${safeApiKey}" \\
   -H "Content-Type: application/json" \\
   -d '{"url":"/users","method":"POST","categoria":"backend"}'</div>
       </div>`
@@ -44,7 +56,7 @@ function buildWelcomeHtml(email, apiKey) {
     <!-- Body -->
     <div style="padding:32px">
       <h1 style="color:#F8FAFC;font-size:22px;font-weight:700;margin:0 0 8px">Bem-vindo ao DEBUG_Assist!</h1>
-      <p style="color:#94A3B8;font-size:15px;margin:0 0 24px">Sua conta foi criada com sucesso para <strong style="color:#F8FAFC">${email}</strong>.</p>
+      <p style="color:#94A3B8;font-size:15px;margin:0 0 24px">Sua conta foi criada com sucesso para <strong style="color:#F8FAFC">${safeEmail}</strong>.</p>
 
       ${apiKeyBlock}
       ${curlExample}

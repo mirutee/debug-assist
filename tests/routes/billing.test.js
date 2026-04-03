@@ -2,6 +2,8 @@
 
 // Garantir que variáveis de ambiente necessárias existam em CI (sem .env)
 process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test_ci';
+process.env.STRIPE_PRICE_PRO   = process.env.STRIPE_PRICE_PRO   || 'price_test_pro';
+process.env.STRIPE_PRICE_SCALE = process.env.STRIPE_PRICE_SCALE || 'price_test_scale';
 
 // Instância mock compartilhada — mesma referência usada pelo handler e pelos testes
 const mockStripeInstance = {
@@ -11,7 +13,14 @@ const mockStripeInstance = {
   checkout: {
     sessions: {
       create: jest.fn().mockResolvedValue({ url: 'https://checkout.stripe.com/test' }),
+      // retrieve com line_items expandidos — usado pela validação de price_id
+      retrieve: jest.fn().mockResolvedValue({
+        line_items: { data: [{ price: { id: 'price_test_pro' } }] },
+      }),
     },
+  },
+  charges: {
+    retrieve: jest.fn().mockResolvedValue({ customer: 'cus_test123' }),
   },
   webhooks: {
     constructEvent: jest.fn(),
@@ -49,6 +58,10 @@ beforeEach(() => {
   // clearAllMocks não reseta mockImplementation — resetar explicitamente
   // para que o throw do teste de assinatura inválida não persista
   mockStripeInstance.webhooks.constructEvent.mockReset();
+  // Restaurar retrieve com price_id correto para pro (padrão dos testes de checkout)
+  mockStripeInstance.checkout.sessions.retrieve.mockResolvedValue({
+    line_items: { data: [{ price: { id: process.env.STRIPE_PRICE_PRO } }] },
+  });
 });
 
 // --- checkout ---
@@ -113,7 +126,9 @@ describe('POST /v1/billing/webhook', () => {
       type: 'checkout.session.completed',
       data: {
         object: {
+          id: 'cs_test123',
           customer: 'cus_test123',
+          payment_status: 'paid',
           metadata: { usuario_id: VALID_UUID, plano: 'pro' },
         },
       },
@@ -133,13 +148,68 @@ describe('POST /v1/billing/webhook', () => {
     });
   });
 
+  it('ignora checkout.session.completed com payment_status != paid', async () => {
+    const VALID_UUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_test123',
+          customer: 'cus_test123',
+          payment_status: 'unpaid',
+          metadata: { usuario_id: VALID_UUID, plano: 'pro' },
+        },
+      },
+    });
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(200);
+    expect(updatePlanoBilling).not.toHaveBeenCalled();
+  });
+
+  it('rejeita checkout.session.completed com price_id diferente do plano no metadata', async () => {
+    const VALID_UUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_test123',
+          customer: 'cus_test123',
+          payment_status: 'paid',
+          // metadata diz "scale" mas retrieve vai retornar price_id de "pro"
+          metadata: { usuario_id: VALID_UUID, plano: 'scale' },
+        },
+      },
+    });
+    // retrieve retorna price_id de pro (diferente do scale declarado no metadata)
+    mockStripeInstance.checkout.sessions.retrieve.mockResolvedValueOnce({
+      line_items: { data: [{ price: { id: process.env.STRIPE_PRICE_PRO } }] },
+    });
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(400);
+    expect(updatePlanoBilling).not.toHaveBeenCalled();
+  });
+
   it('retorna 200 ou 500 quando updatePlanoBilling lança erro', async () => {
     const VALID_UUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
     mockStripeInstance.webhooks.constructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
         object: {
+          id: 'cs_test123',
           customer: 'cus_test123',
+          payment_status: 'paid',
           metadata: { usuario_id: VALID_UUID, plano: 'pro' },
         },
       },
@@ -173,10 +243,28 @@ describe('POST /v1/billing/webhook', () => {
     expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
   });
 
-  it('retorna 200 e rebaixa plano para customer.subscription.updated com cancel_at', async () => {
+  it('não rebaixa plano para customer.subscription.updated com cancel_at (cancelamento agendado ainda dentro do período pago)', async () => {
+    // cancel_at = data futura de cancelamento — usuário ainda está no período pago,
+    // o downgrade só deve ocorrer em customer.subscription.deleted
     mockStripeInstance.webhooks.constructEvent.mockReturnValue({
       type: 'customer.subscription.updated',
-      data: { object: { customer: 'cus_test123', cancel_at: 1776909320 } },
+      data: { object: { customer: 'cus_test123', cancel_at: 1776909320, status: 'active' } },
+    });
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(200);
+    expect(updatePlanoBilling).not.toHaveBeenCalled();
+  });
+
+  it('rebaixa plano para customer.subscription.updated com status unpaid', async () => {
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'customer.subscription.updated',
+      data: { object: { customer: 'cus_test123', status: 'unpaid' } },
     });
     getUsuarioByStripeCustomerId.mockResolvedValue({ id: 'user-uuid', plano_id: 'pro' });
     updatePlanoBilling.mockResolvedValue(undefined);
@@ -191,11 +279,13 @@ describe('POST /v1/billing/webhook', () => {
     expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
   });
 
-  it('não rebaixa plano para customer.subscription.updated sem cancel_at', async () => {
+  it('rebaixa plano para customer.subscription.updated com status past_due', async () => {
     mockStripeInstance.webhooks.constructEvent.mockReturnValue({
       type: 'customer.subscription.updated',
-      data: { object: { customer: 'cus_test123', cancel_at: null } },
+      data: { object: { customer: 'cus_test123', status: 'past_due' } },
     });
+    getUsuarioByStripeCustomerId.mockResolvedValue({ id: 'user-uuid', plano_id: 'pro' });
+    updatePlanoBilling.mockResolvedValue(undefined);
 
     const res = await request(app)
       .post('/v1/billing/webhook')
@@ -204,7 +294,48 @@ describe('POST /v1/billing/webhook', () => {
       .send(Buffer.from('{}'));
 
     expect(res.status).toBe(200);
-    expect(updatePlanoBilling).not.toHaveBeenCalled();
+    expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
+  });
+
+  it('rebaixa plano para charge.refunded', async () => {
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'charge.refunded',
+      data: { object: { id: 'ch_test', customer: 'cus_test123' } },
+    });
+    getUsuarioByStripeCustomerId.mockResolvedValue({ id: 'user-uuid', plano_id: 'pro' });
+    updatePlanoBilling.mockResolvedValue(undefined);
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(200);
+    expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
+  });
+
+  it('rebaixa plano para charge.dispute.created', async () => {
+    mockStripeInstance.webhooks.constructEvent.mockReturnValue({
+      type: 'charge.dispute.created',
+      data: { object: { id: 'dp_test', charge: 'ch_test123' } },
+    });
+    // dispute.charge é charge_id; mock getUsuarioByStripeCustomerId falha na primeira
+    // chamada (com charge_id) e sucede após retrieve retornar o customer_id
+    getUsuarioByStripeCustomerId
+      .mockResolvedValueOnce(null)            // chamada com charge_id (não encontra)
+      .mockResolvedValueOnce({ id: 'user-uuid', plano_id: 'pro' }); // após lookup
+    mockStripeInstance.charges.retrieve.mockResolvedValue({ customer: 'cus_test123' });
+    updatePlanoBilling.mockResolvedValue(undefined);
+
+    const res = await request(app)
+      .post('/v1/billing/webhook')
+      .set('stripe-signature', 'sig_valida')
+      .set('Content-Type', 'application/json')
+      .send(Buffer.from('{}'));
+
+    expect(res.status).toBe(200);
+    expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', { plano_id: 'free' });
   });
 });
 

@@ -7,14 +7,15 @@ jest.mock("../../src/db/supabase", () => ({
     uso_mensal: 10,
     planos: { limite_mensal: 100 },
   }),
-  incrementarUso: jest.fn().mockResolvedValue(undefined),
+  checkAndIncrementUso: jest.fn().mockResolvedValue(true),
   getUsuarioByAuthId: jest.fn(),
 }));
 
 const request = require("supertest");
 const app = require("../../src/app");
 
-const HEADERS = { Authorization: "Bearer qualquer-api-key-valida" };
+// UUID válido — auth middleware rejeita API keys que não sejam UUID
+const HEADERS = { Authorization: "Bearer a1b2c3d4-e5f6-7890-abcd-ef1234567890" };
 
 describe("Validate middleware", () => {
   it("retorna 400 quando 'tipo' não enviado", async () => {

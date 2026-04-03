@@ -21,10 +21,27 @@
   </div>
 
   <script>
+    // SEGURANÇA: escapa texto antes de inserir no DOM — evita XSS via parâmetros da URL
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function showError(msg) {
       document.getElementById('status').style.display = 'none';
       const el = document.getElementById('error-msg');
-      el.innerHTML = msg + ' <a href="/dashboard/login.html" style="color:#6366f1">Voltar ao login</a>';
+      // SEGURANÇA: textContent para a mensagem de erro (sem XSS),
+      // link de volta adicionado como elemento separado
+      el.textContent = msg;
+      const link = document.createElement('a');
+      link.href = '/dashboard/login.html';
+      link.style.color = '#6366f1';
+      link.textContent = ' Voltar ao login';
+      el.appendChild(link);
       el.classList.add('show');
     }
 
@@ -33,11 +50,17 @@
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const query = new URLSearchParams(window.location.search);
 
-      // Verificar erros
+      // SEGURANÇA [CRÍTICO]: limpar hash imediatamente após leitura —
+      // evita que access_token fique exposto na URL durante o redirecionamento
+      if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+
+      // Verificar erros — escapeHtml previne XSS caso error_description seja malicioso
       const errorDesc = hash.get('error_description') || query.get('error_description');
       const errorCode = hash.get('error') || query.get('error');
       if (errorDesc || errorCode) {
-        showError('Erro: ' + (errorDesc || errorCode));
+        showError('Erro: ' + escapeHtml(errorDesc || errorCode));
         return;
       }
 

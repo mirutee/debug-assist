@@ -15,7 +15,7 @@ const mockSupabaseClient = {
 
 beforeEach(() => jest.clearAllMocks());
 
-const { getUsuarioByApiKey, incrementarUso, getUsuarioByAuthId, getUsuarioById, updatePlanoBilling, getUsuarioByStripeCustomerId } =
+const { getUsuarioByApiKey, checkAndIncrementUso, getUsuarioByAuthId, getUsuarioById, updatePlanoBilling, getUsuarioByStripeCustomerId } =
   require("../../src/db/supabase");
 
 describe("getUsuarioByApiKey", () => {
@@ -59,26 +59,36 @@ describe("getUsuarioByApiKey", () => {
   });
 });
 
-describe("incrementarUso", () => {
-  it("chama rpc increment_uso_mensal com id correto", async () => {
-    mockSupabaseClient.rpc.mockResolvedValue({ error: null });
+describe("checkAndIncrementUso", () => {
+  it("retorna true quando dentro da cota (rpc retorna true)", async () => {
+    mockSupabaseClient.rpc.mockResolvedValue({ data: true, error: null });
 
-    await incrementarUso("user-uuid");
+    const result = await checkAndIncrementUso("user-uuid", 10);
 
+    expect(result).toBe(true);
     expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
-      "increment_uso_mensal",
-      { p_usuario_id: "user-uuid" }
+      "check_and_increment_uso_mensal",
+      { p_usuario_id: "user-uuid", p_limite: 10 }
     );
   });
 
-  it("loga erro quando rpc falha", async () => {
+  it("retorna false quando cota esgotada (rpc retorna false)", async () => {
+    mockSupabaseClient.rpc.mockResolvedValue({ data: false, error: null });
+
+    const result = await checkAndIncrementUso("user-uuid", 10);
+
+    expect(result).toBe(false);
+  });
+
+  it("retorna false e loga erro quando rpc falha", async () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    mockSupabaseClient.rpc.mockResolvedValue({ error: { message: "db down" } });
+    mockSupabaseClient.rpc.mockResolvedValue({ data: null, error: { message: "db down" } });
 
-    await incrementarUso("user-uuid");
+    const result = await checkAndIncrementUso("user-uuid", 10);
 
+    expect(result).toBe(false);
     expect(consoleSpy).toHaveBeenCalledWith(
-      "Erro ao incrementar uso:",
+      "Erro ao verificar/incrementar uso:",
       "db down"
     );
     consoleSpy.mockRestore();
@@ -143,13 +153,33 @@ describe("updatePlanoBilling", () => {
   it("lança erro quando Supabase retorna erro", async () => {
     mockSupabaseClient.from.mockReturnValue({
       update: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({ error: { message: "db error" } }),
+        eq: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({ data: null, error: { message: "db error" } }),
+          }),
+        }),
       }),
     });
 
     await expect(
       updatePlanoBilling("user-uuid", { plano_id: "pro" })
     ).rejects.toThrow("db error");
+  });
+
+  it("lança erro quando nenhuma linha é encontrada (usuario_id inexistente)", async () => {
+    mockSupabaseClient.from.mockReturnValue({
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        }),
+      }),
+    });
+
+    await expect(
+      updatePlanoBilling("uuid-inexistente", { plano_id: "pro" })
+    ).rejects.toThrow("Usuário não encontrado");
   });
 
   it("retorna sem chamar update quando ambos os campos são undefined", async () => {
@@ -280,20 +310,26 @@ describe("regenerateApiKey", () => {
 });
 
 describe("getAnalyticsByUsuario", () => {
-  it("retorna dados agrupados por data", async () => {
+  function mockAnalyticsChain(resolved) {
     mockSupabaseClient.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          gte: jest.fn().mockResolvedValue({
-            data: [
-              { criado_em: "2026-03-01T10:00:00Z" },
-              { criado_em: "2026-03-01T12:00:00Z" },
-              { criado_em: "2026-03-02T09:00:00Z" },
-            ],
-            error: null,
+          gte: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue(resolved),
           }),
         }),
       }),
+    });
+  }
+
+  it("retorna dados agrupados por data", async () => {
+    mockAnalyticsChain({
+      data: [
+        { criado_em: "2026-03-01T10:00:00Z" },
+        { criado_em: "2026-03-01T12:00:00Z" },
+        { criado_em: "2026-03-02T09:00:00Z" },
+      ],
+      error: null,
     });
 
     const result = await getAnalyticsByUsuario("user-uuid");
@@ -304,29 +340,14 @@ describe("getAnalyticsByUsuario", () => {
   });
 
   it("retorna array vazio se não houver diagnósticos", async () => {
-    mockSupabaseClient.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          gte: jest.fn().mockResolvedValue({ data: [], error: null }),
-        }),
-      }),
-    });
+    mockAnalyticsChain({ data: [], error: null });
 
     const result = await getAnalyticsByUsuario("user-uuid");
     expect(result).toEqual([]);
   });
 
   it("lança erro se query falhar", async () => {
-    mockSupabaseClient.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          gte: jest.fn().mockResolvedValue({
-            data: null,
-            error: { message: "query failed" },
-          }),
-        }),
-      }),
-    });
+    mockAnalyticsChain({ data: null, error: { message: "query failed" } });
 
     await expect(getAnalyticsByUsuario("user-uuid")).rejects.toThrow("query failed");
   });
