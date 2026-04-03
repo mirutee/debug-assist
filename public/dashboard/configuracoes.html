@@ -168,10 +168,16 @@
           <span class="email-value" id="plano-nome">Carregando...</span>
         </div>
         <div id="plano-actions" style="margin-top:14px;display:none">
-          <button id="btn-portal" onclick="abrirPortal()"
-            style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500">
-            Gerenciar assinatura →
-          </button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button id="btn-portal" onclick="abrirPortal()"
+              style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500">
+              Gerenciar assinatura →
+            </button>
+            <button id="btn-cancelar-plano" onclick="abrirModalCancelamento()"
+              style="background:none;border:1px solid #ef4444;color:#ef4444;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer">
+              Cancelar plano
+            </button>
+          </div>
           <div id="portal-error" style="font-size:12px;color:#f87171;margin-top:8px;display:none"></div>
         </div>
       </div>
@@ -230,6 +236,26 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- Modal cancelamento de plano -->
+  <div class="modal-overlay" id="modal-cancelamento">
+    <div class="modal-box">
+      <div class="modal-title">Cancelar plano?</div>
+      <div class="modal-body">
+        Você será redirecionado para o portal de assinaturas para confirmar o cancelamento.<br><br>
+        <strong style="color:var(--text)">Seu acesso continua até o fim do período já pago.</strong>
+        Após isso, sua conta volta para o plano Free (10 diagnósticos/mês).
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="fecharModalCancelamento()">Voltar</button>
+        <button class="btn-confirm" id="btn-confirmar-cancelamento"
+          onclick="confirmarCancelamento()"
+          style="background:#ef4444;">
+          Ir para cancelamento
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal de confirmação -->
@@ -483,6 +509,9 @@
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('modal-overlay')) closeModal();
     });
+    document.getElementById('modal-cancelamento').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('modal-cancelamento')) fecharModalCancelamento();
+    });
 
     function toggleTheme() {
       var current = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -572,6 +601,24 @@
         status.textContent = 'Erro ao remover.';
         status.style.color = '#f87171';
       }
+    }
+
+    function abrirModalCancelamento() {
+      document.getElementById('modal-cancelamento').classList.add('active');
+    }
+
+    function fecharModalCancelamento() {
+      document.getElementById('modal-cancelamento').classList.remove('active');
+    }
+
+    async function confirmarCancelamento() {
+      const btn = document.getElementById('btn-confirmar-cancelamento');
+      btn.disabled = true;
+      btn.textContent = 'Redirecionando...';
+      fecharModalCancelamento();
+      await abrirPortal();
+      btn.disabled = false;
+      btn.textContent = 'Ir para cancelamento';
     }
 
     async function checkApiStatus() {
