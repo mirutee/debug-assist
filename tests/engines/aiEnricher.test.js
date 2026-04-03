@@ -1,4 +1,11 @@
 // tests/engines/aiEnricher.test.js
+
+// decrypt como passthrough — a chave armazenada é retornada sem modificação
+jest.mock('../../src/utils/encrypt', () => ({
+  decrypt: jest.fn(val => val),
+  encrypt: jest.fn(val => val),
+}));
+
 const aiEnricher = require('../../src/engines/aiEnricher');
 
 const baseResultado = {
@@ -13,6 +20,8 @@ const baseResultado = {
 const basePayload = { tipo: 'hydration_error', mensagem: 'Hydration failed' };
 
 const usuarioSemKey = { ai_key_encrypted: null, ai_provider: null };
+const usuarioOpenai = { ai_key_encrypted: 'sk-openai', ai_provider: 'openai' };
+const usuarioAnthropic = { ai_key_encrypted: 'sk-ant', ai_provider: 'anthropic' };
 
 describe('aiEnricher', () => {
   beforeEach(() => {
@@ -26,20 +35,14 @@ describe('aiEnricher', () => {
     expect(r.problema).toBe(baseResultado.problema);
   });
 
-  it('header override tem prioridade sobre ai_key_encrypted', async () => {
-    global.fetch = jest.fn().mockResolvedValueOnce({
-      json: async () => ({
-        choices: [{ message: { content: 'Análise via header' } }],
-      }),
-    });
-
+  it('x-ai-key header é ignorado (removido por segurança)', async () => {
+    global.fetch = jest.fn();
     const headers = { 'x-ai-key': 'sk-header', 'x-ai-provider': 'openai' };
     const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
-
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    expect(r.analise_aprofundada).toBe('Análise via header');
-    expect(r.ia_provider).toBe('openai');
-    expect(r.ia_timeout).toBe(false);
+    // Header ignorado — sem key no usuario, deve retornar ia_aviso sem chamar IA
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(r.ia_aviso).toBeDefined();
+    expect(r.analise_aprofundada).toBeNull();
   });
 
   it('openai: retorna analise_aprofundada no sucesso', async () => {
@@ -49,8 +52,7 @@ describe('aiEnricher', () => {
       }),
     });
 
-    const headers = { 'x-ai-key': 'sk-openai', 'x-ai-provider': 'openai' };
-    const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
+    const r = await aiEnricher(baseResultado, basePayload, usuarioOpenai, {});
 
     expect(r.analise_aprofundada).toBe('Análise detalhada OpenAI');
     expect(r.ia_timeout).toBe(false);
@@ -64,8 +66,7 @@ describe('aiEnricher', () => {
       }),
     });
 
-    const headers = { 'x-ai-key': 'sk-ant', 'x-ai-provider': 'anthropic' };
-    const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
+    const r = await aiEnricher(baseResultado, basePayload, usuarioAnthropic, {});
 
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining('anthropic.com'),
@@ -83,8 +84,7 @@ describe('aiEnricher', () => {
       })
     );
 
-    const headers = { 'x-ai-key': 'sk-slow', 'x-ai-provider': 'openai' };
-    const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
+    const r = await aiEnricher(baseResultado, basePayload, usuarioOpenai, {});
 
     expect(r.analise_aprofundada).toBeNull();
     expect(r.ia_timeout).toBe(true);
@@ -94,8 +94,7 @@ describe('aiEnricher', () => {
   it('erro genérico da IA: retorna ia_timeout: false e analise null', async () => {
     global.fetch = jest.fn().mockRejectedValueOnce(new Error('Network error'));
 
-    const headers = { 'x-ai-key': 'sk-err', 'x-ai-provider': 'openai' };
-    const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
+    const r = await aiEnricher(baseResultado, basePayload, usuarioOpenai, {});
 
     expect(r.analise_aprofundada).toBeNull();
     expect(r.ia_timeout).toBe(false);
@@ -103,8 +102,8 @@ describe('aiEnricher', () => {
 
   it('provider desconhecido: retorna ia_aviso sem chamar IA', async () => {
     global.fetch = jest.fn();
-    const headers = { 'x-ai-key': 'sk-test', 'x-ai-provider': 'gemini' };
-    const r = await aiEnricher(baseResultado, basePayload, usuarioSemKey, headers);
+    const usuarioGemini = { ai_key_encrypted: 'sk-test', ai_provider: 'gemini' };
+    const r = await aiEnricher(baseResultado, basePayload, usuarioGemini, {});
     expect(global.fetch).not.toHaveBeenCalled();
     expect(r.ia_aviso).toBeDefined();
     expect(r.analise_aprofundada).toBeNull();

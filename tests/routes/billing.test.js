@@ -41,7 +41,12 @@ function mockJwt(usuario) {
   getUsuarioByAuthId.mockResolvedValue(usuario);
 }
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  // clearAllMocks não reseta mockImplementation — resetar explicitamente
+  // para que o throw do teste de assinatura inválida não persista
+  mockStripeInstance.webhooks.constructEvent.mockReset();
+});
 
 // --- checkout ---
 
@@ -100,12 +105,13 @@ describe('POST /v1/billing/webhook', () => {
   });
 
   it('retorna 200 e atualiza plano para checkout.session.completed', async () => {
+    const VALID_UUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
     mockStripeInstance.webhooks.constructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
         object: {
           customer: 'cus_test123',
-          metadata: { usuario_id: 'user-uuid', plano: 'pro' },
+          metadata: { usuario_id: VALID_UUID, plano: 'pro' },
         },
       },
     });
@@ -118,19 +124,20 @@ describe('POST /v1/billing/webhook', () => {
       .send(Buffer.from('{}'));
 
     expect(res.status).toBe(200);
-    expect(updatePlanoBilling).toHaveBeenCalledWith('user-uuid', {
+    expect(updatePlanoBilling).toHaveBeenCalledWith(VALID_UUID, {
       plano_id: 'pro',
       stripe_customer_id: 'cus_test123',
     });
   });
 
   it('retorna 200 ou 500 quando updatePlanoBilling lança erro', async () => {
+    const VALID_UUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
     mockStripeInstance.webhooks.constructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
         object: {
           customer: 'cus_test123',
-          metadata: { usuario_id: 'uuid-inexistente', plano: 'pro' },
+          metadata: { usuario_id: VALID_UUID, plano: 'pro' },
         },
       },
     });

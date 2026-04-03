@@ -75,7 +75,8 @@ describe("POST /v1/auth/signup", () => {
       .send({ email: "existing@gmail.com", senha: "senha123" });
 
     expect(res.status).toBe(400);
-    expect(res.body.erro).toBe("Email já cadastrado");
+    // Anti-enumeration: não revelar se email está cadastrado
+    expect(res.body.erro).toBe("Email ou senha inválidos. Tente novamente.");
   });
 
   it("retorna 400 para email inválido (sem @)", async () => {
@@ -182,7 +183,8 @@ describe("GET /v1/auth/me", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.email).toBe("user@gmail.com");
-    expect(res.body.api_key).toBe("key-uuid");
+    // Segurança: api_key não é retornada no endpoint GET /me
+    expect(res.body.api_key).toBeUndefined();
     expect(res.body.plano).toBe("free");
     expect(res.body.uso_mensal).toBe(10);
     expect(res.body.limite_mensal).toBe(100);
@@ -206,7 +208,7 @@ describe("GET /v1/auth/me", () => {
     expect(res.status).toBe(401);
   });
 
-  it("retorna 404 quando usuário não confirmou email", async () => {
+  it("retorna 401 quando usuário não existe na base (token válido mas sem registro)", async () => {
     getUserFromToken.mockResolvedValue({
       data: { user: { id: "auth-uuid" } },
       error: null,
@@ -218,8 +220,9 @@ describe("GET /v1/auth/me", () => {
       .get("/v1/auth/me")
       .set("Authorization", "Bearer jwt-valido");
 
-    expect(res.status).toBe(404);
-    expect(res.body.erro).toMatch(/confirme/i);
+    // Segurança: não revelar se usuário existe ou aguarda confirmação
+    expect(res.status).toBe(401);
+    expect(res.body.erro).toBe("Token inválido");
   });
 });
 

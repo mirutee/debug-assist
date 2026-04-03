@@ -1,10 +1,10 @@
 // src/routes/feedback.js
 const express = require('express');
 const router = express.Router();
-const authJwt = require('../middleware/authJwt');
+const { getUserFromToken, getUsuarioByAuthId } = require('../db/supabase');
 const { sendFeedbackEmail } = require('../email/resend');
 
-router.post('/', authJwt, async (req, res) => {
+router.post('/', async (req, res) => {
   const { mensagem } = req.body;
 
   if (!mensagem || typeof mensagem !== 'string' || mensagem.trim().length === 0) {
@@ -14,11 +14,25 @@ router.post('/', authJwt, async (req, res) => {
     return res.status(400).json({ erro: 'Mensagem muito longa (máximo 2000 caracteres)' });
   }
 
-  await sendFeedbackEmail({
-    mensagem: mensagem.trim(),
-    email: req.usuario.email,
-    plano: req.usuario.plano_id
-  });
+  // Auth opcional — feedback funciona anônimo ou autenticado
+  let email = null;
+  let plano = null;
+  const header = req.headers['authorization'];
+  if (header && header.startsWith('Bearer ')) {
+    try {
+      const token = header.slice(7).trim();
+      const { data: { user }, error } = await getUserFromToken(token);
+      if (!error && user) {
+        const usuario = await getUsuarioByAuthId(user.id);
+        if (usuario) {
+          email = usuario.email;
+          plano = usuario.plano_id;
+        }
+      }
+    } catch (_) {}
+  }
+
+  await sendFeedbackEmail({ mensagem: mensagem.trim(), email, plano });
 
   return res.json({ ok: true });
 });
