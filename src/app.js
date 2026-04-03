@@ -9,6 +9,10 @@ const path = require("path");
 
 const app = express();
 
+// SEGURANÇA: trust proxy — necessário para req.ip ser o IP real do cliente atrás do Render/nginx.
+// Sem isso, todos os rate limiters usam o IP interno do proxy (mesmo IP para todos os usuários).
+app.set('trust proxy', 1);
+
 // SEGURANÇA: Adicionar headers de segurança com Helmet
 app.use(helmet({
   contentSecurityPolicy: {

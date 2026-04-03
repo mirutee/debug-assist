@@ -29,7 +29,7 @@ describe("GET /v1/analytics", () => {
     expect(res.status).toBe(401);
   });
 
-  it("retorna 404 se usuário não existe", async () => {
+  it("retorna 401 se usuário não existe na tabela usuarios", async () => {
     getUserFromToken.mockResolvedValue({ data: { user: { id: "auth-uuid" } }, error: null });
     getUsuarioByAuthId.mockResolvedValue(null);
 
@@ -37,12 +37,12 @@ describe("GET /v1/analytics", () => {
       .get("/v1/analytics")
       .set("Authorization", "Bearer token-valido");
 
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(401);
   });
 
   it("retorna 200 com array de dados", async () => {
     getUserFromToken.mockResolvedValue({ data: { user: { id: "auth-uuid" } }, error: null });
-    getUsuarioByAuthId.mockResolvedValue({ id: "user-uuid" });
+    getUsuarioByAuthId.mockResolvedValue({ id: "user-uuid", email: "a@b.com", plano_id: "free", stripe_customer_id: null });
     getAnalyticsByUsuario.mockResolvedValue([
       { data: "2026-03-01", total: 5 },
       { data: "2026-03-02", total: 3 },
@@ -59,7 +59,7 @@ describe("GET /v1/analytics", () => {
 
   it("retorna 200 com array vazio se sem diagnósticos", async () => {
     getUserFromToken.mockResolvedValue({ data: { user: { id: "auth-uuid" } }, error: null });
-    getUsuarioByAuthId.mockResolvedValue({ id: "user-uuid" });
+    getUsuarioByAuthId.mockResolvedValue({ id: "user-uuid", email: "a@b.com", plano_id: "free", stripe_customer_id: null });
     getAnalyticsByUsuario.mockResolvedValue([]);
 
     const res = await request(app)
