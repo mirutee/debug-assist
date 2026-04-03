@@ -137,7 +137,7 @@ input:focus { border-color: #6366f1; }
 .sidebar-footer {
   margin-top: auto;
   padding: 8px 12px;
-  color: #444;
+  color: var(--muted);
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
