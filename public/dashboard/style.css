@@ -127,13 +127,13 @@ input:focus { border-color: #6366f1; }
   padding: 9px 12px;
   border-radius: 6px;
   text-decoration: none;
-  color: #888;
+  color: var(--muted);
   font-size: 13px;
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
 }
 .nav-item.active { background: var(--nav-active); color: var(--text); }
-.nav-item:hover:not(.active) { background: #161616; color: #ccc; }
+.nav-item:hover:not(.active) { background: var(--nav-active); color: var(--text); }
 .sidebar-footer {
   margin-top: auto;
   padding: 8px 12px;
@@ -164,7 +164,7 @@ input:focus { border-color: #6366f1; }
 
 .main { margin-left: 200px; padding: 32px; flex: 1; max-width: 720px; }
 .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-.page-subtitle { color: #555; font-size: 13px; margin-bottom: 24px; }
+.page-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
 
 /* ── Cards ──────────────────────────────── */
 .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
@@ -175,17 +175,17 @@ input:focus { border-color: #6366f1; }
   padding: 18px;
 }
 .card-label {
-  color: #666;
+  color: var(--muted);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
 }
 .usage-number { font-size: 28px; font-weight: 700; }
-.usage-limit { color: #555; font-size: 16px; font-weight: 400; }
+.usage-limit { color: var(--muted); font-size: 16px; font-weight: 400; }
 .usage-bar { background: var(--border); border-radius: 4px; height: 6px; margin-top: 12px; }
 .usage-fill { background: #6366f1; height: 6px; border-radius: 4px; transition: width 0.5s ease; }
-.card-sub { color: #555; font-size: 11px; margin-top: 8px; }
+.card-sub { color: var(--muted); font-size: 11px; margin-top: 8px; }
 
 .plan-badge { color: #6366f1; font-size: 20px; font-weight: 700; text-transform: capitalize; }
 .btn-upgrade {
@@ -516,7 +516,6 @@ input:focus { border-color: #6366f1; }
   padding: 10px 12px;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  margin-top: auto;
   margin-bottom: 8px;
 }
 
