@@ -1,5 +1,8 @@
 // tests/routes/billing.test.js
 
+// Garantir que variáveis de ambiente necessárias existam em CI (sem .env)
+process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test_ci';
+
 // Instância mock compartilhada — mesma referência usada pelo handler e pelos testes
 const mockStripeInstance = {
   customers: {
