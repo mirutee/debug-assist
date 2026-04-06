@@ -104,7 +104,7 @@ async function getUsuarioById(usuarioId) {
   if (!client) return null;
   const { data, error } = await client
     .from("usuarios")
-    .select("id, email, plano_id, stripe_customer_id")
+    .select("id, email, plano_id, stripe_customer_id, api_key")
     .eq("id", usuarioId)
     .single();
 
