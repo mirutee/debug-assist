@@ -980,7 +980,7 @@ DebugAssist.init({
     document.getElementById('btn-sair').addEventListener('click', (e) => {
       e.preventDefault();
       localStorage.removeItem('debug_assist_token');
-      window.location.replace('/dashboard/login.html');
+      window.location.replace('https://debugassist.com.br/');
     });
 
     function toggleTheme() {
@@ -993,10 +993,11 @@ DebugAssist.init({
     function updateThemeIcon() {
       var btn = document.getElementById('theme-toggle');
       if (!btn) return;
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
       btn.textContent = isDark ? '☀️' : '🌙';
       btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
     }
+    updateThemeIcon();
     document.addEventListener('DOMContentLoaded', updateThemeIcon);
 
     loadDashboard();

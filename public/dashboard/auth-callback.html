@@ -45,7 +45,30 @@
       el.classList.add('show');
     }
 
-    function handleCallback() {
+    // Tenta /v1/auth/me até o registro do usuário existir (máx 8s)
+    async function waitForUserRecord(token) {
+      const MAX_ATTEMPTS = 8;
+      const INTERVAL_MS = 1000;
+      for (let i = 0; i < MAX_ATTEMPTS; i++) {
+        try {
+          const res = await fetch('/v1/auth/me', {
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (res.ok) return; // registro existe, pode redirecionar
+          if (res.status === 401 && i < MAX_ATTEMPTS - 1) {
+            // registro ainda não criado — aguarda e tenta novamente
+            await new Promise(r => setTimeout(r, INTERVAL_MS));
+            continue;
+          }
+        } catch (_) {
+          // erro de rede — aguarda e tenta novamente
+          await new Promise(r => setTimeout(r, INTERVAL_MS));
+        }
+      }
+      // esgotou tentativas — redireciona mesmo assim (dashboard fará retry próprio)
+    }
+
+    async function handleCallback() {
       // Supabase retorna tokens no hash fragment após OAuth (implicit flow)
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const query = new URLSearchParams(window.location.search);
@@ -70,8 +93,9 @@
         localStorage.setItem('debug_assist_token', accessToken);
         const redirectParam = query.get('redirect');
         const dest = redirectParam === 'pricing' ? '/dashboard/pricing.html' : '/dashboard/';
-        // Pausa para o trigger do banco criar o registro do usuário
-        setTimeout(() => window.location.replace(dest), 800);
+        // Polling: aguarda o trigger do banco criar o registro antes de redirecionar
+        await waitForUserRecord(accessToken);
+        window.location.replace(dest);
         return;
       }
 
@@ -84,7 +108,7 @@
       showError('Nenhum token recebido. Tente fazer login novamente.');
     }
 
-    handleCallback();
+    handleCallback().catch(() => showError('Erro inesperado. Tente fazer login novamente.'));
   </script>
 </body>
 </html>
