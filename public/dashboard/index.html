@@ -829,6 +829,8 @@ DebugAssist.init({
 
         if (!res.ok) return;
         const data = await res.json();
+        // Armazena no userData para que toggleReveal() e copyKey() possam usar
+        if (userData) userData.api_key = data.api_key;
         updateCodeExamples(data.api_key);
       } catch (err) {
         console.error('Erro ao carregar API key:', err);
