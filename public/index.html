@@ -7,15 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
-  <script>
-    (function() {
-      try {
-        var saved = localStorage.getItem('da_theme');
-        var sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', saved || sys);
-      } catch(e) {}
-    })();
-  </script>
 </head>
 <body>
 
@@ -39,8 +30,8 @@
     <div class="hero-badge">⚡ Diagnóstico de erros em tempo real</div>
     <h1>
       Entenda seus erros.<br>
-      <span class="accent">Antes</span> que o usuário<br>
-      perceba.
+      <span class="accent-cyan">Antes</span> que o usuário<br>
+      <span class="accent-green">perceba.</span>
     </h1>
     <p class="hero-sub">
       DEBUG_Assist analisa suas requisições, logs e queries em tempo real —
@@ -175,38 +166,28 @@
   </div>
 </section>
 
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Pronto para debugar mais rápido?</h2>
+  <p>Comece grátis hoje. Integração em menos de 5 minutos.</p>
+  <div class="cta-btns">
+    <a class="btn-primary" href="/dashboard/signup.html">Criar conta grátis →</a>
+    <a class="btn-outline" href="/docs">Ver documentação</a>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
-  <img src="/images/logo.png" alt="DEBUG_Assist" style="height:40px;width:auto;display:block;">
-  <span>© 2026 · Diagnóstico de APIs para devs</span>
+  <img src="/images/logo.png" alt="DEBUG_Assist" style="height:36px;width:auto;">
+  <span class="footer-copy">© 2026 · Diagnóstico de APIs para devs</span>
   <div class="footer-links">
     <a href="/docs">Docs</a>
     <a href="/docs/sdks.html">SDK</a>
     <a href="/termos.html">Termos</a>
     <a href="/privacidade.html">Privacidade</a>
-    <a href="mailto:contato@debugassist.com">Suporte</a>
+    <a href="mailto:debugassistapp@gmail.com">Suporte</a>
   </div>
 </footer>
-
-<script>
-  function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme') || 'dark';
-    var next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    try { localStorage.setItem('da_theme', next); } catch(e) {}
-    updateThemeIcon();
-  }
-  function updateThemeIcon() {
-    var btn = document.getElementById('theme-toggle');
-    if (!btn) return;
-    var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-    btn.textContent = isDark ? '☀️' : '🌙';
-    btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
-  }
-  document.addEventListener('DOMContentLoaded', updateThemeIcon);
-
-</script>
-<button id="theme-toggle" class="theme-toggle-float" onclick="toggleTheme()" title="Mudar tema"></button>
 
 </body>
 </html>
