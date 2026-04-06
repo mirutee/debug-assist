@@ -1,57 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg:            #0F172A;
-  --surface:       #1E293B;
-  --border:        #334155;
-  --accent:        #6366F1;
-  --accent-h:      #4F46E5;
-  --text:          #F8FAFC;
-  --muted:         #94A3B8;
-  --green:         #4ADE80;
-  --red:           #F87171;
-  --code-bg:       #0D1117;
-  --nav-active:    rgba(99,102,241,0.12);
-  --hover-bg:      #161616;
-  --item-meta:     #555;
-  --item-time:     #444;
-  --item-text:     #ccc;
-  --item-divider:  #1a1a1a;
-  --detail-text:   #aaa;
-  --empty-text:    #444;
-  --bar-bg:        #222;
-  --btn-sm-bg:     #1a1a1a;
-  --btn-sm-border: #333;
-  --btn-sm-color:  #aaa;
-  --banner-bg:     #1a1a2e;
-  --banner-color:  #aaa;
-  --alert-border:  #2a1010;
-  --input-color:   #fff;
+  --bg:            #07101E;
+  --surface:       #0F1929;
+  --border:        #1E3554;
+  --accent:        #00D4FF;
+  --accent-h:      #00BCDF;
+  --text:          #E8F0FF;
+  --muted:         #5A7A9A;
+  --green:         #22FF7A;
+  --red:           #FF5C6A;
+  --code-bg:       #040A14;
+  --nav-active:    rgba(0,212,255,0.10);
+  --hover-bg:      #0C1828;
+  --item-meta:     #4A6A8A;
+  --item-time:     #3A5A7A;
+  --item-text:     #B8CCEA;
+  --item-divider:  #162640;
+  --detail-text:   #7A9ABE;
+  --empty-text:    #3A5A7A;
+  --bar-bg:        #162640;
+  --btn-sm-bg:     #0C1828;
+  --btn-sm-border: #1E3554;
+  --btn-sm-color:  #5A7A9A;
+  --banner-bg:     #091420;
+  --banner-color:  #5A7A9A;
+  --alert-border:  #2A1020;
+  --input-color:   #E8F0FF;
 }
 
 [data-theme="light"] {
-  --bg:            #F8FAFC;
+  --bg:            #F0F6FF;
   --surface:       #FFFFFF;
-  --border:        #CBD5E1;
-  --text:          #0F172A;
-  --muted:         #64748B;
-  --code-bg:       #F1F5F9;
-  --nav-active:    rgba(99,102,241,0.10);
-  --hover-bg:      #F1F5F9;
-  --item-meta:     #64748B;
-  --item-time:     #94A3B8;
-  --item-text:     #334155;
-  --item-divider:  #E2E8F0;
-  --detail-text:   #475569;
-  --empty-text:    #94A3B8;
-  --bar-bg:        #CBD5E1;
-  --btn-sm-bg:     #F8FAFC;
-  --btn-sm-border: #CBD5E1;
-  --btn-sm-color:  #64748B;
-  --banner-bg:     #F1F5F9;
-  --banner-color:  #64748B;
-  --alert-border:  #CBD5E1;
-  --input-color:   #0F172A;
+  --border:        #BAD0EA;
+  --text:          #0A1628;
+  --muted:         #4A6A8A;
+  --code-bg:       #E8F0FF;
+  --nav-active:    rgba(0,212,255,0.10);
+  --hover-bg:      #E0EEFF;
+  --item-meta:     #4A6A8A;
+  --item-time:     #6A8AAA;
+  --item-text:     #1A2E42;
+  --item-divider:  #BAD0EA;
+  --detail-text:   #3A5A7A;
+  --empty-text:    #6A8AAA;
+  --bar-bg:        #BAD0EA;
+  --btn-sm-bg:     #F0F6FF;
+  --btn-sm-border: #BAD0EA;
+  --btn-sm-color:  #4A6A8A;
+  --banner-bg:     #E8F0FF;
+  --banner-color:  #4A6A8A;
+  --alert-border:  #BAD0EA;
+  --input-color:   #0A1628;
 }
 [data-theme="light"] .nivel-baixo { background: #dcfce7; color: #15803d; }
 [data-theme="light"] .nivel-médio { background: #fef9c3; color: #a16207; }
@@ -93,7 +93,7 @@ body {
   gap: 8px;
   margin-bottom: 28px;
 }
-.logo-dot { width: 10px; height: 10px; border-radius: 50%; background: #6366f1; }
+.logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 .logo-text { font-size: 18px; font-weight: 700; }
 
 .form-group { margin-bottom: 16px; }
@@ -109,22 +109,22 @@ input[type="email"], input[type="password"] {
   outline: none;
   transition: border-color 0.15s;
 }
-input:focus { border-color: #6366f1; }
+input:focus { border-color: var(--accent); }
 
 .btn-primary {
   width: 100%;
-  background: #6366f1;
+  background: var(--accent);
   border: none;
   border-radius: 6px;
   padding: 11px;
-  color: #fff;
+  color: #07101E;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.15s;
   margin-top: 4px;
 }
-.btn-primary:hover { background: #4f52d9; }
+.btn-primary:hover { background: var(--accent-h); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .error-msg {
@@ -222,15 +222,15 @@ input:focus { border-color: #6366f1; }
 .usage-number { font-size: 28px; font-weight: 700; }
 .usage-limit { color: var(--muted); font-size: 16px; font-weight: 400; }
 .usage-bar { background: var(--border); border-radius: 4px; height: 6px; margin-top: 12px; }
-.usage-fill { background: #6366f1; height: 6px; border-radius: 4px; transition: width 0.5s ease; }
+.usage-fill { background: var(--accent); height: 6px; border-radius: 4px; transition: width 0.5s ease; }
 .card-sub { color: var(--muted); font-size: 11px; margin-top: 8px; }
 
-.plan-badge { color: #6366f1; font-size: 20px; font-weight: 700; text-transform: capitalize; }
+.plan-badge { color: var(--accent); font-size: 20px; font-weight: 700; text-transform: capitalize; }
 .btn-upgrade {
   display: inline-block;
   margin-top: 12px;
-  border: 1px solid #6366f1;
-  color: #6366f1;
+  border: 1px solid var(--accent);
+  color: var(--accent);
   border-radius: 5px;
   padding: 5px 12px;
   font-size: 11px;
@@ -433,7 +433,7 @@ input:focus { border-color: #6366f1; }
   border-radius: 4px;
   height: 4px;
 }
-.confianca-fill { background: #6366f1; height: 4px; border-radius: 4px; }
+.confianca-fill { background: var(--accent); height: 4px; border-radius: 4px; }
 
 .history-empty {
   text-align: center;
@@ -442,7 +442,7 @@ input:focus { border-color: #6366f1; }
   font-size: 14px;
   line-height: 1.8;
 }
-.history-empty a { color: #6366f1; text-decoration: none; }
+.history-empty a { color: var(--accent); text-decoration: none; }
 
 /* ── Nav badge ──────────────────────────── */
 .nav-item { position: relative; }
@@ -531,7 +531,7 @@ input:focus { border-color: #6366f1; }
   font-size: 14px;
   line-height: 1.8;
 }
-.alert-empty a { color: #6366f1; text-decoration: none; }
+.alert-empty a { color: var(--accent); text-decoration: none; }
 
 /* ── Logo cursor ─────────────────────────── */
 .logo-debug { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-weight: 700; }
@@ -859,7 +859,7 @@ input:focus { border-color: #6366f1; }
   height: 28px;
   min-width: 28px;
   border-radius: 50%;
-  background: #6366f1;
+  background: var(--accent);
   color: #fff;
   font-weight: 600;
   font-size: 12px;
