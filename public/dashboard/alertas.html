@@ -29,7 +29,7 @@
       <a class="nav-item" href="https://debugassist.com.br/docs" target="_blank" rel="noopener">📖 Docs</a>
       <a class="nav-item" id="btn-sair" href="#">🚪 Sair</a>
       <div class="sidebar-footer" id="user-email">Carregando...</div>
-      <button id="theme-toggle" class="theme-toggle-sidebar" onclick="toggleTheme()" title="Mudar tema"></button>
+      <button id="theme-toggle" class="theme-toggle-sidebar" title="Mudar tema">☀️</button>
       <div class="api-status" id="api-status">
         <span class="api-status-dot"></span>
         <span id="api-status-label">API</span>
@@ -298,8 +298,8 @@
       btn.textContent = isDark ? '☀️' : '🌙';
       btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
     }
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     updateThemeIcon();
-    document.addEventListener('DOMContentLoaded', updateThemeIcon);
 
     async function initBanner(token) {
       try {

@@ -46,7 +46,7 @@
         </div>
       </div>
 
-      <button id="theme-toggle" class="theme-toggle-sidebar" onclick="toggleTheme()" title="Mudar tema"></button>
+      <button id="theme-toggle" class="theme-toggle-sidebar" title="Mudar tema">☀️</button>
     </nav>
 
     <main class="main">
@@ -1001,8 +1001,8 @@ DebugAssist.init({
       btn.textContent = isDark ? '☀️' : '🌙';
       btn.title = isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro';
     }
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     updateThemeIcon();
-    document.addEventListener('DOMContentLoaded', updateThemeIcon);
 
     loadDashboard();
     checkAlertBadge();
