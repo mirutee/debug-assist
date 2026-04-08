@@ -344,14 +344,14 @@ try {
         <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Escolha sua linguagem e veja como integrar a Debug Assist na sua aplicação:</p>
 
         <div class="sdk-tabs">
-          <button class="sdk-tab active" onclick="selectSdk('nodejs')">Node.js</button>
-          <button class="sdk-tab" onclick="selectSdk('python')">Python</button>
-          <button class="sdk-tab" onclick="selectSdk('java')">Java</button>
-          <button class="sdk-tab" onclick="selectSdk('csharp')">C#</button>
-          <button class="sdk-tab" onclick="selectSdk('go')">Go</button>
-          <button class="sdk-tab" onclick="selectSdk('php')">PHP</button>
-          <button class="sdk-tab" onclick="selectSdk('ruby')">Ruby</button>
-          <button class="sdk-tab" onclick="selectSdk('browser')">Browser</button>
+          <button class="sdk-tab active" onclick="selectSdk('nodejs', this)">Node.js</button>
+          <button class="sdk-tab" onclick="selectSdk('python', this)">Python</button>
+          <button class="sdk-tab" onclick="selectSdk('java', this)">Java</button>
+          <button class="sdk-tab" onclick="selectSdk('csharp', this)">C#</button>
+          <button class="sdk-tab" onclick="selectSdk('go', this)">Go</button>
+          <button class="sdk-tab" onclick="selectSdk('php', this)">PHP</button>
+          <button class="sdk-tab" onclick="selectSdk('ruby', this)">Ruby</button>
+          <button class="sdk-tab" onclick="selectSdk('browser', this)">Browser</button>
         </div>
 
         <!-- Node.js -->
@@ -631,6 +631,7 @@ DebugAssist.init({
   <script>
     const API = '';
     let userData = null;
+    let apiKey = null;
     let revealed = false;
 
     async function fetchMe(token) {
@@ -790,13 +791,13 @@ DebugAssist.init({
       });
     }
 
-    function selectSdk(sdk) {
+    function selectSdk(sdk, el) {
       // Remover ativo de todas as abas
       document.querySelectorAll('.sdk-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.sdk-content').forEach(c => c.classList.remove('active'));
 
       // Adicionar ativo à aba selecionada
-      event.target.classList.add('active');
+      el.classList.add('active');
       const content = document.getElementById('sdk-' + sdk);
       if (content) content.classList.add('active');
     }
@@ -830,6 +831,7 @@ DebugAssist.init({
         if (!res.ok) return;
         const data = await res.json();
         // Armazena no userData para que toggleReveal() e copyKey() possam usar
+        apiKey = data.api_key;
         if (userData) userData.api_key = data.api_key;
         updateCodeExamples(data.api_key);
       } catch (err) {
@@ -962,17 +964,17 @@ DebugAssist.init({
     }
 
     function toggleReveal() {
-      if (!userData) return;
+      if (!apiKey) return;
       revealed = !revealed;
       document.getElementById('apikey-field').textContent = revealed
-        ? userData.api_key
+        ? apiKey
         : '••••••••-••••-••••-••••-••••••••••••';
       document.getElementById('btn-reveal').textContent = revealed ? '🙈 Ocultar' : '👁 Revelar';
     }
 
     function copyKey() {
-      if (!userData) return;
-      navigator.clipboard.writeText(userData.api_key).then(() => {
+      if (!apiKey) return;
+      navigator.clipboard.writeText(apiKey).then(() => {
         const el = document.getElementById('copied-feedback');
         el.classList.add('show');
         setTimeout(() => el.classList.remove('show'), 2000);
