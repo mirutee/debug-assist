@@ -19,6 +19,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"], // jsdelivr para SDK Supabase
+      scriptSrcAttr: ["'unsafe-inline'"], // Helmet 7+ bloqueia onclick por padrão; precisamos liberar
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "https://*.supabase.co"], // Supabase Auth para OAuth
