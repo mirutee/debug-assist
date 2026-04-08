@@ -275,6 +275,7 @@
   <script>
     const API = '';
     let userData = null;
+    let apiKey = null;
     let revealed = false;
 
     async function init() {
@@ -308,6 +309,7 @@
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('account-email').textContent = userData.email;
         mostrarUsoBanner(userData);
+        loadApiKey();
         const plano = userData.plano;
         const planoLabels = { free: 'Free', pro: 'Pro', scale: 'Scale' };
         document.getElementById('plano-nome').textContent = planoLabels[plano] || plano;
@@ -431,17 +433,33 @@
     }
 
     // API Key
+    async function loadApiKey() {
+      try {
+        const token = localStorage.getItem('debug_assist_token');
+        if (!token) return;
+        const res = await fetch(`${API}/v1/auth/api-key`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        apiKey = data.api_key;
+        if (userData) userData.api_key = data.api_key;
+      } catch (err) {
+        console.error('Erro ao carregar API key:', err);
+      }
+    }
+
     function toggleReveal() {
-      if (!userData) return;
+      if (!apiKey) return;
       revealed = !revealed;
       document.getElementById('apikey-field').textContent =
-        revealed ? userData.api_key : '••••••••-••••-••••-••••-••••••••••••';
+        revealed ? apiKey : '••••••••-••••-••••-••••-••••••••••••';
       document.getElementById('btn-reveal').textContent = revealed ? '🙈 Ocultar' : '👁 Revelar';
     }
 
     function copyKey() {
-      if (!userData) return;
-      navigator.clipboard.writeText(userData.api_key).then(() => {
+      if (!apiKey) return;
+      navigator.clipboard.writeText(apiKey).then(() => {
         const fb = document.getElementById('copied-feedback');
         fb.classList.add('show');
         setTimeout(() => { fb.classList.remove('show'); }, 2000);
@@ -481,7 +499,8 @@
         }
 
         const { api_key } = await res.json();
-        userData.api_key = api_key;
+        apiKey = api_key;
+        if (userData) userData.api_key = api_key;
         revealed = true;
         document.getElementById('apikey-field').textContent = api_key;
         document.getElementById('btn-reveal').textContent = '🙈 Ocultar';
